@@ -1,0 +1,80 @@
+import { fetchGql } from "./fetcher";
+import { Config, FetchQueryReturnType, ResponseType } from "./types";
+import { chacheResponse, getFromCache } from "./cache";
+
+export const config = {
+  "auth-key": "",
+};
+
+export function init(key: string) {
+  config["auth-key"] = key;
+}
+
+const defaultConfig:Config = {
+    fetchPolicy: "cache-first",
+}
+
+export async function fetchQuery(
+  query: string,
+  variables: Record<string, any>,
+  _config?: Config
+): FetchQueryReturnType {
+  const _variables = {};
+  for (const key in variables) {
+    if (typeof variables[key] === "object") {
+      _variables[key] = JSON.stringify(variables[key]);
+    } else {
+      _variables[key] = variables[key];
+    }
+  }
+
+  const config = {...defaultConfig, ..._config}
+  
+  let data: null | ResponseType = config.fetchPolicy === 'cache-first' ? getFromCache(query, _variables) : null;
+  let error = null;
+
+  if (!data) {
+    const [response, _error] = (await fetchGql(query, _variables)) as [
+      ResponseType,
+      any
+    ];
+    data = response;
+    error = _error;
+    if (data && !error) {
+      chacheResponse(response, query, _variables);
+    }
+  }
+
+  const pageInfo = data ? data[Object.keys(data || {})[0]]?.pageInfo : null;
+  const hasNextPage = Boolean(pageInfo?.nextCursor);
+  const hasPrevPage = Boolean(pageInfo?.prevCursor);
+
+  const handleNext = async () => {
+    if (hasNextPage) {
+      return await fetchQuery(query, {
+        ..._variables,
+        cursor: pageInfo?.nextCursor,
+      });
+    }
+    return null;
+  };
+
+  const handlePrev = async () => {
+    if (hasPrevPage) {
+      return await fetchQuery(query, {
+        ..._variables,
+        cursor: pageInfo?.prevCursor,
+      });
+    }
+    return null;
+  };
+
+  return {
+    data,
+    error,
+    hasNextPage,
+    hasPrevPage,
+    next: handleNext,
+    prev: handlePrev,
+  };
+}
