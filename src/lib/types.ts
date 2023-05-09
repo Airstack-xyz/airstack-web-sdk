@@ -12,11 +12,13 @@ export type FetchQuery = {
     error: any;
     hasNextPage: boolean;
     hasPrevPage: boolean; 
-    next: () => Promise<FetchQuery | null>;
-    prev: () => Promise<FetchQuery | null>;}
+    getNextPage: () => Promise<FetchQuery | null>;
+    getPrevPage: () => Promise<FetchQuery | null>;}
 
 export type FetchQueryReturnType = Promise<FetchQuery>;
 
 export type Config = {
-  fetchPolicy?: "cache-first" | "network-only";
+  cache?: boolean;
 };
+
+export type Variables = Record<string, any>;

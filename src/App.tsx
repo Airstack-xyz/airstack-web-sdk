@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import "./App.css";
-import { init, useQuery } from "./lib/fetchQuery";
-import { useQueryWithPagination } from "./lib/useQueryWithPagination";
+import { init } from "./lib/fetchQuery";
+import { useLazyQueryWithPagination, useQueryWithPagination } from "./lib/useQueryWithPagination";
+import { useLazyQuery } from "./lib/useQuery";
 
 const owners = ["vitalik.eth", "dwr.eth"];
 const limit = 10;
@@ -26,15 +27,59 @@ const variables = {
   "blockchain": "ethereum",
   "limit": 3
 }
-function App() {
-  const { data, error, loading, hasNextPage, hasPrevPage, getNextPage, getPrevPage } = useQueryWithPagination(query, variables);
-  console.log(" data ", data);
+
+
+function WithPagginationNoCaching () {
+  const { data, loading, hasNextPage, hasPrevPage, getNextPage, getPrevPage } = useQueryWithPagination(query, variables, {
+    cache: false
+  });
+
   return (
     <div>
-      {loading && <h1> Loading... </h1>}
-      {data && <h2>{JSON.stringify(data)}</h2>}
+      <h2> useQueryWithPagination no catching </h2>
+      {loading && <h4> Loading... </h4>}
+      {data && <h4>{JSON.stringify(data, null , 4)}</h4>}
       <button onClick={getPrevPage} disabled={!hasPrevPage}> prev </button>
       <button onClick={getNextPage} disabled={!hasNextPage} > next </button>
+    </div>
+  );
+}
+
+function LazyLoad () {
+  const [fetch, { data, loading}] = useLazyQuery(query, variables);
+  
+  return (
+    <div>
+      {loading && <h4> Loading... </h4>}
+      {data && <h4>{JSON.stringify(data, null , "\t")}</h4>}
+      <button onClick={() => fetch()} disabled={loading}> fetch </button>
+    </div>
+  );
+}
+
+
+function App() {
+  const { data, loading, hasNextPage, hasPrevPage, getNextPage, getPrevPage } = useQueryWithPagination(query, variables);
+  
+  return (
+    <div>
+      <h2> useQueryWithPagination </h2>
+      {loading && <h4> Loading... </h4>}
+      {data && <h4>{JSON.stringify(data, null ,"\t")}</h4>}
+      <button onClick={getPrevPage} disabled={!hasPrevPage}> prev </button>
+      <button onClick={getNextPage} disabled={!hasNextPage} > next </button>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <h2> useLazyQuery </h2>
+      <LazyLoad/>
+
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <WithPagginationNoCaching/>
     </div>
   );
 }

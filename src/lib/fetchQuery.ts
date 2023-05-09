@@ -1,5 +1,5 @@
 import { fetchGql } from "./fetcher";
-import { Config, FetchQueryReturnType, ResponseType } from "./types";
+import { Config, FetchQueryReturnType, ResponseType, Variables } from "./types";
 import { chacheResponse, getFromCache } from "./cache";
 
 export const config = {
@@ -11,12 +11,12 @@ export function init(key: string) {
 }
 
 const defaultConfig:Config = {
-    fetchPolicy: "cache-first",
+    cache: true,
 }
 
 export async function fetchQuery(
   query: string,
-  variables: Record<string, any>,
+  variables?: Variables,
   _config?: Config
 ): FetchQueryReturnType {
   const _variables = {};
@@ -30,7 +30,7 @@ export async function fetchQuery(
 
   const config = {...defaultConfig, ..._config}
   
-  let data: null | ResponseType = config.fetchPolicy === 'cache-first' ? getFromCache(query, _variables) : null;
+  let data: null | ResponseType = config.cache ? getFromCache(query, _variables || {}) : null;
   let error = null;
 
   if (!data) {
@@ -54,7 +54,7 @@ export async function fetchQuery(
       return await fetchQuery(query, {
         ..._variables,
         cursor: pageInfo?.nextCursor,
-      });
+      }, config);
     }
     return null;
   };
@@ -64,7 +64,8 @@ export async function fetchQuery(
       return await fetchQuery(query, {
         ..._variables,
         cursor: pageInfo?.prevCursor,
-      });
+      }, config);
+
     }
     return null;
   };
@@ -74,7 +75,7 @@ export async function fetchQuery(
     error,
     hasNextPage,
     hasPrevPage,
-    next: handleNext,
-    prev: handlePrev,
+    getNextPage: handleNext,
+    getPrevPage: handlePrev,
   };
 }
