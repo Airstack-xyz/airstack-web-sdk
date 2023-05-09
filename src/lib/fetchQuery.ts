@@ -2,17 +2,9 @@ import { fetchGql } from "./fetcher";
 import { Config, FetchQueryReturnType, ResponseType, Variables } from "./types";
 import { chacheResponse, getFromCache } from "./cache";
 
-export const config = {
-  "auth-key": "",
+const defaultConfig: Config = {
+  cache: true,
 };
-
-export function init(key: string) {
-  config["auth-key"] = key;
-}
-
-const defaultConfig:Config = {
-    cache: true,
-}
 
 export async function fetchQuery(
   query: string,
@@ -28,9 +20,11 @@ export async function fetchQuery(
     }
   }
 
-  const config = {...defaultConfig, ..._config}
-  
-  let data: null | ResponseType = config.cache ? getFromCache(query, _variables || {}) : null;
+  const config = { ...defaultConfig, ..._config };
+
+  let data: null | ResponseType = config.cache
+    ? getFromCache(query, _variables || {})
+    : null;
   let error = null;
 
   if (!data) {
@@ -51,21 +45,28 @@ export async function fetchQuery(
 
   const handleNext = async () => {
     if (hasNextPage) {
-      return await fetchQuery(query, {
-        ..._variables,
-        cursor: pageInfo?.nextCursor,
-      }, config);
+      return await fetchQuery(
+        query,
+        {
+          ..._variables,
+          cursor: pageInfo?.nextCursor,
+        },
+        config
+      );
     }
     return null;
   };
 
   const handlePrev = async () => {
     if (hasPrevPage) {
-      return await fetchQuery(query, {
-        ..._variables,
-        cursor: pageInfo?.prevCursor,
-      }, config);
-
+      return await fetchQuery(
+        query,
+        {
+          ..._variables,
+          cursor: pageInfo?.prevCursor,
+        },
+        config
+      );
     }
     return null;
   };

@@ -17,7 +17,9 @@ type UseLazyQueryWithPaginationReturnType = [
   (
     query?: string,
     variables?: Variables
-  ) => Promise<Omit<UseQueryReturnType, "loading" | "getNextPage" | "getPrevPage">>,
+  ) => Promise<
+    Omit<UseQueryReturnType, "loading" | "getNextPage" | "getPrevPage">
+  >,
   UseQueryReturnType
 ];
 
@@ -36,7 +38,14 @@ export function useLazyQueryWithPagination(
   const handleResponse = useCallback(
     (res: null | Awaited<FetchQueryReturnType>) => {
       if (!res) return;
-      const { data, error, getNextPage, getPrevPage, hasNextPage, hasPrevPage } = res;
+      const {
+        data,
+        error,
+        getNextPage,
+        getPrevPage,
+        hasNextPage,
+        hasPrevPage,
+      } = res;
       nextRef.current = getNextPage;
       prevRef.current = getPrevPage;
       setData(data);
@@ -51,7 +60,11 @@ export function useLazyQueryWithPagination(
   const fetch = useCallback(
     async (_query?: string, _variables?: any) => {
       setLoading(true);
-      const res = await fetchQuery(_query || query, _variables || variables, configRef.current);
+      const res = await fetchQuery(
+        _query || query,
+        _variables || variables,
+        configRef.current
+      );
       handleResponse(res);
       const { data, error, hasNextPage, hasPrevPage } = res;
       return { data, error, hasNextPage, hasPrevPage };

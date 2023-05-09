@@ -12,7 +12,7 @@ type UseQueryReturnType = {
 type UseLazyQueryReturnType = [
   (
     query?: string,
-    variables?: Variables,
+    variables?: Variables
   ) => Promise<Omit<UseQueryReturnType, "loading">>,
   UseQueryReturnType
 ];
@@ -39,7 +39,11 @@ export function useLazyQuery(
   const fetch = useCallback(
     async (_query?: string, _variables?: Variables) => {
       setLoading(true);
-      const res = await fetchQuery(_query || query, _variables || variables, configRef.current);
+      const res = await fetchQuery(
+        _query || query,
+        _variables || variables,
+        configRef.current
+      );
       handleResponse(res);
       return { data: res?.data, error: res?.error };
     },
@@ -49,8 +53,16 @@ export function useLazyQuery(
   return [fetch, { data, error, loading }];
 }
 
-export function useQuery(query: string, variables?: Variables, config?: Config): UseQueryReturnType {
-  const [fetch, { data, error, loading }] = useLazyQuery(query, variables, config);
+export function useQuery(
+  query: string,
+  variables?: Variables,
+  config?: Config
+): UseQueryReturnType {
+  const [fetch, { data, error, loading }] = useLazyQuery(
+    query,
+    variables,
+    config
+  );
 
   useEffect(() => {
     fetch();

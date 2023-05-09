@@ -1,11 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import "./App.css";
-import { init } from "./lib/fetchQuery";
-import { useLazyQueryWithPagination, useQueryWithPagination } from "./lib/useQueryWithPagination";
-import { useLazyQuery } from "./lib/useQuery";
+import { init, useLazyQuery, useQueryWithPagination } from "./lib";
 
-const owners = ["vitalik.eth", "dwr.eth"];
-const limit = 10;
+
 init("992ffd31110843858365cd4e5c3131bf");
 
 const query = `query QB2($address: Address, $blockchain: TokenBlockchain!, $limit: Int, $cursor: String) {

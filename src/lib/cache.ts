@@ -21,13 +21,16 @@ function createCacheKey(query: string, variables = {}) {
 }
 
 function isCacheValid(createdAt: number) {
-  return (Date.now() - createdAt) < CACHE_EXPIRATION;
+  return Date.now() - createdAt < CACHE_EXPIRATION;
 }
 
-export function getFromCache(query: string, variables = {}): ResponseType | null {
+export function getFromCache(
+  query: string,
+  variables = {}
+): ResponseType | null {
   const key = createCacheKey(query, variables);
   const cachedData = cache[key];
-  if(!cachedData) return null;
+  if (!cachedData) return null;
   const isValidCache = isCacheValid(cachedData.createdAt);
   return isValidCache ? cachedData.data : null;
 }

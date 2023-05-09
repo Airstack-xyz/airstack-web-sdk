@@ -8,12 +8,13 @@ export type ResponseType = {
 };
 
 export type FetchQuery = {
-    data: any;
-    error: any;
-    hasNextPage: boolean;
-    hasPrevPage: boolean; 
-    getNextPage: () => Promise<FetchQuery | null>;
-    getPrevPage: () => Promise<FetchQuery | null>;}
+  data: any;
+  error: any;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  getNextPage: () => Promise<FetchQuery | null>;
+  getPrevPage: () => Promise<FetchQuery | null>;
+};
 
 export type FetchQueryReturnType = Promise<FetchQuery>;
 
