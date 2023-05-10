@@ -39,7 +39,7 @@ export async function fetchQuery(
     ];
     data = response;
     error = _error;
-    if (data && !error) {
+    if (config.cache && data && !error) {
       chacheResponse(response, query, _variables);
     }
   }
