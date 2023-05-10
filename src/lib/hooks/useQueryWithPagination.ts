@@ -59,6 +59,7 @@ export function useLazyQueryWithPagination(
 
   const fetch = useCallback(
     async (_query?: string, _variables?: any) => {
+      setError(null);
       setLoading(true);
       const res = await fetchQuery(
         _query || query,
@@ -69,7 +70,7 @@ export function useLazyQueryWithPagination(
       const { data, error, hasNextPage, hasPrevPage } = res;
       return { data, error, hasNextPage, hasPrevPage };
     },
-    [configRef, handleResponse, query, setLoading, variables]
+    [configRef, handleResponse, query, setError, setLoading, variables]
   );
 
   const getNextPage = useCallback(async () => {

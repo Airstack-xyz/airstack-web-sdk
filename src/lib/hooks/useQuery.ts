@@ -38,6 +38,7 @@ export function useLazyQuery(
 
   const fetch = useCallback(
     async (_query?: string, _variables?: Variables) => {
+      setError(null);
       setLoading(true);
       const res = await fetchQuery(
         _query || query,
@@ -47,7 +48,7 @@ export function useLazyQuery(
       handleResponse(res);
       return { data: res?.data, error: res?.error };
     },
-    [setLoading, query, variables, configRef, handleResponse]
+    [setError, setLoading, query, variables, configRef, handleResponse]
   );
 
   return [fetch, { data, error, loading }];
