@@ -1,12 +1,14 @@
 import { config } from "./config";
+import { AIRSTACK_ENDPOINT } from "./constants";
 
-const api = "https://devapi.airstack.xyz/gql";
-
-export const fetchGql = async (query, variables) => {
+export async function fetchGql<ResponseType = any>(
+  query,
+  variables
+): Promise<[ResponseType, any]> {
   if (!config.authKey) {
     throw new Error("No API key provided");
   }
-  const res = await fetch(api, {
+  const res = await fetch(AIRSTACK_ENDPOINT, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -24,4 +26,4 @@ export const fetchGql = async (query, variables) => {
     error = json.errors;
   }
   return [data, error];
-};
+}

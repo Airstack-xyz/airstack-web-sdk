@@ -23,3 +23,16 @@ export type Config = {
 };
 
 export type Variables = Record<string, any>;
+
+export interface NFTAssetURL {
+  type: string;
+  value: {
+    extraSmall: string;
+    small: string;
+    medium: string;
+    large: string;
+    original: string;
+  };
+}
+
+export type NFTCache = Record<string, NFTAssetURL>;
