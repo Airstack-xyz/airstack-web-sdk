@@ -16,7 +16,7 @@ export async function fetchQuery(
   variables?: Variables,
   _config?: Config
 ): FetchQueryReturnType {
-  const _variables = {};
+  const _variables: Variables = {};
   for (const key in variables) {
     if (typeof variables[key] === "object") {
       _variables[key] = JSON.stringify(variables[key]);

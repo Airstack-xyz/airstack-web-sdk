@@ -1,9 +1,10 @@
 import { config } from "../config";
 import { AIRSTACK_ENDPOINT } from "../constants";
+import { Variables } from "../types";
 
 export async function fetchGql<ResponseType = any>(
-  query,
-  variables
+  query: string,
+  variables: Variables
 ): Promise<[ResponseType | null, any]> {
   if (!config.authKey) {
     throw new Error("No API key provided");

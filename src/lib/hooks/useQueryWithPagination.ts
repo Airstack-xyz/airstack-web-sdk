@@ -7,8 +7,8 @@ type UseQueryReturnType = {
   data: any;
   error: any;
   loading: boolean;
-  hasNextPage;
-  hasPrevPage;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
   getNextPage: () => Promise<void>;
   getPrevPage: () => Promise<void>;
 };

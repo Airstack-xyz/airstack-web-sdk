@@ -1,21 +1,11 @@
 import react from "@vitejs/plugin-react";
 import path from "node:path";
-import dts from "vite-plugin-dts";
 import { defineConfig } from "vite";
-
+import dts from "vite-plugin-dts";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    dts({
-      entryRoot: path.resolve(__dirname, "lib/index.ts"),
-      insertTypesEntry: true,
-      exclude: ["examples/vite-env.d.ts"],
-      // need to add /* here, for some some reason if just giving dist/ it will generate some types outside dist folder
-      outputDir: path.resolve(__dirname, "dist/*"),
-    }),
-  ],
+  plugins: [react(), dts()],
   build: {
     lib: {
       entry: path.resolve(__dirname, "src/lib/index.ts"),
@@ -24,13 +14,13 @@ export default defineConfig({
       fileName: (format) => `airstack-web-sdk.${format}.js`,
     },
     rollupOptions: {
-      external: ["react"],
+      external: ["react", "react-dom"],
       output: {
         globals: {
           react: "React",
+          "react-dom": "ReactDOM",
         },
       },
     },
-    minify: "esbuild",
   },
 });

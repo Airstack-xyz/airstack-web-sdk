@@ -62,7 +62,7 @@ export const fetchNFTAssetURL = (
       getNftContent(chain, address, tokenId)
         .then(([data, error]) => {
           const tokenNfts = data?.TokenNfts.TokenNft || [];
-          if (error || !data.TokenNfts) {
+          if (error || !data?.TokenNfts) {
             reject(new Error("can't get the data"));
             return;
           }
