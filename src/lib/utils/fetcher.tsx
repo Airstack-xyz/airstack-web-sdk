@@ -29,6 +29,9 @@ export async function fetchGql<ResponseType = any>(
     }
     return [data, error];
   } catch (error) {
-    return [null, error];
+    return [
+      null,
+      (error as { message: string })?.message || "Unable to fetch data",
+    ];
   }
 }

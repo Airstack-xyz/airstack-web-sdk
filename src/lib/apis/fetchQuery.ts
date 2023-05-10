@@ -5,13 +5,15 @@ import {
   ResponseType,
   Variables,
 } from "../types";
-import { chacheResponse, getFromCache } from "../cache";
+import { chacheResponse, createCacheKey, getFromCache } from "../cache";
 
 const defaultConfig: Config = {
   cache: true,
 };
 
-export async function fetchQuery(
+const promiseCache: { [key: string]: FetchQueryReturnType } = {};
+
+export async function fetchQueryBase(
   query: string,
   variables?: Variables,
   _config?: Config
@@ -84,4 +86,18 @@ export async function fetchQuery(
     getNextPage: handleNext,
     getPrevPage: handlePrev,
   };
+}
+
+export async function fetchQuery(
+  query: string,
+  variables?: Variables,
+  config?: Config
+) {
+  const key = createCacheKey(query, variables);
+  if (!promiseCache[key]) {
+    promiseCache[key] = fetchQueryBase(query, variables, config);
+  } else {
+    console.log("cache hit", variables);
+  }
+  return promiseCache[key];
 }

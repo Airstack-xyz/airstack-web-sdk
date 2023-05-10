@@ -11,7 +11,7 @@ type Cache = {
 
 const cache: Cache = {};
 
-function createCacheKey(query: string, variables: Variables = {}) {
+export function createCacheKey(query: string, variables: Variables = {}) {
   let key = query;
   const keys = Object.keys(variables).sort();
   for (const k of keys) {

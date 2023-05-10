@@ -1,9 +1,8 @@
 import React from "react";
 import "./App.css";
-import { init, useLazyQuery, useQueryWithPagination } from "./lib";
+import { NftImage, init, useLazyQuery, useQueryWithPagination } from "./lib";
 
-
-init("992ffd31110843858365cd4e5c3131bf");
+init("ef3d1cdeafb642d3a8d6a44664ce566c");
 
 const query = `query QB2($address: Address, $blockchain: TokenBlockchain!, $limit: Int, $cursor: String) {
   TokenNfts(input: {filter: {address: {_eq: $address}}, blockchain: $blockchain, limit: $limit, , cursor: $cursor}) {
@@ -11,6 +10,7 @@ const query = `query QB2($address: Address, $blockchain: TokenBlockchain!, $limi
       address
       id
       type
+      tokenId
     }
     pageInfo {
       nextCursor
@@ -20,63 +20,95 @@ const query = `query QB2($address: Address, $blockchain: TokenBlockchain!, $limi
 }`;
 
 const variables = {
-  "address": "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
-  "blockchain": "ethereum",
-  "limit": 3
-}
+  address: "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
+  blockchain: "ethereum",
+  limit: 3,
+};
 
-
-function WithPagginationNoCaching () {
-  const { data, loading, hasNextPage, hasPrevPage, getNextPage, getPrevPage } = useQueryWithPagination(query, variables, {
-    cache: false
-  });
+function WithPagginationNoCaching() {
+  const { data, loading, hasNextPage, hasPrevPage, getNextPage, getPrevPage } =
+    useQueryWithPagination(query, variables, {
+      cache: false,
+    });
 
   return (
     <div>
       <h2> useQueryWithPagination no catching </h2>
       {loading && <h4> Loading... </h4>}
-      {data && <h4>{JSON.stringify(data, null , 4)}</h4>}
-      <button onClick={getPrevPage} disabled={!hasPrevPage}> prev </button>
-      <button onClick={getNextPage} disabled={!hasNextPage} > next </button>
+      {data && <h4>{JSON.stringify(data, null, 4)}</h4>}
+      <button onClick={getPrevPage} disabled={!hasPrevPage}>
+        {" "}
+        prev{" "}
+      </button>
+      <button onClick={getNextPage} disabled={!hasNextPage}>
+        {" "}
+        next{" "}
+      </button>
     </div>
   );
 }
 
-function LazyLoad () {
-  const [fetch, { data, loading}] = useLazyQuery(query, variables);
-  
+function LazyLoad() {
+  const [fetch, { data, loading }] = useLazyQuery(query, variables);
+
   return (
     <div>
       {loading && <h4> Loading... </h4>}
-      {data && <h4>{JSON.stringify(data, null , "\t")}</h4>}
-      <button onClick={() => fetch()} disabled={loading}> fetch </button>
+      {data && <h4>{JSON.stringify(data, null, "\t")}</h4>}
+      <button onClick={() => fetch()} disabled={loading}>
+        fetch
+      </button>
+      <div>{data?.TokenNfts?.TokenNft.length}</div>
+      {data?.TokenNfts?.TokenNft.map(({ address, tokenId }) => (
+        <NftImage address={address} tokenId={tokenId} preset="extraSmall" />
+      ))}
     </div>
   );
 }
-
 
 function App() {
-  const { data, loading, hasNextPage, hasPrevPage, getNextPage, getPrevPage } = useQueryWithPagination(query, variables);
-  
+  const {
+    data,
+    error,
+    loading,
+    hasNextPage,
+    hasPrevPage,
+    getNextPage,
+    getPrevPage,
+  } = useQueryWithPagination(query, variables);
+  console.log({ error }, error);
+
   return (
     <div>
+      <NftImage
+        address="0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"
+        tokenId="0"
+        preset="original"
+      />
       <h2> useQueryWithPagination </h2>
       {loading && <h4> Loading... </h4>}
-      {data && <h4>{JSON.stringify(data, null ,"\t")}</h4>}
-      <button onClick={getPrevPage} disabled={!hasPrevPage}> prev </button>
-      <button onClick={getNextPage} disabled={!hasNextPage} > next </button>
-      <br/>
-      <br/>
-      <br/>
-      <br/>
+      {error && <h4> Error...</h4>}
+      {data && <h4>{JSON.stringify(data, null, "\t")}</h4>}
+      <button onClick={getPrevPage} disabled={!hasPrevPage}>
+        {" "}
+        prev{" "}
+      </button>
+      <button onClick={getNextPage} disabled={!hasNextPage}>
+        {" "}
+        next{" "}
+      </button>
+      <br />
+      <br />
+      <br />
+      <br />
       <h2> useLazyQuery </h2>
-      <LazyLoad/>
+      <LazyLoad />
 
-      <br/>
-      <br/>
-      <br/>
-      <br/>
-      <WithPagginationNoCaching/>
+      <br />
+      <br />
+      <br />
+      <br />
+      <WithPagginationNoCaching />
     </div>
   );
 }
