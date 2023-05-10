@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Config } from "./types";
+import { Config } from "../types";
 
 export function useRequestState(config?: Config) {
   const [data, setData] = useState(null);

@@ -138,7 +138,6 @@ export const NftImage = (props: IAirstackAssetProps) => {
     }
     fetchNFTAssetURL(chain, address, tokenId)
       .then((res: any) => {
-        console.log(" res ", res, presetRef.current);
         if (presetRef.current) {
           setUri(res.value[presetRef.current]);
         }
@@ -148,8 +147,6 @@ export const NftImage = (props: IAirstackAssetProps) => {
         updateState(Status.Error);
       });
   }, [chain, imageUri, address, tokenId, getSize, updateState]);
-
-  console.log({ uri });
 
   let OUTPUT;
 

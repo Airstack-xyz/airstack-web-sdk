@@ -1,7 +1,10 @@
-import { getNftContent } from "../api/getNftContent";
+import { getNftContent } from "../../apis/getNftContent";
 import { Chain } from "../../constants";
 import type { NFTCache, NFTAssetURL } from "../../types";
-import { getCacheKey } from "../utils";
+
+export function getCacheKey(chain: Chain, address: string, tokenId: string) {
+  return `${chain}-${address.toLowerCase()}-${tokenId.toLowerCase()}`;
+}
 
 export interface AirstackAssetContextInterface {
   fetchCachedNFTAssetURL: (

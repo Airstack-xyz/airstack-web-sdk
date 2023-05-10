@@ -1,6 +1,11 @@
-import { fetchGql } from "./fetcher";
-import { Config, FetchQueryReturnType, ResponseType, Variables } from "./types";
-import { chacheResponse, getFromCache } from "./cache";
+import { fetchGql } from "../utils/fetcher";
+import {
+  Config,
+  FetchQueryReturnType,
+  ResponseType,
+  Variables,
+} from "../types";
+import { chacheResponse, getFromCache } from "../cache";
 
 const defaultConfig: Config = {
   cache: true,

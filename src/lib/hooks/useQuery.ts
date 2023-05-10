@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react";
-import { fetchQuery } from "./fetchQuery";
-import { Config, FetchQueryReturnType, Variables } from "./types";
+import { fetchQuery } from "../apis/fetchQuery";
+import { Config, FetchQueryReturnType, Variables } from "../types";
 import { useRequestState } from "./useDataState";
 
 type UseQueryReturnType = {

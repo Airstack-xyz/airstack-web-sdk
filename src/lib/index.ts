@@ -1,10 +1,10 @@
-import { fetchQuery } from "./fetchQuery";
-import { useQuery, useLazyQuery } from "./useQuery";
+import { fetchQuery } from "./apis/fetchQuery";
+import { useQuery, useLazyQuery } from "./hooks/useQuery";
 import {
   useQueryWithPagination,
   useLazyQueryWithPagination,
-} from "./useQueryWithPagination";
-import { NftImage } from "./components";
+} from "./hooks/useQueryWithPagination";
+import { NftImage } from "./components/NFTImage/Image";
 import { init } from "./config";
 
 export {
