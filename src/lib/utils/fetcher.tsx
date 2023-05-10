@@ -1,8 +1,9 @@
+import { createCacheKey } from "../cache";
 import { config } from "../config";
 import { AIRSTACK_ENDPOINT } from "../constants";
 import { Variables } from "../types";
 
-export async function fetchGql<ResponseType = any>(
+export async function _fetch<ResponseType = any>(
   query: string,
   variables: Variables
 ): Promise<[ResponseType | null, any]> {
@@ -34,4 +35,16 @@ export async function fetchGql<ResponseType = any>(
       (error as { message: string })?.message || "Unable to fetch data",
     ];
   }
+}
+const promiseCache: { [key: string]: Promise<any> } = {};
+
+export async function fetchGql<ResponseType = any>(
+  query: string,
+  variables: Variables
+): Promise<[ResponseType | null, any]> {
+  const key = createCacheKey(query, variables);
+  if (!promiseCache[key]) {
+    promiseCache[key] = _fetch<ResponseType>(query, variables);
+  }
+  return promiseCache[key];
 }

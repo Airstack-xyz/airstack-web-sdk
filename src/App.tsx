@@ -76,7 +76,9 @@ function App() {
     getNextPage,
     getPrevPage,
   } = useQueryWithPagination(query, variables);
-  console.log({ error }, error);
+  if (error) {
+    console.log({ error }, error);
+  }
 
   return (
     <div>
