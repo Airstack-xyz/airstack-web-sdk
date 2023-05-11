@@ -2,32 +2,40 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { fetchQuery } from "../apis/fetchQuery";
 import { Config, FetchQuery, FetchQueryReturnType, Variables } from "../types";
 import { useRequestState } from "./useDataState";
+import { addPaginationFieldToQuery } from "../utils/addPaginationFieldToQuery";
 
-type UseQueryReturnType = {
+type BaseReturnType = {
   data: any;
   error: any;
-  loading: boolean;
+};
+type Pagination = {
   hasNextPage: boolean;
   hasPrevPage: boolean;
   getNextPage: () => Promise<void>;
   getPrevPage: () => Promise<void>;
 };
 
-type UseLazyQueryWithPaginationReturnType = [
-  (
-    query?: string,
-    variables?: Variables
-  ) => Promise<
-    Omit<UseQueryReturnType, "loading" | "getNextPage" | "getPrevPage">
-  >,
-  UseQueryReturnType
-];
+type UseQueryReturnType = BaseReturnType & {
+  loading: boolean;
+  pagination: Pagination;
+};
+
+type FetchType = (
+  query?: string,
+  variables?: Variables
+) => Promise<
+  BaseReturnType & {
+    pagination: Omit<Pagination, "getNextPage" | "getPrevPage">;
+  }
+>;
+
+type LazyHookReturnType = [FetchType, UseQueryReturnType];
 
 export function useLazyQueryWithPagination(
   query: string,
   variables?: Variables,
   config?: Config
-): UseLazyQueryWithPaginationReturnType {
+): LazyHookReturnType {
   const { data, error, loading, setData, setError, setLoading, configRef } =
     useRequestState(config);
   const [hasNextPage, setHasNextPage] = useState(false);
@@ -57,18 +65,30 @@ export function useLazyQueryWithPagination(
     [setData, setError, setLoading]
   );
 
-  const fetch = useCallback(
-    async (_query?: string, _variables?: any) => {
+  const fetch: FetchType = useCallback(
+    async (_query?: string, _variables?: Variables) => {
       setError(null);
       setLoading(true);
+
+      const queryWithPaginationField = addPaginationFieldToQuery(
+        _query || query
+      );
+
       const res = await fetchQuery(
-        _query || query,
+        queryWithPaginationField,
         _variables || variables,
         configRef.current
       );
       handleResponse(res);
       const { data, error, hasNextPage, hasPrevPage } = res;
-      return { data, error, hasNextPage, hasPrevPage };
+      return {
+        data,
+        error,
+        pagination: {
+          hasNextPage,
+          hasPrevPage,
+        },
+      };
     },
     [configRef, handleResponse, query, setError, setLoading, variables]
   );
@@ -93,10 +113,12 @@ export function useLazyQueryWithPagination(
       data,
       error,
       loading,
-      hasNextPage,
-      hasPrevPage,
-      getNextPage,
-      getPrevPage,
+      pagination: {
+        hasNextPage,
+        hasPrevPage,
+        getNextPage,
+        getPrevPage,
+      },
     },
   ];
 }

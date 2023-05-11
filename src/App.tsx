@@ -12,10 +12,6 @@ const query = `query QB2($address: Address, $blockchain: TokenBlockchain!, $limi
       type
       tokenId
     }
-    pageInfo {
-      nextCursor
-      prevCursor
-    }
   }
 }`;
 
@@ -26,10 +22,13 @@ const variables = {
 };
 
 function WithPagginationNoCaching() {
-  const { data, loading, hasNextPage, hasPrevPage, getNextPage, getPrevPage } =
-    useQueryWithPagination(query, variables, {
-      cache: false,
-    });
+  const {
+    data,
+    loading,
+    pagination: { hasNextPage, hasPrevPage, getNextPage, getPrevPage },
+  } = useQueryWithPagination(query, variables, {
+    cache: false,
+  });
 
   return (
     <div>
@@ -71,10 +70,7 @@ function App() {
     data,
     error,
     loading,
-    hasNextPage,
-    hasPrevPage,
-    getNextPage,
-    getPrevPage,
+    pagination: { hasNextPage, hasPrevPage, getNextPage, getPrevPage },
   } = useQueryWithPagination(query, variables);
   if (error) {
     console.log({ error }, error);
