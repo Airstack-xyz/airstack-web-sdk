@@ -1,6 +1,6 @@
 {
   "name": "airstack-web-sdk-test",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -46,6 +46,7 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/airstack-web-sdk.es.js",
       "require": "./dist/airstack-web-sdk.umd.js"
     }

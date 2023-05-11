@@ -10,10 +10,7 @@ type UseQueryReturnType = {
 };
 
 type UseLazyQueryReturnType = [
-  (
-    query?: string,
-    variables?: Variables
-  ) => Promise<Omit<UseQueryReturnType, "loading">>,
+  (variables?: Variables) => Promise<Omit<UseQueryReturnType, "loading">>,
   UseQueryReturnType
 ];
 
@@ -37,11 +34,11 @@ export function useLazyQuery(
   );
 
   const fetch = useCallback(
-    async (_query?: string, _variables?: Variables) => {
+    async (_variables?: Variables) => {
       setError(null);
       setLoading(true);
       const res = await fetchQuery(
-        _query || query,
+        query,
         _variables || variables,
         configRef.current
       );

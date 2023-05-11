@@ -20,10 +20,7 @@ type UseQueryReturnType = BaseReturnType & {
   pagination: Pagination;
 };
 
-type FetchType = (
-  query?: string,
-  variables?: Variables
-) => Promise<
+type FetchType = (variables?: Variables) => Promise<
   BaseReturnType & {
     pagination: Omit<Pagination, "getNextPage" | "getPrevPage">;
   }
@@ -66,13 +63,11 @@ export function useLazyQueryWithPagination(
   );
 
   const fetch: FetchType = useCallback(
-    async (_query?: string, _variables?: Variables) => {
+    async (_variables?: Variables) => {
       setError(null);
       setLoading(true);
 
-      const queryWithPaginationField = addPaginationFieldToQuery(
-        _query || query
-      );
+      const queryWithPaginationField = addPaginationFieldToQuery(query);
 
       const res = await fetchQuery(
         queryWithPaginationField,

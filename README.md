@@ -20,7 +20,7 @@ yarn add airstack-web-sdk
 
 ## Getting started
 
-To use the SDK you will need airstack api-key, which you can find in your profile setting section in [airstack web](https://app.airstack.xyz/profile-settings/api-keys), once you have it you can call the `init` function with the api-key.
+To use the SDK you will need airstack api-key, which you can find in your profile setting section in [airstack web](https://app.airstack.xyz), once you have it you can call the `init` function with the api-key.
 
 **`init` must be called before any of the SDK hook or component is used**, we recommend to use `init` in the *App.ts* file.
 
@@ -64,9 +64,6 @@ The `useQuery` hook loads query data as soon as the component is mounted. It ret
 - `data`: the data returned by the query.
 - `loading`: a boolean indicating whether the query is currently loading.
 - `error`: any error that occurred while loading the query.
-
-
-Parameter
 
 #### Example
 
