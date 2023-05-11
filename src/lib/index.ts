@@ -4,7 +4,7 @@ import {
   useQueryWithPagination,
   useLazyQueryWithPagination,
 } from "./hooks/useQueryWithPagination";
-import { NftImage } from "./components/NFTImage/Image";
+import { NftAsset } from "./components/NFTAsset/NftAsset";
 import { init } from "./config";
 
 export {
@@ -14,5 +14,5 @@ export {
   useQueryWithPagination,
   useLazyQueryWithPagination,
   fetchQuery,
-  NftImage,
+  NftAsset,
 };

@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-import { NftImage, init, useLazyQuery, useQueryWithPagination } from "./lib";
+import { NftAsset, init, useLazyQuery, useQueryWithPagination } from "./lib";
 
 init("ef3d1cdeafb642d3a8d6a44664ce566c");
 
@@ -60,7 +60,7 @@ function LazyLoad() {
       </button>
       <div>{data?.TokenNfts?.TokenNft.length}</div>
       {data?.TokenNfts?.TokenNft.map(({ address, tokenId }) => (
-        <NftImage address={address} tokenId={tokenId} preset="extraSmall" />
+        <NftAsset address={address} tokenId={tokenId} preset="extraSmall" />
       ))}
     </div>
   );
@@ -82,7 +82,7 @@ function App() {
 
   return (
     <div>
-      <NftImage
+      <NftAsset
         address="0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"
         tokenId="0"
         preset="original"

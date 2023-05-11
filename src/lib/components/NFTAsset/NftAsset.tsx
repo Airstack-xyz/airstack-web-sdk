@@ -39,7 +39,7 @@ const PresetArray = [
   PresetPXSize.Large,
 ];
 
-export const NftImage = (props: IAirstackAssetProps) => {
+export const NftAsset = (props: IAirstackAssetProps) => {
   const {
     chain = "ethereum",
     address,

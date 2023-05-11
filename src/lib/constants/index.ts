@@ -1,4 +1,4 @@
-export const AIRSTACK_ENDPOINT = "https://devapi.airstack.xyz/gql";
+export const AIRSTACK_ENDPOINT = "https://api.airstack.xyz/gql";
 
 export enum PresetPXSize {
   ExtraSmall = 125,
