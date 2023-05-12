@@ -185,7 +185,7 @@ export const NftAsset = (props: IAirstackAssetProps) => {
           justifyContent: "center",
         }}
       >
-        Error while loading NFT
+        Error!
       </div>
     );
   } else {
