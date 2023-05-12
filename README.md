@@ -1,33 +1,32 @@
 # Airstack Web SDK
 
-The Airstack Web SDK provides a set of react hooks and components for web developers to easily integrate Airstack's blockchain functionalities into their web applications. 
+The Airstack Web SDK provides a set of react hooks and components for web developers to easily integrate Airstack's blockchain functionalities into their web applications.
 With this SDK, developers can perform various tasks, such as querying and fetching data from smart contracts, displaying NFT assets.
 
 ## Installation
+
 #### With NPM
 
 ```sh
-npm install airstack-react
+npm install @airstack/airstack-react
 ```
 
 #### With yarn
 
 ```sh
-yarn add airstack-react
+yarn add @airstack/airstack-react
 ```
-
-
 
 ## Getting started
 
 To use the SDK you will need airstack api-key, which you can find in your profile setting section in [airstack web](https://app.airstack.xyz), once you have it you can call the `init` function with the api-key.
 
-**`init` must be called before any of the SDK hook or component is used**, we recommend to use `init` in the *App.ts* file.
+**`init` must be called before any of the SDK hook or component is used**, we recommend to use `init` in the _App.ts_ file.
 
 ```jsx
-import { init, useQuery } from "airstack-react";
+import { init, useQuery } from "@airstack/airstack-react";
 
-init('api-key');
+init("api-key");
 
 const MyComponent = () => {
   const { data, loading, error } = useQuery(query, variables, { cache: false });
@@ -44,19 +43,20 @@ const MyComponent = () => {
 };
 ```
 
-
 ## Hooks
 
-**All the hooks take 3 parameters** 
+**All the hooks take 3 parameters**
 
--   `query` (required): A string that represents the Airstack GraphQL query to be executed.
--   `variables`: An object that contains variables used in the query.
--   `config` (optional): An object that contains optional configuration parameters for the request. Currently, the only available parameter is `cache`, which is a boolean that determines whether to cache the response or not.
+- `query` (required): A string that represents the Airstack GraphQL query to be executed.
+- `variables`: An object that contains variables used in the query.
+- `config` (optional): An object that contains optional configuration parameters for the request. Currently, the only available parameter is `cache`, which is a boolean that determines whether to cache the response or not.
 
 ```jsx
-const { data, loading, error } = useQuery(query, variables, {cache:false});
+const { data, loading, error } = useQuery(query, variables, { cache: false });
 ```
+
 ### Query Hooks
+
 ### useQuery
 
 The `useQuery` hook loads query data as soon as the component is mounted. It returns an object with the following properties:
@@ -68,7 +68,7 @@ The `useQuery` hook loads query data as soon as the component is mounted. It ret
 #### Example
 
 ```jsx
-import { useQuery } from "airstack-react";
+import { useQuery } from "@airstack/airstack-react";
 
 const MyComponent = () => {
   const { data, loading, error } = useQuery(query, variables);
@@ -95,7 +95,7 @@ The `useLazyQuery` hook is used when you want to fetch query data manually, inst
 #### Example
 
 ```jsx
-import { useLazyQuery } from "airstack-react";
+import { useLazyQuery } from "@airstack/airstack-react";
 
 const MyComponent = () => {
   const [fetch, { data, loading, error }] = useLazyQuery(query, variables);
@@ -115,10 +115,13 @@ const MyComponent = () => {
   // Render your component using the data returned by the query
 };
 ```
+
 ### Pagination Hooks
-**Note:** *pagination hooks only works with queries that has support for pagination, and the query passed to hook must have a cursor as argument for it to work.*
+
+**Note:** _pagination hooks only works with queries that has support for pagination, and the query passed to hook must have a cursor as argument for it to work._
 
 **Example of a Query with cursor**
+
 ```jsx
 query GetNfts($cursor: String) {
   TokenNfts(input: {cursor: $cursor}) {
@@ -126,6 +129,7 @@ query GetNfts($cursor: String) {
   }
 }
 ```
+
 ### useQueryWithPagination
 
 The `useQueryWithPagination` hook provides a simple way to paginate the data returned by a query. It works the same as the `useQuery` hook, but also returns an object with the following properties:
@@ -136,14 +140,16 @@ The `useQueryWithPagination` hook provides a simple way to paginate the data ret
   - `getNextPage`: a function that can be called to fetch the next page of data.
   - `getPrevPage`: a function that can be called to fetch the previous page of data.
 
-
 #### Example
 
 ```jsx
-import { useQueryWithPagination } from "airstack-react";
+import { useQueryWithPagination } from "@airstack/airstack-react";
 
 const MyComponent = () => {
-  const { data, loading, pagination } = useQueryWithPagination(query, variables);
+  const { data, loading, pagination } = useQueryWithPagination(
+    query,
+    variables
+  );
   const { hasNextPage, hasPrevPage, getNextPage, getPrevPage } = pagination;
 
   const handleNextPage = () => {
@@ -178,7 +184,7 @@ The `fetch` function can be called whenever you want to execute the query, for e
 Here's an example of using useLazyQueryWithPagination:
 
 ```jsx
-import { useLazyQueryWithPagination } from "airstack-react";
+import { useLazyQueryWithPagination } from "@airstack/airstack-react";
 
 function Component() {
   const [fetchData, { data, loading, pagination }] = useLazyQueryWithPagination(
@@ -214,7 +220,8 @@ Note that when using `useLazyQueryWithPagination`, you will need to handle the f
 ## Components
 
 ### Asset
-The `Asset` component can be used to load and display NFT assets in your React application. 
+
+The `Asset` component can be used to load and display NFT assets in your React application.
 
 ### Props
 
@@ -229,7 +236,7 @@ The `Asset` component can be used to load and display NFT assets in your React a
 ### Example
 
 ```jsx
-import { Asset } from "airstack-react";
+import { Asset } from "@airstack/airstack-react";
 
 function App() {
   return (
@@ -266,7 +273,8 @@ fetchQuery can be used in places where using hooks is not possible. `fetchQuery`
 ### Example
 
 ```typescript
-import { fetchQuery } from './fetchQuery';
+import { fetchQuery } from "./fetchQuery";
 
-const { data, error, hasNextPage, hasPrevPage, getNextPage, getPrevPage } = await fetchQuery(query, variables, config);
+const { data, error, hasNextPage, hasPrevPage, getNextPage, getPrevPage } =
+  await fetchQuery(query, variables, config);
 ```

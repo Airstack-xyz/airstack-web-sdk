@@ -1,5 +1,5 @@
 {
-  "name": "airstack-react",
+  "name": "@airstack/airstack-react",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
