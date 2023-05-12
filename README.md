@@ -56,7 +56,7 @@ const MyComponent = () => {
 ```jsx
 const { data, loading, error } = useQuery(query, variables, {cache:false});
 ```
-
+### Query Hooks
 ### useQuery
 
 The `useQuery` hook loads query data as soon as the component is mounted. It returns an object with the following properties:
@@ -115,7 +115,17 @@ const MyComponent = () => {
   // Render your component using the data returned by the query
 };
 ```
+### Pagination Hooks
+**Note:** *pagination hooks only works with queries that has support for pagination, and the query passed to hook must have a cursor as argument for it to work.*
 
+**Example of a Query with cursor**
+```jsx
+query GetNfts($cursor: String) {
+  TokenNfts(input: {cursor: $cursor}) {
+    .....
+  }
+}
+```
 ### useQueryWithPagination
 
 The `useQueryWithPagination` hook provides a simple way to paginate the data returned by a query. It works the same as the `useQuery` hook, but also returns an object with the following properties:
@@ -126,7 +136,6 @@ The `useQueryWithPagination` hook provides a simple way to paginate the data ret
   - `getNextPage`: a function that can be called to fetch the next page of data.
   - `getPrevPage`: a function that can be called to fetch the previous page of data.
 
-> **Note:** `useQueryWithPagination` only works with queries that support pagination.
 
 #### Example
 
@@ -204,8 +213,8 @@ Note that when using `useLazyQueryWithPagination`, you will need to handle the f
 
 ## Components
 
-### NftAsset
-The `NftAsset` component can be used to load and display NFT assets in your React application. 
+### Asset
+The `Asset` component can be used to load and display NFT assets in your React application. 
 
 ### Props
 
@@ -220,12 +229,12 @@ The `NftAsset` component can be used to load and display NFT assets in your Reac
 ### Example
 
 ```jsx
-import { NftAsset } from "airstack-web-sdk";
+import { Asset } from "airstack-web-sdk";
 
 function App() {
   return (
     <div>
-      <NftAsset
+      <Asset
         chain="ethereum"
         address="0x...",
         tokenId="tokenId"
