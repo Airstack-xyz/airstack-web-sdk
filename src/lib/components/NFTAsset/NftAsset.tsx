@@ -166,7 +166,7 @@ export const NftAsset = (props: IAirstackAssetProps) => {
           justifyContent: "center",
         }}
       >
-        Loading NFT...
+        Loading...
       </div>
     );
   } else if (state === Status.Error) {
