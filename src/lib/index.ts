@@ -14,5 +14,5 @@ export {
   useQueryWithPagination,
   useLazyQueryWithPagination,
   fetchQuery,
-  NftAsset,
+  NftAsset as Asset,
 };
