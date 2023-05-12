@@ -118,6 +118,7 @@ const MyComponent = () => {
 ### Pagination Hooks
 **Note:** *pagination hooks only works with queries that has support for pagination, and the query passed to hook must have a cursor as argument for it to work.*
 
+**Example of a Query with cursor**
 ```jsx
 query GetNfts($cursor: String) {
   TokenNfts(input: {cursor: $cursor}) {
