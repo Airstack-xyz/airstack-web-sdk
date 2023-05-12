@@ -7,13 +7,13 @@ With this SDK, developers can perform various tasks, such as querying and fetchi
 #### With NPM
 
 ```sh
-npm install airstack-web-sdk
+npm install airstack-react
 ```
 
 #### With yarn
 
 ```sh
-yarn add airstack-web-sdk
+yarn add airstack-react
 ```
 
 
@@ -25,7 +25,7 @@ To use the SDK you will need airstack api-key, which you can find in your profil
 **`init` must be called before any of the SDK hook or component is used**, we recommend to use `init` in the *App.ts* file.
 
 ```jsx
-import { init, useQuery } from "airstack-web-sdk";
+import { init, useQuery } from "airstack-react";
 
 init('api-key');
 
@@ -68,7 +68,7 @@ The `useQuery` hook loads query data as soon as the component is mounted. It ret
 #### Example
 
 ```jsx
-import { useQuery } from "airstack-web-sdk";
+import { useQuery } from "airstack-react";
 
 const MyComponent = () => {
   const { data, loading, error } = useQuery(query, variables);
@@ -95,7 +95,7 @@ The `useLazyQuery` hook is used when you want to fetch query data manually, inst
 #### Example
 
 ```jsx
-import { useLazyQuery } from "airstack-web-sdk";
+import { useLazyQuery } from "airstack-react";
 
 const MyComponent = () => {
   const [fetch, { data, loading, error }] = useLazyQuery(query, variables);
@@ -140,7 +140,7 @@ The `useQueryWithPagination` hook provides a simple way to paginate the data ret
 #### Example
 
 ```jsx
-import { useQueryWithPagination } from "airstack-web-sdk";
+import { useQueryWithPagination } from "airstack-react";
 
 const MyComponent = () => {
   const { data, loading, pagination } = useQueryWithPagination(query, variables);
@@ -178,7 +178,7 @@ The `fetch` function can be called whenever you want to execute the query, for e
 Here's an example of using useLazyQueryWithPagination:
 
 ```jsx
-import { useLazyQueryWithPagination } from "airstack-web-sdk";
+import { useLazyQueryWithPagination } from "airstack-react";
 
 function Component() {
   const [fetchData, { data, loading, pagination }] = useLazyQueryWithPagination(
@@ -229,7 +229,7 @@ The `Asset` component can be used to load and display NFT assets in your React a
 ### Example
 
 ```jsx
-import { Asset } from "airstack-web-sdk";
+import { Asset } from "airstack-react";
 
 function App() {
   return (
