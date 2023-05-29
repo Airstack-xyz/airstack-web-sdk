@@ -68,7 +68,7 @@ export function useLazyQueryWithPagination(
       setError(null);
       setLoading(true);
 
-      const queryWithPaginationField = addPaginationFieldToQuery(query);
+      const queryWithPaginationField = await addPaginationFieldToQuery(query);
 
       const res = await fetchQuery(
         queryWithPaginationField,

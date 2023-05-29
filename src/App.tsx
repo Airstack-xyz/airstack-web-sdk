@@ -4,8 +4,8 @@ import { Asset, init, useLazyQuery, useQueryWithPagination } from "./lib";
 
 init("ef3d1cdeafb642d3a8d6a44664ce566c");
 
-const query = `query QB2($address: Address, $blockchain: TokenBlockchain!, $limit: Int, $cursor: String) {
-  TokenNfts(input: {filter: {address: {_eq: $address}}, blockchain: $blockchain, limit: $limit, , cursor: $cursor}) {
+const query = `query QB2($address: Address, $blockchain: TokenBlockchain!, $limit: Int) {
+  TokenNfts(input: {filter: {address: {_eq: $address}}, blockchain: $blockchain, limit: $limit}) {
     TokenNft {
       address
       id
@@ -89,7 +89,7 @@ function App() {
       {loading && <h4> Loading... </h4>}
       {error && <h4> Error...</h4>}
       {data && <h4>{JSON.stringify(data, null, "\t")}</h4>}
-      <button onClick={getPrevPage} disabled={!hasPrevPage}>
+      {/* <button onClick={getPrevPage} disabled={!hasPrevPage}>
         {" "}
         prev{" "}
       </button>
@@ -108,7 +108,7 @@ function App() {
       <br />
       <br />
       <br />
-      <WithPagginationNoCaching />
+      <WithPagginationNoCaching /> */}
     </div>
   );
 }
