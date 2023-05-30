@@ -89,7 +89,7 @@ function App() {
       {loading && <h4> Loading... </h4>}
       {error && <h4> Error...</h4>}
       {data && <h4>{JSON.stringify(data, null, "\t")}</h4>}
-      {/* <button onClick={getPrevPage} disabled={!hasPrevPage}>
+      <button onClick={getPrevPage} disabled={!hasPrevPage}>
         {" "}
         prev{" "}
       </button>
@@ -108,7 +108,7 @@ function App() {
       <br />
       <br />
       <br />
-      <WithPagginationNoCaching /> */}
+      <WithPagginationNoCaching />
     </div>
   );
 }

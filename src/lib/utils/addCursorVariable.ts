@@ -1,13 +1,13 @@
 import { parse } from "graphql";
-import { getAllArguments } from "./query";
+import { getArguments } from "./query";
 import { getIntrospectionQuery } from "./query/getIntrospectionQuery";
 import { moveArgumentsToParams } from "./query/moveArgumentsToParams";
 
-export async function addCursor(query: string) {
+export async function addCursorVariable(query: string) {
   try {
     const introspectionQuery = await getIntrospectionQuery();
     const queryDocument = parse(query);
-    const { args, inputFields } = getAllArguments(
+    const { args, inputFields } = getArguments(
       introspectionQuery,
       queryDocument
     );
@@ -26,7 +26,7 @@ export async function addCursor(query: string) {
           kind: "NullValue",
         },
       });
-      const { args: argsWithCursor } = getAllArguments(
+      const { args: argsWithCursor } = getArguments(
         introspectionQuery,
         queryDocument
       );

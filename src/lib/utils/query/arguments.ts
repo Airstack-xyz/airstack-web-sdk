@@ -6,7 +6,7 @@ import {
 } from "graphql";
 import { Argument } from "./types";
 
-export function getArguments(
+export function getArgumentsFromInput(
   inputs: readonly ObjectFieldNode[],
   variableNamesMap: Record<string, number> = {},
   _key = ""
@@ -15,7 +15,7 @@ export function getArguments(
   inputs.forEach((input) => {
     let key = _key;
     if (input.kind === "ObjectField" && input.value.kind === "ObjectValue") {
-      const _data = getArguments(
+      const _data = getArgumentsFromInput(
         (input.value as ObjectValueNode).fields,
         variableNamesMap,
         (key += input.name.value + "/")

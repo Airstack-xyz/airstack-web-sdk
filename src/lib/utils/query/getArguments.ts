@@ -7,11 +7,11 @@ import {
   IntrospectionInputObjectType,
   ObjectValueNode,
 } from "graphql";
-import { getArguments } from "./arguments";
+import { getArgumentsFromInput } from "./arguments";
 import { getFieldType } from "./getFieldType";
 import { Argument } from "./types";
 
-export function getAllArguments(
+export function getArguments(
   schema: IntrospectionSchema,
   query: DocumentNode
 ): { args: Argument[]; inputFields: ObjectValueNode["fields"] } {
@@ -36,7 +36,7 @@ export function getAllArguments(
   const inputFields = (input?.value as ObjectValueNode).fields;
 
   const userInputsArgs = [];
-  // get type of arguments from queryInputType and stoer in argumetentType
+  // get type of arguments from queryInputType and store in argumetentType
   (queryInputType as IntrospectionInputObjectType)?.inputFields.forEach(
     (inputField) => {
       const inputName = inputField.name;
@@ -49,7 +49,7 @@ export function getAllArguments(
     }
   );
 
-  const args = getArguments(inputFields);
+  const args = getArgumentsFromInput(inputFields);
 
   args.forEach((input) => {
     const [type, isRequied] = getFieldType(

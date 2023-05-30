@@ -1,29 +1,29 @@
-import { Kind } from 'graphql';
-import { Argument } from './types';
+import { Kind } from "graphql";
+import { Argument } from "./types";
 
 function getType(kind: Kind, value: string, required = false) {
   let type: any = {
-    kind: 'NamedType',
+    kind: "NamedType",
     name: {
-      kind: 'Name',
-      value
-    }
+      kind: "Name",
+      value,
+    },
   };
   if (required) {
     type = {
-      kind: 'NonNullType',
+      kind: "NonNullType",
       type: {
-        ...type
-      }
+        ...type,
+      },
     };
   }
 
   if (kind === Kind.LIST) {
     type = {
-      kind: 'ListType',
+      kind: "ListType",
       type: {
-        ...type
-      }
+        ...type,
+      },
     };
   }
 
@@ -35,18 +35,18 @@ export function createVariable({
   isRequired,
   name,
   uniqueName,
-  valueKind
+  valueKind,
 }: Argument) {
   return {
-    kind: 'VariableDefinition',
+    kind: "VariableDefinition",
     variable: {
-      kind: 'Variable',
+      kind: "Variable",
       name: {
-        kind: 'Name',
-        value: uniqueName || name
-      }
+        kind: "Name",
+        value: uniqueName || name,
+      },
     },
-    type: getType(valueKind as Kind, type, isRequired),
-    directives: []
+    type: getType(valueKind as Kind, type as string, isRequired),
+    directives: [],
   };
 }

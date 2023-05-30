@@ -1,4 +1,4 @@
-import { addCursor } from "./addCursor";
+import { addCursorVariable } from "./addCursorVariable";
 
 const REGEXT_LAST_CLOSING_CURLEY_BRACE = /(\}\s*\})$/g;
 const PAGINATION_FIELD = `pageInfo {
@@ -8,9 +8,7 @@ const PAGINATION_FIELD = `pageInfo {
 
 const cache: Record<string, string> = {};
 
-export async function addPaginationFieldToQuery(
-  query: string
-): Promise<string> {
+export async function addPaginationToQuery(query: string): Promise<string> {
   if (cache[query]) {
     return cache[query];
   }
@@ -23,7 +21,7 @@ export async function addPaginationFieldToQuery(
     });
   }
 
-  const _query = await addCursor(query);
+  const _query = await addCursorVariable(query);
 
   if (_query !== query) {
     cache[query] = _query;
