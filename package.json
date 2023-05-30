@@ -11,7 +11,7 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "graphql": "^16.6.0"
+    "graphql": "16.6.0"
   },
   "peerDependencies": {
     "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
