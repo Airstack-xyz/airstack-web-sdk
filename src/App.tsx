@@ -4,8 +4,8 @@ import { Asset, init, useLazyQuery, useQueryWithPagination } from "./lib";
 
 init("ef3d1cdeafb642d3a8d6a44664ce566c");
 
-const query = `query QB2($address: Address, $blockchain: TokenBlockchain!, $limit: Int, $cursor: String) {
-  TokenNfts(input: {filter: {address: {_eq: $address}}, blockchain: $blockchain, limit: $limit, , cursor: $cursor}) {
+const query = `query QB2($address: Address, $blockchain: TokenBlockchain!, $limit: Int) {
+  TokenNfts(input: {filter: {address: {_eq: $address}}, blockchain: $blockchain, limit: $limit}) {
     TokenNft {
       address
       id
