@@ -66,12 +66,14 @@ function LazyLoad() {
 }
 
 function App() {
+  const _variables = { ...variables };
   const {
     data,
     error,
     loading,
     pagination: { hasNextPage, hasPrevPage, getNextPage, getPrevPage },
-  } = useQueryWithPagination(query, variables);
+  } = useQueryWithPagination(query, _variables);
+
   if (error) {
     console.log({ error }, error);
   }
