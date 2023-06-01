@@ -9,7 +9,18 @@ import { getIntrospectionQuery } from "./query/getIntrospectionQuery";
 import { moveArgumentsToParams } from "./query/moveArgumentsToParams";
 import { getQueries } from "./query/getQueries";
 import { QueryContext } from "../types";
+import { addPageInfoFields } from "./addPageInfoFields";
 
+const cursorField = {
+  kind: "ObjectField",
+  name: {
+    kind: "Name",
+    value: "cursor",
+  },
+  value: {
+    kind: "StringValue",
+  },
+};
 async function addVariable(
   queryString: string,
   callback: (value: string) => void
@@ -19,7 +30,7 @@ async function addVariable(
     const queryDocument = parse(queryString);
     const queries = getQueries(queryDocument);
     const schemaMap: Record<string, IntrospectionType> = {};
-    let addedCursor = false;
+
     const globalCtx: QueryContext = {
       variableNamesMap: {},
     };
@@ -47,16 +58,7 @@ async function addVariable(
         if (!supportsCursor) return;
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        inputFields.push({
-          kind: "ObjectField",
-          name: {
-            kind: "Name",
-            value: "cursor",
-          },
-          value: {
-            kind: "StringValue",
-          },
-        });
+        inputFields.push(cursorField);
         ctx = { variableNamesMap: { ...globalCtx.variableNamesMap } };
 
         const { args: argsWithCursor } = getArguments(schemaMap, query, ctx);
@@ -68,7 +70,7 @@ async function addVariable(
 
         if (cursor) {
           moveArgumentsToParams(queryDocument, [cursor]);
-          addedCursor = true;
+          addPageInfoFields(query);
         }
         globalCtx.variableNamesMap = {
           ...globalCtx.variableNamesMap,
@@ -76,10 +78,8 @@ async function addVariable(
         };
       }
     });
-    if (addedCursor) {
-      queryString = print(queryDocument);
-    }
-    callback(queryString);
+    const updatedQueryString = print(queryDocument);
+    callback(updatedQueryString);
   } catch (error) {
     console.error(error);
     callback(queryString);
@@ -87,6 +87,7 @@ async function addVariable(
 }
 
 const promiseCache: Record<string, Promise<string>> = {};
+
 export async function addCursorVariable(queryString: string) {
   const cachedPromise = promiseCache[queryString];
   if (cachedPromise) return cachedPromise;
