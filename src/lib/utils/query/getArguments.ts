@@ -1,8 +1,6 @@
 import {
   IntrospectionSchema,
-  DocumentNode,
   IntrospectionType,
-  FragmentDefinitionNode,
   FieldNode,
   IntrospectionInputObjectType,
   ObjectValueNode,
@@ -10,20 +8,14 @@ import {
 import { getArgumentsFromInput } from "./arguments";
 import { getFieldType } from "./getFieldType";
 import { Argument } from "./types";
+import { QueryContext } from "../../types";
 
 export function getArguments(
-  schema: IntrospectionSchema,
-  query: DocumentNode
+  schemaMap: Record<string, IntrospectionType>,
+  fieldNode: FieldNode,
+  ctx: QueryContext
 ): { args: Argument[]; inputFields: ObjectValueNode["fields"] } {
-  const schemaMap: Record<string, IntrospectionType> = {};
-  schema.types.forEach((type) => {
-    schemaMap[type.name.toLowerCase()] = type;
-  });
-
-  const selection = (query.definitions[0] as FragmentDefinitionNode)
-    .selectionSet.selections[0] as FieldNode;
-
-  const queryName = selection.name.value;
+  const queryName = fieldNode.name.value;
 
   const queryInputTypeName = queryName.toLowerCase() + "input";
 
@@ -31,7 +23,7 @@ export function getArguments(
     queryInputTypeName
   ] as IntrospectionInputObjectType;
 
-  const input = selection.arguments?.find((a) => a.name.value === "input");
+  const input = fieldNode.arguments?.find((a) => a.name.value === "input");
 
   const inputFields = (input?.value as ObjectValueNode).fields;
 
@@ -49,7 +41,7 @@ export function getArguments(
     }
   );
 
-  const args = getArgumentsFromInput(inputFields);
+  const args = getArgumentsFromInput(inputFields, ctx);
 
   args.forEach((input) => {
     const [type, isRequied] = getFieldType(

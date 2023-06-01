@@ -7,6 +7,8 @@ export type ResponseType = {
   };
 };
 
+export type QueryContext = { variableNamesMap: Record<string, number> };
+
 export type FetchQuery = {
   data: any;
   error: any;

@@ -5,10 +5,11 @@ import {
   StringValueNode,
 } from "graphql";
 import { Argument } from "./types";
+import { QueryContext } from "../../types";
 
 export function getArgumentsFromInput(
   inputs: readonly ObjectFieldNode[],
-  variableNamesMap: Record<string, number> = {},
+  ctx: QueryContext,
   _key = ""
 ) {
   let data: Argument[] = [];
@@ -17,7 +18,7 @@ export function getArgumentsFromInput(
     if (input.kind === "ObjectField" && input.value.kind === "ObjectValue") {
       const _data = getArgumentsFromInput(
         (input.value as ObjectValueNode).fields,
-        variableNamesMap,
+        ctx,
         (key += input.name.value + "/")
       );
       data = [...data, ..._data];
@@ -25,11 +26,11 @@ export function getArgumentsFromInput(
       key += input.name.value;
       const name = input.name.value;
       let uniqueName = input.name.value;
-      if (variableNamesMap[name]) {
-        uniqueName = `${name}${variableNamesMap[name]}`;
-        variableNamesMap[name]++;
+      if (ctx.variableNamesMap[name]) {
+        uniqueName = `${name}${ctx.variableNamesMap[name]}`;
+        ctx.variableNamesMap[name]++;
       } else {
-        variableNamesMap[name] = 1;
+        ctx.variableNamesMap[name] = 1;
       }
       data.push({
         path: key.split("/"),
