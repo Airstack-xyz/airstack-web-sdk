@@ -1,17 +1,18 @@
-import { IntrospectionSchema } from "graphql";
+import { IntrospectionSchema, IntrospectionType } from "graphql";
 import { config } from "../../config";
 import { API_ENDPOINT_DEV, API_ENDPOINT_PROD } from "../../constants";
 import { introspectionQuery } from "../../constants/introspectionQuery";
 
+type SchemaMap = Record<string, IntrospectionType>;
 const cache: {
-  schema: IntrospectionSchema | null;
+  schema: SchemaMap | null;
 } = {
   schema: null,
 };
 
-let inProgressRequest: Promise<IntrospectionSchema> | null = null;
+let inProgressRequest: Promise<SchemaMap> | null = null;
 
-export async function getIntrospectionQuery(): Promise<IntrospectionSchema> {
+export async function getIntrospectionQueryMap(): Promise<SchemaMap> {
   if (cache.schema) {
     return cache.schema;
   }
@@ -35,8 +36,13 @@ export async function getIntrospectionQuery(): Promise<IntrospectionSchema> {
     .then((res) => res.json())
     .then((res) => {
       inProgressRequest = null;
-      cache.schema = res.data.__schema;
-      return res.data.__schema;
+      const schemaMap: Record<string, IntrospectionType> = {};
+      (res.data.__schema as IntrospectionSchema).types.forEach((type) => {
+        schemaMap[type.name.toLowerCase()] = type;
+      });
+
+      cache.schema = schemaMap;
+      return schemaMap;
     });
 
   return inProgressRequest;

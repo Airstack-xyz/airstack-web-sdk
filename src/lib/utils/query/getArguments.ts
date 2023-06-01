@@ -1,5 +1,4 @@
 import {
-  IntrospectionSchema,
   IntrospectionType,
   FieldNode,
   IntrospectionInputObjectType,

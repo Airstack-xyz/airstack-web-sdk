@@ -1,47 +1,28 @@
-import {
-  IntrospectionInputObjectType,
-  IntrospectionType,
-  print,
-  parse,
-} from "graphql";
+import { IntrospectionInputObjectType, print, parse } from "graphql";
 import { getArguments } from "./query";
-import { getIntrospectionQuery } from "./query/getIntrospectionQuery";
+import { getIntrospectionQueryMap } from "./query/getIntrospectionQuery";
 import { moveArgumentsToParams } from "./query/moveArgumentsToParams";
 import { getQueries } from "./query/getQueries";
 import { QueryContext } from "../types";
 import { addPageInfoFields } from "./addPageInfoFields";
 
-const cursorField = {
-  kind: "ObjectField",
-  name: {
-    kind: "Name",
-    value: "cursor",
-  },
-  value: {
-    kind: "StringValue",
-  },
-};
 async function addVariable(
   queryString: string,
   callback: (value: string) => void
 ) {
   try {
-    const introspectionQuery = await getIntrospectionQuery();
+    const schemaMap = await getIntrospectionQueryMap();
     const queryDocument = parse(queryString);
     const queries = getQueries(queryDocument);
-    const schemaMap: Record<string, IntrospectionType> = {};
 
     const globalCtx: QueryContext = {
       variableNamesMap: {},
     };
 
-    introspectionQuery.types.forEach((type) => {
-      schemaMap[type.name.toLowerCase()] = type;
-    });
-
     queries.forEach((query) => {
-      let ctx = { variableNamesMap: { ...globalCtx.variableNamesMap } };
-      const { args, inputFields } = getArguments(schemaMap, query, ctx);
+      const { args, inputFields } = getArguments(schemaMap, query, {
+        variableNamesMap: {},
+      });
       const hasCursor = args.find((arg) => arg.name === "cursor");
 
       if (!hasCursor) {
@@ -58,8 +39,18 @@ async function addVariable(
         if (!supportsCursor) return;
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        inputFields.push(cursorField);
-        ctx = { variableNamesMap: { ...globalCtx.variableNamesMap } };
+        inputFields.push({
+          kind: "ObjectField",
+          name: {
+            kind: "Name",
+            value: "cursor",
+          },
+          value: {
+            kind: "StringValue",
+          },
+        });
+
+        const ctx = { variableNamesMap: { ...globalCtx.variableNamesMap } };
 
         const { args: argsWithCursor } = getArguments(schemaMap, query, ctx);
         const cursor = argsWithCursor.find((arg) => arg.name === "cursor");
@@ -72,6 +63,7 @@ async function addVariable(
           moveArgumentsToParams(queryDocument, [cursor]);
           addPageInfoFields(query);
         }
+
         globalCtx.variableNamesMap = {
           ...globalCtx.variableNamesMap,
           ...ctx.variableNamesMap,
