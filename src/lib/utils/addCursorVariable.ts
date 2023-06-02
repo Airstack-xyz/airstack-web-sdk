@@ -61,7 +61,7 @@ async function addVariable(
 
         if (cursor) {
           moveArgumentsToParams(queryDocument, [cursor]);
-          addPageInfoFields(query);
+          addPageInfoFields(query, cursor.uniqueName || cursor.name);
         }
 
         globalCtx.variableNamesMap = {

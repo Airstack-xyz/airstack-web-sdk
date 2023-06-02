@@ -6,10 +6,53 @@ import {
   Variables,
 } from "../types";
 import { chacheResponse, getFromCache } from "../cache";
+import isAliasedPageInfo, { getCursorName } from "../utils/cursor";
 
 const defaultConfig: Config = {
   cache: true,
 };
+
+function getPaginationData(response: ResponseType | null): {
+  nextCursors: Record<string, string>;
+  prevCursors: Record<string, string>;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+} {
+  if (!response)
+    return {
+      nextCursors: {},
+      prevCursors: {},
+      hasNextPage: false,
+      hasPrevPage: false,
+    };
+
+  const nextCursors: Record<string, string> = {};
+  const prevCursors: Record<string, string> = {};
+  let hasNextPage = false;
+  let hasPrevPage = false;
+  for (const queryName in response) {
+    const query = response[queryName];
+    for (const key in query) {
+      if (isAliasedPageInfo(key)) {
+        const pageInfo = query[key as "pageInfo"];
+        nextCursors[getCursorName(key)] = pageInfo.nextCursor;
+        prevCursors[getCursorName(key)] = pageInfo.prevCursor;
+        if (!hasNextPage) {
+          hasNextPage = Boolean(pageInfo.nextCursor);
+        }
+        if (!hasPrevPage) {
+          hasPrevPage = Boolean(pageInfo.prevCursor);
+        }
+      }
+    }
+  }
+  return {
+    nextCursors,
+    prevCursors,
+    hasNextPage,
+    hasPrevPage,
+  };
+}
 
 export async function fetchQuery(
   query: string,
@@ -41,9 +84,8 @@ export async function fetchQuery(
     }
   }
 
-  const pageInfo = data ? data[Object.keys(data || {})[0]]?.pageInfo : null;
-  const hasNextPage = Boolean(pageInfo?.nextCursor);
-  const hasPrevPage = Boolean(pageInfo?.prevCursor);
+  const { nextCursors, prevCursors, hasNextPage, hasPrevPage } =
+    getPaginationData(data);
 
   const handleNext = async () => {
     if (hasNextPage) {
@@ -51,7 +93,7 @@ export async function fetchQuery(
         query,
         {
           ..._variables,
-          cursor: pageInfo?.nextCursor,
+          ...nextCursors,
         },
         config
       );
@@ -65,7 +107,7 @@ export async function fetchQuery(
         query,
         {
           ..._variables,
-          cursor: pageInfo?.prevCursor,
+          ...prevCursors,
         },
         config
       );

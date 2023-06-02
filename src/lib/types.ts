@@ -1,9 +1,11 @@
+export type PageInfo = {
+  prevCursor: string;
+  nextCursor: string;
+};
+
 export type ResponseType = {
   [key: string]: {
-    pageInfo: {
-      prevCursor: string;
-      nextCursor: string;
-    };
+    pageInfo: PageInfo;
   };
 };
 
