@@ -38,6 +38,7 @@ export function getPaginationData(_response: ResponseType | null): {
       }
     }
   }
+
   return {
     nextCursors,
     prevCursors,
