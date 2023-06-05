@@ -1,6 +1,10 @@
 type Env = "dev" | "prod";
+type Config = {
+  authKey: string;
+  env: Env;
+};
 
-export const config = {
+export const config: Config = {
   authKey: "",
   env: "dev",
 };
