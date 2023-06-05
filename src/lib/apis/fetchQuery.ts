@@ -6,7 +6,7 @@ import {
   Variables,
 } from "../types";
 import { chacheResponse, getFromCache } from "../cache";
-import { getPaginationData } from "../utils/getPaginationDatat";
+import { getPaginationData } from "../utils/getPaginationData";
 import { stringifyObjectValues } from "../utils/stringifyObjectValues";
 
 const defaultConfig: Config = {
