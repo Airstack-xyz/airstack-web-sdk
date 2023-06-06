@@ -5,6 +5,7 @@ export type Argument = {
   name: string;
   uniqueName?: string;
   valueKind?: Kind;
+  assignedVariable?: string;
   type?: string | null;
   ref?: unknown;
   isRequired?: boolean;

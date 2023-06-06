@@ -36,7 +36,10 @@ export function getArgumentsFromInput(
         path: key.split("/"),
         name,
         uniqueName,
-        valueKind: input.value.kind,
+        valueKind: input.value?.kind,
+        // eslint-disable-next-line
+        // @ts-ignore
+        assignedVariable: input.value?.name?.value,
         defaultValue:
           (input.value as StringValueNode).value ||
           ((input.value as ListValueNode).values as unknown[]),

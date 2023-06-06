@@ -3,7 +3,7 @@ import { config } from "../../config";
 import { API_ENDPOINT_DEV, API_ENDPOINT_PROD } from "../../constants";
 import { introspectionQuery } from "../../constants/introspectionQuery";
 
-type SchemaMap = Record<string, IntrospectionType>;
+export type SchemaMap = Record<string, IntrospectionType>;
 const cache: {
   schema: SchemaMap | null;
 } = {
