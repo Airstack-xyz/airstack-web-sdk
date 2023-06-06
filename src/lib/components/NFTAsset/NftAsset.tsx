@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { fetchCachedNFTAssetURL, fetchNFTAssetURL } from "./fetchNFTAssetURL";
 import { Chain, PresetImageSize, PresetPXSize } from "../../constants";
+import { Media } from "./Media";
 
 export interface IAirstackAssetProps
   extends React.DetailedHTMLProps<
@@ -21,6 +22,14 @@ export interface IAirstackAssetProps
   imgProps?: React.DetailedHTMLProps<
     React.ImgHTMLAttributes<HTMLImageElement>,
     HTMLImageElement
+  >;
+  videoProps?: React.DetailedHTMLProps<
+    React.ImgHTMLAttributes<HTMLVideoElement>,
+    HTMLVideoElement
+  >;
+  audioProps?: React.DetailedHTMLProps<
+    React.ImgHTMLAttributes<HTMLAudioElement>,
+    HTMLAudioElement
   >;
   progressCallback?: (status: Status) => void;
   preset?: PresetImageSize;
@@ -47,6 +56,8 @@ export const NftAsset = (props: IAirstackAssetProps) => {
     loading,
     error,
     imgProps = {},
+    videoProps = {},
+    audioProps = {},
     preset,
     progressCallback,
   } = props;
@@ -189,7 +200,14 @@ export const NftAsset = (props: IAirstackAssetProps) => {
       </div>
     );
   } else {
-    OUTPUT = <img {...imgProps} alt="" src={uri} style={{ width: "100%" }} />;
+    OUTPUT = (
+      <Media
+        url={uri || ""}
+        imgProps={imgProps}
+        videoProps={videoProps}
+        audioProps={audioProps}
+      />
+    );
   }
 
   const containerProp = useMemo(() => {
