@@ -1,4 +1,5 @@
 import { Chain } from "../constants";
+import { type } from "../types";
 import { fetchGql } from "../utils/fetcher";
 
 const query = `query GetTokenNfts($address: Address, $tokenId: String, $blockchain: TokenBlockchain!) {
@@ -7,13 +8,17 @@ const query = `query GetTokenNfts($address: Address, $tokenId: String, $blockcha
         tokenId
         contentType
         contentValue {
+          video
+          audio
           image {
             extraSmall
-            small
-            medium
             large
+            medium
             original
-            
+            small
+          }
+          animation_url {
+            original
           }
         }
       }
@@ -21,30 +26,12 @@ const query = `query GetTokenNfts($address: Address, $tokenId: String, $blockcha
   }
 `;
 
-interface GetTokenNftsQueryData {
-  TokenNfts: {
-    TokenNft: {
-      tokenId: string;
-      contentType: string;
-      contentValue: {
-        image: {
-          extraSmall: string;
-          small: string;
-          medium: string;
-          large: string;
-          original: string;
-        };
-      };
-    }[];
-  };
-}
-
 export function getNftContent(
   chainId: Chain,
   address: string,
   tokenId: string
 ) {
-  return fetchGql<GetTokenNftsQueryData>(query, {
+  return fetchGql<type>(query, {
     blockchain: chainId,
     address,
     tokenId,

@@ -13,6 +13,13 @@ export type PresetImageSize =
   | "large"
   | "original";
 
-export type Chain = "ethereum";
+export const PresetArray = [
+  PresetPXSize.ExtraSmall,
+  PresetPXSize.Small,
+  PresetPXSize.Medium,
+  PresetPXSize.Large,
+];
+
+export type Chain = "ethereum" | "polygon";
 
 export const API_ENDPOINT_PROD = "https://api.airstack.xyz/gql";

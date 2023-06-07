@@ -1,7 +1,13 @@
+import { PresetImageSize } from "../../constants";
+import { NFTAssetURL } from "../../types";
 import { getMediaType } from "./utils";
+// eslint-disable-next-line
+// @ts-ignore
+import styles from "./styles.module.css";
 
-type MediaProps = {
-  url: string;
+// !!! TODO: handle html, svg markup (SENITISE markup)
+
+export type MediaProps = {
   imgProps?: React.DetailedHTMLProps<
     React.ImgHTMLAttributes<HTMLImageElement>,
     HTMLImageElement
@@ -14,45 +20,94 @@ type MediaProps = {
     React.ImgHTMLAttributes<HTMLAudioElement>,
     HTMLAudioElement
   >;
+  preset: PresetImageSize;
+  data?: NFTAssetURL["value"];
+  onError?: () => void;
 };
 
-const defaultStyles = {
-  width: "100%",
+type AudioVideoProps = Omit<MediaProps, "data" | "preset"> & {
+  url: string;
 };
 
-function Audio({ url, audioProps }: MediaProps) {
+function Audio({ url, audioProps, onError }: AudioVideoProps) {
   // TODO: confirm if we need autoplay here
   return (
-    <audio autoPlay loop muted style={defaultStyles} {...audioProps}>
+    <audio
+      autoPlay
+      loop
+      muted
+      className={styles.media}
+      {...audioProps}
+      onError={(error) => {
+        onError && onError();
+        audioProps?.onError && audioProps.onError(error);
+      }}
+    >
       <source src={url} type="audio/mp3" />
       Your browser does not support the audio tag.
     </audio>
   );
 }
 
-function Video({ url, videoProps }: MediaProps) {
+function Video({ url, videoProps, onError }: AudioVideoProps) {
   // TODO: add logic for autoplay if the video length is less than 10 seconds
   return (
-    <video autoPlay loop muted style={defaultStyles} {...videoProps}>
+    <video
+      autoPlay
+      loop
+      muted
+      className={styles.media}
+      {...videoProps}
+      onError={(error) => {
+        onError && onError();
+        videoProps?.onError && videoProps.onError(error);
+      }}
+    >
       <source src={url} type="video/mp4" />
       Your browser does not support the video tag.
     </video>
   );
 }
 
-export function Media({ url, imgProps }: MediaProps) {
+export function Media({
+  data,
+  preset,
+  imgProps,
+  videoProps,
+  audioProps,
+  onError,
+}: Omit<MediaProps, "url">) {
+  if (!data) return null;
+
+  const url =
+    data.animation_url?.original ||
+    (data.image || {})[preset] ||
+    data.video ||
+    data.audio;
+
   const type = getMediaType(url);
 
   if (type === "image") {
-    return <img alt="NFT" style={defaultStyles} {...imgProps} src={url} />;
+    return (
+      <img
+        alt="NFT"
+        className={styles.media}
+        {...imgProps}
+        src={url}
+        onError={(error) => {
+          onError && onError();
+          imgProps?.onError && imgProps.onError(error);
+        }}
+      />
+    );
   }
 
   if (type === "video") {
-    return <Video url={url} />;
+    return <Video url={url} videoProps={videoProps} onError={onError} />;
   }
 
   if (type === "audio") {
-    return <Audio url={url} />;
+    return <Audio url={url} audioProps={audioProps} onError={onError} />;
   }
   // TODO: Handle error here, as the type is not supported
   return null;

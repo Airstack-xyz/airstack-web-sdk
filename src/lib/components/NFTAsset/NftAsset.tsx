@@ -6,47 +6,35 @@ import React, {
   useMemo,
 } from "react";
 import { fetchCachedNFTAssetURL, fetchNFTAssetURL } from "./fetchNFTAssetURL";
-import { Chain, PresetImageSize, PresetPXSize } from "../../constants";
-import { Media } from "./Media";
+import { Chain, PresetImageSize } from "../../constants";
+import { Media, MediaProps } from "./Media";
+import { getPreset } from "./utils";
+// eslint-disable-next-line
+// @ts-ignore
+import styles from "./styles.module.css";
 
-export interface IAirstackAssetProps
-  extends React.DetailedHTMLProps<
-    React.HTMLAttributes<HTMLDivElement>,
-    HTMLDivElement
-  > {
+type DivProps = React.DetailedHTMLProps<
+  React.HTMLAttributes<HTMLDivElement>,
+  HTMLDivElement
+>;
+
+export type IAirstackAssetProps = {
   chain?: Chain;
   address: string;
   tokenId: string;
   loading?: React.ReactNode;
   error?: React.ReactNode;
-  imgProps?: React.DetailedHTMLProps<
-    React.ImgHTMLAttributes<HTMLImageElement>,
-    HTMLImageElement
-  >;
-  videoProps?: React.DetailedHTMLProps<
-    React.ImgHTMLAttributes<HTMLVideoElement>,
-    HTMLVideoElement
-  >;
-  audioProps?: React.DetailedHTMLProps<
-    React.ImgHTMLAttributes<HTMLAudioElement>,
-    HTMLAudioElement
-  >;
   progressCallback?: (status: Status) => void;
   preset?: PresetImageSize;
-}
+  containerClassName?: string;
+} & DivProps &
+  Omit<MediaProps, "data" | "onError" | "preset">;
 
 enum Status {
   Loading = "loading",
   Loaded = "loaded",
   Error = "error",
 }
-
-const PresetArray = [
-  PresetPXSize.ExtraSmall,
-  PresetPXSize.Small,
-  PresetPXSize.Medium,
-  PresetPXSize.Large,
-];
 
 export const NftAsset = (props: IAirstackAssetProps) => {
   const {
@@ -58,25 +46,28 @@ export const NftAsset = (props: IAirstackAssetProps) => {
     imgProps = {},
     videoProps = {},
     audioProps = {},
-    preset,
+    preset: presetProp,
     progressCallback,
+    containerClassName,
+    ...containerProps
   } = props;
-  const presetRef = useRef(preset);
+
   const ref = useRef<HTMLDivElement>(null);
+  const [preset, setPreset] = useState<PresetImageSize>(() => {
+    if (presetProp) return presetProp;
+    return getPreset(ref.current);
+  });
 
-  const imageUri = useMemo(() => {
-    if (!preset) {
-      return "";
+  const cachedData = useMemo(() => {
+    const assetCache = fetchCachedNFTAssetURL(chain, address, tokenId);
+    if (assetCache && assetCache.value) {
+      return assetCache.value;
     }
-    const imagesFromCache = fetchCachedNFTAssetURL(chain, address, tokenId);
-    if (imagesFromCache && imagesFromCache.value && preset) {
-      return imagesFromCache.value[preset];
-    }
-  }, [chain, preset, address, tokenId]);
+  }, [chain, address, tokenId]);
 
-  const [uri, setUri] = useState(imageUri);
+  const [data, setData] = useState(cachedData);
   const [state, setState] = useState<Status>(
-    imageUri ? Status.Loaded : Status.Loading
+    cachedData ? Status.Loaded : Status.Loading
   );
 
   const updateState = useCallback(
@@ -92,150 +83,80 @@ export const NftAsset = (props: IAirstackAssetProps) => {
     [progressCallback, state]
   );
 
-  const getSize = useCallback(() => {
-    let height = 0;
-    let width = 0;
-    if (ref.current) {
-      height = ref.current.clientHeight;
-      width = ref.current.clientWidth;
+  useEffect(() => {
+    if (!presetProp) {
+      setPreset(getPreset(ref.current));
     }
-    return { height, width };
-  }, []);
-
-  const getPreset = useCallback((width: number) => {
-    const closest = PresetArray.reduce((prev, curr) => {
-      return Math.abs(curr - width) < Math.abs(prev - width) ? curr : prev;
-    });
-    switch (closest) {
-      case PresetPXSize.ExtraSmall:
-        return "extraSmall";
-      case PresetPXSize.Small:
-        return "small";
-      case PresetPXSize.Medium:
-        return "medium";
-      case PresetPXSize.Large:
-        return "large";
-      default:
-        return "original";
-    }
-  }, []);
+  }, [presetProp]);
 
   useEffect(() => {
-    if (preset) {
+    if (presetProp) {
       return;
     }
     const onResize = () => {
-      const { width } = getSize();
-      const currentPreset = getPreset(width);
-      if (presetRef.current != currentPreset) {
-        presetRef.current = currentPreset;
-        const imagesFromCache = fetchCachedNFTAssetURL(chain, address, tokenId);
-        if (presetRef.current && imagesFromCache && imagesFromCache.value) {
-          setUri(imagesFromCache.value[presetRef.current]);
-          updateState(Status.Loaded);
-        }
-      }
+      const currentPreset = getPreset(ref.current);
+      setPreset(currentPreset);
     };
-    onResize();
     window.addEventListener("resize", onResize);
     return () => {
       window.removeEventListener("resize", onResize);
     };
-  }, [chain, address, getPreset, getSize, preset, tokenId, updateState]);
+  }, [chain, address, preset, tokenId, updateState, presetProp]);
 
   useEffect(() => {
-    if (imageUri) {
+    if (cachedData) {
       return;
     }
     fetchNFTAssetURL(chain, address, tokenId)
-      .then((res: any) => {
-        if (presetRef.current) {
-          setUri(res.value[presetRef.current]);
-        }
+      .then((res) => {
+        setData(res.value);
         updateState(Status.Loaded);
       })
       .catch(() => {
         updateState(Status.Error);
       });
-  }, [chain, imageUri, address, tokenId, getSize, updateState]);
+  }, [chain, cachedData, address, tokenId, updateState]);
 
-  let OUTPUT;
-
-  if (state === Status.Loading) {
-    OUTPUT = loading || (
-      <div
-        style={{
-          backgroundColor: "#0E0E12",
-          textAlign: "center",
-          fontSize: "10px",
-          lineHeight: "1em",
-          color: "#96999c",
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        Loading...
-      </div>
-    );
-  } else if (state === Status.Error) {
-    OUTPUT = error || (
-      <div
-        style={{
-          textAlign: "center",
-          fontSize: "10px",
-          lineHeight: "1em",
-          color: "#96999c",
-          backgroundColor: "#0E0E12",
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        Error!
-      </div>
-    );
-  } else {
-    OUTPUT = (
-      <Media
-        url={uri || ""}
-        imgProps={imgProps}
-        videoProps={videoProps}
-        audioProps={audioProps}
-      />
-    );
-  }
-
-  const containerProp = useMemo(() => {
-    const cProps: Record<string, any> = { ...props };
-    delete cProps.chain;
-    delete cProps.address;
-    delete cProps.tokenId;
-    delete cProps.loading;
-    delete cProps.error;
-    delete cProps.imgProps;
-    delete cProps.progressCallback;
-    delete cProps.preset;
-    return cProps;
-  }, [props]);
+  const media = useMemo(() => {
+    if (state === Status.Loading) {
+      return loading || <div className={styles.loading}>Loading...</div>;
+    } else if (state === Status.Error) {
+      return error || <div className={styles.error}>Error!</div>;
+    } else {
+      return (
+        <Media
+          data={data}
+          preset={preset}
+          imgProps={imgProps}
+          videoProps={videoProps}
+          audioProps={audioProps}
+          onError={() => {
+            updateState(Status.Error);
+          }}
+        />
+      );
+    }
+  }, [
+    audioProps,
+    data,
+    error,
+    imgProps,
+    loading,
+    preset,
+    state,
+    updateState,
+    videoProps,
+  ]);
 
   return (
     <div
-      {...containerProp}
+      {...containerProps}
       ref={ref}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "100%",
-        height: "100%",
-      }}
+      className={`${styles.container}${
+        containerClassName ? " " + containerClassName : ""
+      }`}
     >
-      {OUTPUT}
+      {media}
     </div>
   );
 };
