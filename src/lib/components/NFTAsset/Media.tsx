@@ -107,12 +107,13 @@ export function Media({
   onError,
 }: Omit<MediaProps, "url">) {
   if (!data) return null;
-
+  // use animation url if available, otherwise use video, audio, or image
   const url =
     data.animation_url?.original ||
-    (data.image || {})[preset] ||
     data.video ||
-    data.audio;
+    data.audio ||
+    (data.image || {})[preset] ||
+    "";
 
   const type = getMediaType(url);
 

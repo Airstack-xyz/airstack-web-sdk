@@ -21,6 +21,7 @@ export function getMediaType(media: string): MediaType {
 
   return "unknown";
 }
+
 export function getSize(el?: HTMLElement | null) {
   let height = 0;
   let width = 0;
