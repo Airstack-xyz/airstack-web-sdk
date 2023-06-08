@@ -8,18 +8,20 @@ import styles from "./styles.module.css";
 
 // !!! TODO: handle html, svg markup (SENITISE markup)
 
+type HTMLVideoProps = React.DetailedHTMLProps<
+  React.ImgHTMLAttributes<HTMLVideoElement>,
+  HTMLVideoElement
+>;
+
 export type MediaProps = {
   imgProps?: React.DetailedHTMLProps<
     React.ImgHTMLAttributes<HTMLImageElement>,
     HTMLImageElement
   >;
-  videoProps?: React.DetailedHTMLProps<
-    React.ImgHTMLAttributes<HTMLVideoElement>,
-    HTMLVideoElement
-  > & {
+  videoProps?: {
     // max duration in seconds, if videos are shorter than this, they will be auto played, default 10 seconds
     maxDurationForAutoPlay?: number;
-  };
+  } & HTMLVideoProps;
   audioProps?: React.DetailedHTMLProps<
     React.ImgHTMLAttributes<HTMLAudioElement>,
     HTMLAudioElement
@@ -34,12 +36,9 @@ type AudioVideoProps = Omit<MediaProps, "data" | "preset"> & {
 };
 
 function Audio({ url, audioProps, onError }: AudioVideoProps) {
-  // TODO: confirm if we need autoplay here
   return (
     <audio
-      autoPlay
-      loop
-      muted
+      controls
       className={styles.media}
       {...audioProps}
       onError={(error) => {
@@ -47,34 +46,36 @@ function Audio({ url, audioProps, onError }: AudioVideoProps) {
         audioProps?.onError && audioProps.onError(error);
       }}
     >
-      <source src={url} type="audio/mp3" />
+      <source src={url} />
       Your browser does not support the audio tag.
     </audio>
   );
 }
 
-function Video({ url, videoProps, onError }: AudioVideoProps) {
+function Video({ url, videoProps: elementProps, onError }: AudioVideoProps) {
   const ref = useRef<HTMLVideoElement>(null);
+
+  const {
+    maxDurationForAutoPlay = 10,
+    onLoadedMetadata,
+    ...videoProps
+  } = elementProps || {};
 
   const handleMetadata = useCallback(
     (metadata: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-      const minDurationForAutoPlay =
-        videoProps?.maxDurationForAutoPlay === undefined
-          ? 10
-          : videoProps.maxDurationForAutoPlay;
-
       if (
-        (metadata.target as HTMLVideoElement)?.duration < minDurationForAutoPlay
+        maxDurationForAutoPlay &&
+        (metadata.target as HTMLVideoElement)?.duration < maxDurationForAutoPlay
       ) {
         if (ref.current) {
           ref.current.play();
         }
       }
-      if (videoProps?.onLoadedMetadata) {
-        videoProps.onLoadedMetadata(metadata);
+      if (onLoadedMetadata) {
+        onLoadedMetadata(metadata);
       }
     },
-    [videoProps]
+    [maxDurationForAutoPlay, onLoadedMetadata]
   );
 
   return (
@@ -91,7 +92,7 @@ function Video({ url, videoProps, onError }: AudioVideoProps) {
         videoProps?.onError && videoProps.onError(error);
       }}
     >
-      <source src={url} type="video/mp4" />
+      <source src={url} />
       Your browser does not support the video tag.
     </video>
   );
