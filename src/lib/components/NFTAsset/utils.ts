@@ -3,7 +3,7 @@ import { PresetArray, PresetPXSize } from "../../constants";
 type MediaType = "image" | "video" | "audio" | "unknown";
 
 export function getMediaType(media: string): MediaType {
-  const imageRegex = /\.(jpe?g|png|gif|bmp|svg)$/i;
+  const imageRegex = /\.(jpe?g|png|webp|gif|bmp|svg)$/i;
   const videoRegex = /\.(mp4|webm|avi|mov|mwv|mkv)$/i;
   const audioRegex = /\.(mp3|wav|aac|ogg|wma|aiff)$/i;
 

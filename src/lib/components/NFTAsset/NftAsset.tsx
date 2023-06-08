@@ -74,13 +74,13 @@ export const NftAsset = (props: IAirstackAssetProps) => {
     (stateVal: Status) => {
       setState((prevState: Status) => {
         if (prevState != stateVal) {
-          progressCallback && progressCallback(state);
+          progressCallback && progressCallback(stateVal);
           return stateVal;
         }
         return prevState;
       });
     },
-    [progressCallback, state]
+    [progressCallback]
   );
 
   useEffect(() => {
