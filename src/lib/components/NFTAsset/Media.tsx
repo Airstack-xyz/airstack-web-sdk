@@ -17,8 +17,8 @@ export type MediaProps = {
     React.ImgHTMLAttributes<HTMLVideoElement>,
     HTMLVideoElement
   > & {
-    // min duration in seconds, if videos are shorter than this, they will be auto played, default 10 seconds
-    minDurationForAutoPlay?: number;
+    // max duration in seconds, if videos are shorter than this, they will be auto played, default 10 seconds
+    maxDurationForAutoPlay?: number;
   };
   audioProps?: React.DetailedHTMLProps<
     React.ImgHTMLAttributes<HTMLAudioElement>,
@@ -59,9 +59,9 @@ function Video({ url, videoProps, onError }: AudioVideoProps) {
   const handleMetadata = useCallback(
     (metadata: React.SyntheticEvent<HTMLVideoElement, Event>) => {
       const minDurationForAutoPlay =
-        videoProps?.minDurationForAutoPlay === undefined
+        videoProps?.maxDurationForAutoPlay === undefined
           ? 10
-          : videoProps.minDurationForAutoPlay;
+          : videoProps.maxDurationForAutoPlay;
 
       if (
         (metadata.target as HTMLVideoElement)?.duration < minDurationForAutoPlay
