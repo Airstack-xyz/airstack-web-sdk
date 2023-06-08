@@ -1,3 +1,4 @@
+import { useCallback, useRef } from "react";
 import { PresetImageSize } from "../../constants";
 import { NFTAssetURL } from "../../types";
 import { getMediaType } from "./utils";
@@ -15,7 +16,10 @@ export type MediaProps = {
   videoProps?: React.DetailedHTMLProps<
     React.ImgHTMLAttributes<HTMLVideoElement>,
     HTMLVideoElement
-  >;
+  > & {
+    // min duration in seconds, if videos are shorter than this, they will be auto played, default 10 seconds
+    minDurationForAutoPlay?: number;
+  };
   audioProps?: React.DetailedHTMLProps<
     React.ImgHTMLAttributes<HTMLAudioElement>,
     HTMLAudioElement
@@ -50,14 +54,38 @@ function Audio({ url, audioProps, onError }: AudioVideoProps) {
 }
 
 function Video({ url, videoProps, onError }: AudioVideoProps) {
-  // TODO: add logic for autoplay if the video length is less than 10 seconds
+  const ref = useRef<HTMLVideoElement>(null);
+
+  const handleMetadata = useCallback(
+    (metadata: React.SyntheticEvent<HTMLVideoElement, Event>) => {
+      const minDurationForAutoPlay =
+        videoProps?.minDurationForAutoPlay === undefined
+          ? 10
+          : videoProps.minDurationForAutoPlay;
+
+      if (
+        (metadata.target as HTMLVideoElement)?.duration < minDurationForAutoPlay
+      ) {
+        if (ref.current) {
+          ref.current.play();
+        }
+      }
+      if (videoProps?.onLoadedMetadata) {
+        videoProps.onLoadedMetadata(metadata);
+      }
+    },
+    [videoProps]
+  );
+
   return (
     <video
-      autoPlay
       loop
       muted
+      controls
       className={styles.media}
       {...videoProps}
+      onLoadedMetadata={handleMetadata}
+      ref={ref}
       onError={(error) => {
         onError && onError();
         videoProps?.onError && videoProps.onError(error);
@@ -109,6 +137,6 @@ export function Media({
   if (type === "audio") {
     return <Audio url={url} audioProps={audioProps} onError={onError} />;
   }
-  // TODO: Handle error here, as the type is not supported
-  return null;
+
+  return "unsupported media";
 }

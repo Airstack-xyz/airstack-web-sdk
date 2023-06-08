@@ -12,6 +12,7 @@ import { getPreset } from "./utils";
 // eslint-disable-next-line
 // @ts-ignore
 import styles from "./styles.module.css";
+import { debounce } from "../../utils/debounce";
 
 type DivProps = React.DetailedHTMLProps<
   React.HTMLAttributes<HTMLDivElement>,
@@ -83,6 +84,13 @@ export const NftAsset = (props: IAirstackAssetProps) => {
     [progressCallback]
   );
 
+  const handleResize = useMemo(() => {
+    return debounce(() => {
+      const currentPreset = getPreset(ref.current);
+      setPreset(currentPreset);
+    });
+  }, []);
+
   useEffect(() => {
     if (!presetProp) {
       setPreset(getPreset(ref.current));
@@ -93,15 +101,11 @@ export const NftAsset = (props: IAirstackAssetProps) => {
     if (presetProp) {
       return;
     }
-    const onResize = () => {
-      const currentPreset = getPreset(ref.current);
-      setPreset(currentPreset);
-    };
-    window.addEventListener("resize", onResize);
+    window.addEventListener("resize", handleResize);
     return () => {
-      window.removeEventListener("resize", onResize);
+      window.removeEventListener("resize", handleResize);
     };
-  }, [chain, address, preset, tokenId, updateState, presetProp]);
+  }, [handleResize, presetProp]);
 
   useEffect(() => {
     if (cachedData) {
