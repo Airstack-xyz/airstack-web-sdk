@@ -12,12 +12,12 @@ type Cache = {
 const cache: Cache = {};
 
 export function createCacheKey(query: string, variables: Variables = {}) {
-  let key = query;
+  let key = `${query}=`;
   const keys = Object.keys(variables).sort();
   for (const k of keys) {
-    key += `${k}:${variables[k]}`;
+    key += `${k}:${variables[k]} `;
   }
-  return key;
+  return key.trim();
 }
 
 function isCacheValid(createdAt: number) {

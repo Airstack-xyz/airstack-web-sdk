@@ -1,6 +1,7 @@
 import React from "react";
 import "./App.css";
 import { Asset, init, useLazyQuery, useQueryWithPagination } from "./lib";
+import { QueryInput } from "./QueryInput";
 
 init("ef3d1cdeafb642d3a8d6a44664ce566c");
 
@@ -99,6 +100,10 @@ function App() {
 
   return (
     <div>
+      <QueryInput />
+      =========================================
+      <br />
+      <br />
       <h2> useQueryWithPagination </h2>
       {loading && <h4> Loading... </h4>}
       {error && <h4> Error...</h4>}
@@ -128,7 +133,6 @@ function App() {
       <br />
       <h2> useLazyQuery </h2>
       <LazyLoad />
-
       <br />
       <br />
       <br />
