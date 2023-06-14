@@ -1,10 +1,10 @@
-import { vi, describe, expect, test, beforeEach, it } from "vitest";
+import { vi, describe, expect, beforeEach, it } from "vitest";
 import { render, act } from "@testing-library/react";
 import { useLazyQueryWithPagination } from "../useQueryWithPagination";
 import { init } from "../../config";
-import { introspectionQuery } from "./introspectionQuery";
 import { pageOneData } from "./pageOneData";
 import { pageTwoData } from "./pageTwoData";
+import { mockFetch } from "./utils";
 
 init("123");
 
@@ -13,28 +13,8 @@ function wait(ms: number) {
 }
 
 const mockedResponse = vi.fn();
-// eslint-disable-next-line
-// @ts-ignore
-global.fetch = async (_, data: any) => {
-  const response = { data: {} };
-  const isIntrospectionQuery = data.body.indexOf("IntrospectionQuery") > -1;
-  if (isIntrospectionQuery) {
-    response.data = {
-      ...introspectionQuery,
-    };
-  }
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        // eslint-disable-next-line
-        // @ts-ignore
-        json: isIntrospectionQuery ? () => response : mockedResponse,
-      });
-    }, 100);
-  });
-};
+mockFetch(mockedResponse);
 
-// Mock the component that uses the hook
 const TestComponent = () => {
   const [fetch, { data, error, loading, pagination }] =
     useLazyQueryWithPagination(``, {});
