@@ -34,7 +34,6 @@ export function getSize(el?: HTMLElement | null) {
 
 export function getPreset(el?: HTMLElement | null) {
   const { width } = getSize(el);
-  console.log({ width });
   const closest = PresetArray.reduce((prev, curr) => {
     return Math.abs(curr - width) < Math.abs(prev - width) ? curr : prev;
   });

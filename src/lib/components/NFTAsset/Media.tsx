@@ -140,5 +140,8 @@ export function Media({
     return <Audio url={url} audioProps={audioProps} onError={onError} />;
   }
 
-  return "unsupported media";
+  // unsupported media, show error
+  onError && onError();
+
+  return null;
 }
