@@ -5,87 +5,35 @@ import {
   ResponseType,
   Variables,
 } from "../types";
-import { chacheResponse, getFromCache } from "../cache";
-import { getPaginationData } from "../utils/getPaginationData";
+import { cacheResponse, getFromCache } from "../cache";
 import { stringifyObjectValues } from "../utils/stringifyObjectValues";
-
-const defaultConfig: Config = {
-  cache: true,
-};
+import { config as globalConfig } from "../config";
 
 export async function fetchQuery(
   query: string,
   variables?: Variables,
-  config?: Config
+  _config?: Config
 ): FetchQueryReturnType {
-  const prevCursorsCache: Record<string, string>[] = [];
+  const _variables: Variables = stringifyObjectValues(variables || {});
 
-  async function fetch(
-    query: string,
-    _variables?: Variables,
-    _config?: Config
-  ): FetchQueryReturnType {
-    const variables: Variables = stringifyObjectValues(_variables || {});
+  const config = { ...globalConfig, ..._config };
 
-    const config = { ...defaultConfig, ..._config };
+  let data: null | ResponseType = config.cache
+    ? getFromCache(query, _variables || {})
+    : null;
+  let error = null;
 
-    let data: null | ResponseType = config.cache
-      ? getFromCache(query, variables || {})
-      : null;
-    let error = null;
-
-    if (!data) {
-      const [response, _error] = await fetchGql<any>(query, variables);
-      data = response;
-      error = _error;
-      if (config.cache && data && !error) {
-        chacheResponse(response, query, variables);
-      }
+  if (!data) {
+    const [response, _error] = await fetchGql<any>(query, _variables);
+    data = response;
+    error = _error;
+    if (config.cache && data && !error) {
+      cacheResponse(response, query, _variables);
     }
-
-    const { nextCursors, prevCursors, hasNextPage, hasPrevPage } =
-      getPaginationData(data);
-
-    const handleNext = async () => {
-      if (hasNextPage) {
-        prevCursorsCache.push(prevCursors);
-        return await fetch(
-          query,
-          {
-            ...variables,
-            ...nextCursors,
-          },
-          config
-        );
-      }
-      return null;
-    };
-
-    const handlePrev = async () => {
-      if (hasPrevPage) {
-        const savedPrevCursors = prevCursorsCache.pop() || {};
-        const cursors = { ...savedPrevCursors, ...prevCursors };
-
-        return await fetch(
-          query,
-          {
-            ...variables,
-            ...cursors,
-          },
-          config
-        );
-      }
-      return null;
-    };
-
-    return {
-      data,
-      error,
-      hasNextPage,
-      hasPrevPage,
-      getNextPage: handleNext,
-      getPrevPage: handlePrev,
-    };
   }
-  return fetch(query, variables, config);
+
+  return {
+    data,
+    error,
+  };
 }

@@ -2,14 +2,16 @@ type Env = "dev" | "prod";
 type Config = {
   authKey: string;
   env: Env;
+  cache: boolean;
 };
 
 export const config: Config = {
   authKey: "",
   env: "dev",
+  cache: true,
 };
 
-export function init(key: string, env: Env = "dev") {
+export function init(key: string, _config?: Omit<Config, "authKey">) {
   config.authKey = key;
-  config.env = env;
+  config.env = _config?.env || "dev";
 }

@@ -54,7 +54,7 @@ export async function removeQueriesIfNoNextPage(
     return true;
   });
 
-  // no qery was deleted so return null
+  // no query was deleted so return null
   if (variablesToDelete.length === 0) return null;
 
   // remove unsed variables

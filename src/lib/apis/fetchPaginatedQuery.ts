@@ -1,24 +1,21 @@
 import { fetchGql } from "../utils/fetcher";
 import {
   Config,
-  FetchQueryReturnType,
+  FetchPaginatedQueryReturnType,
   ResponseType,
   Variables,
 } from "../types";
-import { chacheResponse, getFromCache } from "../cache";
+import { cacheResponse, getFromCache } from "../cache";
 import { getPaginationData } from "../utils/getPaginationData";
 import { stringifyObjectValues } from "../utils/stringifyObjectValues";
 import { removeQueriesIfNoNextPage } from "../utils/removeQueriesIfNoNextPage";
+import { config as globalConfig } from "../config";
 
-const defaultConfig: Config = {
-  cache: true,
-};
-
-export async function fetchMultipleQueries(
+export async function fetchPaginatedQuery(
   originalQuery: string,
   variables?: Variables,
   config?: Config
-): FetchQueryReturnType {
+): FetchPaginatedQueryReturnType {
   let query = originalQuery;
   const nextCursorsCache: Record<string, string>[] = [];
   const deletedQueryCache: (null | {
@@ -38,9 +35,9 @@ export async function fetchMultipleQueries(
     _query: string,
     _variables?: Variables,
     _config?: Config
-  ): FetchQueryReturnType {
+  ): FetchPaginatedQueryReturnType {
     const variables: Variables = stringifyObjectValues(_variables || {});
-    const config = { ...defaultConfig, ..._config };
+    const config = { cache: globalConfig.cache, ..._config };
 
     let data: null | ResponseType = config.cache
       ? getFromCache(_query, variables || {})
@@ -52,7 +49,7 @@ export async function fetchMultipleQueries(
       data = response;
       error = _error;
       if (config.cache && data && !error) {
-        chacheResponse(response, _query, variables);
+        cacheResponse(response, _query, variables);
       }
     }
 

@@ -35,7 +35,7 @@ export function getFromCache(
   return isValidCache ? cachedData.data : null;
 }
 
-export function chacheResponse(
+export function cacheResponse(
   response: ResponseType,
   query: string,
   variables = {}
