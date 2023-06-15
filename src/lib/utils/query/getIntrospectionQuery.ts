@@ -1,6 +1,5 @@
 import { IntrospectionSchema, IntrospectionType } from "graphql";
-import { config } from "../../config";
-import { API_ENDPOINT_DEV, API_ENDPOINT_PROD } from "../../constants";
+import { API_ENDPOINT_PROD } from "../../constants";
 import { introspectionQuery } from "../../constants/introspectionQuery";
 
 export type SchemaMap = Record<string, IntrospectionType>;
@@ -21,9 +20,7 @@ export async function getIntrospectionQueryMap(): Promise<SchemaMap> {
     return inProgressRequest;
   }
 
-  const api = config.env === "dev" ? API_ENDPOINT_DEV : API_ENDPOINT_PROD;
-
-  inProgressRequest = fetch(api, {
+  inProgressRequest = fetch(API_ENDPOINT_PROD, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
