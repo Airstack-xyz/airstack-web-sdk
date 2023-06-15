@@ -2,6 +2,7 @@ import { fetchGql } from "../utils/fetcher";
 import {
   Config,
   FetchPaginatedQueryReturnType,
+  FetchQuery,
   ResponseType,
   Variables,
 } from "../types";
@@ -30,6 +31,7 @@ export async function fetchPaginatedQuery(
     prevCursors: {},
   };
   let lastResponse: ResponseType | null = null;
+  let inProgressRequest: Promise<FetchQuery> | null = null;
 
   async function fetch(
     _query: string,
@@ -67,6 +69,10 @@ export async function fetchPaginatedQuery(
   }
 
   const handleNext = async () => {
+    if (inProgressRequest) {
+      return inProgressRequest;
+    }
+
     if (paginationData.hasNextPage) {
       nextCursorsCache.push(paginationData.nextCursors);
       const upatedQuery = await removeQueriesIfNoNextPage(
@@ -85,19 +91,27 @@ export async function fetchPaginatedQuery(
         query = upatedQuery;
       }
 
-      return await fetch(
+      inProgressRequest = fetch(
         query,
         {
           ...variables,
           ...paginationData.nextCursors,
         },
         config
-      );
+      ).finally(() => {
+        inProgressRequest = null;
+      });
+
+      return inProgressRequest;
     }
     return null;
   };
 
   const handlePrev = async () => {
+    if (inProgressRequest) {
+      return inProgressRequest;
+    }
+
     if (paginationData.hasPrevPage) {
       nextCursorsCache.pop();
 
@@ -118,14 +132,18 @@ export async function fetchPaginatedQuery(
         cursors = { ...cachedCursors, ...paginationData.prevCursors };
       }
 
-      return await fetch(
+      inProgressRequest = fetch(
         query,
         {
           ...variables,
           ...cursors,
         },
         config
-      );
+      ).finally(() => {
+        inProgressRequest = null;
+      });
+
+      return inProgressRequest;
     }
     return null;
   };
