@@ -15,5 +15,4 @@ export type PresetImageSize =
 
 export type Chain = "ethereum";
 
-export const API_ENDPOINT_DEV = "https://api.dev.airstack.xyz/gql";
 export const API_ENDPOINT_PROD = "https://api.airstack.xyz/gql";

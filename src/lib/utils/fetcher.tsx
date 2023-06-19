@@ -44,7 +44,9 @@ export async function fetchGql<ResponseType = any>(
 ): Promise<[ResponseType | null, any]> {
   const key = createCacheKey(query, variables);
   if (!promiseCache[key]) {
-    promiseCache[key] = _fetch<ResponseType>(query, variables);
+    promiseCache[key] = _fetch<ResponseType>(query, variables).finally(() => {
+      delete promiseCache[key];
+    });
   }
   return promiseCache[key];
 }

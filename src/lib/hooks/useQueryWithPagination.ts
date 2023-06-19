@@ -1,8 +1,13 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { fetchQuery } from "../apis/fetchQuery";
-import { Config, FetchQuery, FetchQueryReturnType, Variables } from "../types";
+import {
+  Config,
+  FetchQuery,
+  FetchPaginatedQueryReturnType,
+  Variables,
+} from "../types";
 import { useRequestState } from "./useDataState";
 import { addPaginationToQuery } from "../utils/addPaginationToQuery";
+import { fetchPaginatedQuery } from "../apis/fetchPaginatedQuery";
 
 type BaseReturnType = {
   data: any;
@@ -42,7 +47,7 @@ export function useLazyQueryWithPagination(
   const variablesRef = useRef<Variables>(variables || {});
 
   const handleResponse = useCallback(
-    (res: null | Awaited<FetchQueryReturnType>) => {
+    (res: null | Awaited<FetchPaginatedQueryReturnType>) => {
       if (!res) return;
       const {
         data,
@@ -70,7 +75,7 @@ export function useLazyQueryWithPagination(
 
       const queryWithPagination = await addPaginationToQuery(query);
 
-      const res = await fetchQuery(
+      const res = await fetchPaginatedQuery(
         queryWithPagination,
         _variables || variablesRef.current,
         configRef.current

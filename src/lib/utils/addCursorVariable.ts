@@ -5,6 +5,7 @@ import { moveArgumentsToParams } from "./query/moveArgumentsToParams";
 import { getQueries } from "./query/getQueries";
 import { QueryContext } from "../types";
 import { addPageInfoFields } from "./addPageInfoFields";
+import { config } from "../config";
 
 async function addVariable(
   queryString: string,
@@ -36,7 +37,12 @@ async function addVariable(
         const supportsCursor = queryInputType.inputFields.find(
           (field) => field.name === "cursor"
         );
-        if (!supportsCursor) return;
+        if (!supportsCursor) {
+          if (config.env === "dev") {
+            console.error(`query "${queryName}" does not support pagination.`);
+          }
+          return;
+        }
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         inputFields.push({
@@ -61,7 +67,7 @@ async function addVariable(
 
         if (cursor) {
           moveArgumentsToParams(queryDocument, [cursor]);
-          addPageInfoFields(query);
+          addPageInfoFields(query, cursor.uniqueName || cursor.name);
         }
 
         globalCtx.variableNamesMap = {
@@ -73,6 +79,11 @@ async function addVariable(
     const updatedQueryString = print(queryDocument);
     callback(updatedQueryString);
   } catch (error) {
+    if (config.env === "dev") {
+      console.error(
+        "unable to add cursor to query, please make sure the query is valid"
+      );
+    }
     console.error(error);
     callback(queryString);
   }

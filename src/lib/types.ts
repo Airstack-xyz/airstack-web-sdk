@@ -1,9 +1,11 @@
+export type PageInfo = {
+  prevCursor: string;
+  nextCursor: string;
+};
+
 export type ResponseType = {
   [key: string]: {
-    pageInfo: {
-      prevCursor: string;
-      nextCursor: string;
-    };
+    pageInfo: PageInfo;
   };
 };
 
@@ -18,7 +20,8 @@ export type FetchQuery = {
   getPrevPage: () => Promise<FetchQuery | null>;
 };
 
-export type FetchQueryReturnType = Promise<FetchQuery>;
+export type FetchPaginatedQueryReturnType = Promise<FetchQuery>;
+export type FetchQueryReturnType = Promise<Pick<FetchQuery, "data" | "error">>;
 
 export type Config = {
   cache?: boolean;
