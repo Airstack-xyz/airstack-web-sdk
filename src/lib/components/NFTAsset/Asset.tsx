@@ -14,12 +14,7 @@ import { getPreset } from "./utils";
 import styles from "./styles.module.css";
 import { debounce } from "../../utils/debounce";
 
-type DivProps = React.DetailedHTMLProps<
-  React.HTMLAttributes<HTMLDivElement>,
-  HTMLDivElement
->;
-
-export type IAirstackAssetProps = {
+export type AssetProps = {
   chain?: Chain;
   address: string;
   tokenId: string;
@@ -28,8 +23,7 @@ export type IAirstackAssetProps = {
   progressCallback?: (status: Status) => void;
   preset?: PresetImageSize;
   containerClassName?: string;
-} & DivProps &
-  Omit<MediaProps, "data" | "onError" | "preset">;
+} & Omit<MediaProps, "data" | "onError" | "preset">;
 
 enum Status {
   Loading = "loading",
@@ -37,7 +31,7 @@ enum Status {
   Error = "error",
 }
 
-export const NftAsset = (props: IAirstackAssetProps) => {
+export const AssetContent = (props: AssetProps) => {
   const {
     chain = "ethereum",
     address,
@@ -49,8 +43,6 @@ export const NftAsset = (props: IAirstackAssetProps) => {
     audioProps = {},
     preset: presetProp,
     progressCallback,
-    containerClassName,
-    ...containerProps
   } = props;
 
   const ref = useRef<HTMLDivElement>(null);
@@ -152,15 +144,5 @@ export const NftAsset = (props: IAirstackAssetProps) => {
     videoProps,
   ]);
 
-  return (
-    <div
-      {...containerProps}
-      ref={ref}
-      className={`${styles.container}${
-        containerClassName ? " " + containerClassName : ""
-      }`}
-    >
-      {media}
-    </div>
-  );
+  return <>{media}</>;
 };

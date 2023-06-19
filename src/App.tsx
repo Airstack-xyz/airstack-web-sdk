@@ -99,11 +99,6 @@ function App() {
 
   return (
     <div>
-      {/* <Asset
-        address="0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"
-        tokenId="0"
-        preset="original"
-      /> */}
       <h2> useQueryWithPagination </h2>
       {loading && <h4> Loading... </h4>}
       {error && <h4> Error...</h4>}
@@ -127,7 +122,7 @@ function App() {
         {" "}
         next{" "}
       </button>
-      {/* <br />
+      <br />
       <br />
       <br />
       <br />
@@ -138,7 +133,19 @@ function App() {
       <br />
       <br />
       <br />
-      <WithPagginationNoCaching /> */}
+      <WithPagginationNoCaching />
+      <div style={{ marginBottom: "100vh" }}></div>
+      <Asset
+        address="0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"
+        tokenId="0"
+        preset="original"
+      />
+      <div style={{ marginBottom: "100vh" }}></div>
+      <Asset
+        address="0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"
+        tokenId="0"
+        preset="original"
+      />
     </div>
   );
 }
