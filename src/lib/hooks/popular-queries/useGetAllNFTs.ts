@@ -1,15 +1,46 @@
 import { useLazyQueryWithPagination } from "../useQueryWithPagination";
 
-const query = `query GetAllNFTs($blockchain: TokenBlockchain!, $limit: Int, $nftAddress: Address) {
+const query = `query GetAllNFTs($address: Address!, $blockchain: TokenBlockchain!, $limit: Int) {
   TokenNfts(
-    input: {blockchain: $blockchain, limit: $limit, filter: {address: {_eq: $nftAddress}}}
+    input: {blockchain: $blockchain, limit: $limit, filter: {address: {_eq: $address}}}
   ) {
     TokenNft {
+      address
       blockchain
-      chainId
-      type
-      totalSupply
+      contentType
+      contentValue {
+        audio
+        animation_url {
+          original
+        }
+        image {
+          extraSmall
+          medium
+          large
+          original
+          small
+        }
+        video
+      }
+      metaData {
+        animationUrl
+        backgroundColor
+        attributes {
+          displayType
+          maxValue
+          value
+          trait_type
+        }
+        description
+        externalUrl
+        image
+        imageData
+        youtubeUrl
+        name
+      }
       tokenURI
+      type
+      tokenId
     }
     pageInfo {
       nextCursor
@@ -21,7 +52,7 @@ const query = `query GetAllNFTs($blockchain: TokenBlockchain!, $limit: Int, $nft
 export type GetAllNFTsVariables = {
   blockchain: string;
   limit: number;
-  nftAddress: string;
+  address: string;
 };
 
 export function useGetAllNFTs(variables: GetAllNFTsVariables) {

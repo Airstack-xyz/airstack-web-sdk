@@ -6,10 +6,48 @@ const query = `query GetBalance($blockchain: TokenBlockchain!, $tokenAddress: Ad
   ) {
     amount
     formattedAmount
-    owner {
-      addresses
-			isPrimary
-      dappName
+    tokenType
+    tokenId
+    token {
+      name
+      symbol
+      decimals
+      totalSupply
+    }
+    tokenNfts {
+      contentType
+      contentValue {
+        image {
+          extraSmall
+          large
+          medium
+          original
+          small
+        }
+        animation_url {
+          original
+        }
+        audio
+        video
+      }
+      metaData {
+        animationUrl
+        attributes {
+          displayType
+          maxValue
+          trait_type
+          value
+        }
+        backgroundColor
+        description
+        externalUrl
+        image
+        imageData
+        name
+        youtubeUrl
+      }
+      tokenURI
+      tokenId
     }
   }
 }`;

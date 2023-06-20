@@ -1,29 +1,63 @@
 import { useLazyQueryWithPagination } from "../useQueryWithPagination";
 
-const query = `query GetAllTokensByWalletAddress($ownerAddress: Identity, $tokenTypes: [TokenType!], $blockchain: TokenBlockchain!, $limit: Int) {
-    TokenBalances(
-      input: {filter: {owner: {_eq: $ownerAddress}, tokenType: {_in: $tokenTypes}}, blockchain: $blockchain, limit: $limit}
-    ) {
-      TokenBalance {
-        tokenAddress
-        amount
-        formattedAmount
-        tokenType
-        token {
+const query = `query GetTokensHeldByWalletAddress($identitity: Identity, $tokenType: [TokenType!], $blockchain: TokenBlockchain!, $limit: Int) {
+  TokenBalances(
+    input: {filter: {owner: {_eq: $identitity}, tokenType: {_in: $tokenType}}, blockchain: $blockchain, limit: $limit}
+  ) {
+    TokenBalance {
+      amount
+      formattedAmount
+      blockchain
+      tokenAddress
+      tokenId
+      token {
+        name
+        symbol
+        decimals
+        totalSupply
+        baseURI
+        contractMetaData {
+          description
+          image
           name
-          symbol
+        }
+        logo {
+          large
+          medium
+          original
+          small
+        }
+        projectDetails {
+          collectionName
+          description
+          imageUrl
         }
       }
-      pageInfo {
-        nextCursor
-        prevCursor
+      tokenNfts {
+        metaData {
+          animationUrl
+          backgroundColor
+          description
+          externalUrl
+          image
+          name
+          youtubeUrl
+          imageData
+        }
+        tokenURI
       }
+      tokenType
     }
-  }`;
+    pageInfo {
+      nextCursor
+      prevCursor
+    }
+  }
+}`;
 
 export type GetTokenByWalletAddressVariables = {
-  ownerAddress: string;
-  tokenTypes: string[];
+  identitity: string;
+  tokenType: string[];
   blockchain: string;
   limit: number;
 };

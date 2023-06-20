@@ -6,6 +6,23 @@ const query = `query GetENSName($identity: Identity!, $blockchain: TokenBlockcha
       name
       dappName
     }
+    domains {
+      name
+      owner
+      parent
+      subDomainCount
+      subDomains {
+        name
+        owner
+        parent
+      }
+      tokenId
+      blockchain
+      dappName
+      resolvedAddress
+      isPrimary
+      expiryTimestamp
+    }
   }
 }`;
 

@@ -2,8 +2,10 @@ import { useQuery } from "../useQuery";
 
 const query = `query GetSocialProfileAndENS($identity: Identity!, $blockchain: TokenBlockchain!) {
   Wallet(input: {identity: $identity, blockchain: $blockchain}) {
-    primaryDomain {
-      name
+    domains {
+      dappName
+      owner
+      isPrimary
     }
     socials {
       dappName

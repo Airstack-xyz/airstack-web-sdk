@@ -2,30 +2,67 @@ import { useQuery } from "../useQuery";
 
 const query = `query GetNFTDetails($address: Address!, $tokenId: String!, $blockchain: TokenBlockchain!) {
   TokenNft(input: {address: $address, tokenId: $tokenId, blockchain: $blockchain}) {
-    token {
-      name
-      symbol
-      decimals
-      totalSupply
-    }
-    metaData {
-      name
-      description
-      image
-      attributes {
-        trait_type
-        value
-      }
-    }
-    tokenURI
+    address
+    blockchain
+    contentType
     contentValue {
+      audio
+      animation_url {
+        original
+      }
       image {
         extraSmall
-        small
         medium
         large
         original
+        small
       }
+      video
+    }
+    metaData {
+      animationUrl
+      backgroundColor
+      attributes {
+        displayType
+        maxValue
+        value
+        trait_type
+      }
+      description
+      externalUrl
+      image
+      imageData
+      youtubeUrl
+      name
+    }
+    tokenURI
+    type
+    tokenId
+    token {
+      baseURI
+      address
+      blockchain
+      contractMetaData {
+        description
+        image
+        name
+      }
+      decimals
+      logo {
+        large
+        medium
+        small
+        original
+      }
+      name
+      projectDetails {
+        collectionName
+        description
+        imageUrl
+      }
+      symbol
+      totalSupply
+      type
     }
   }
 }`;

@@ -1,16 +1,34 @@
 import { useQuery } from "../useQuery";
 
-const query = `query TokenDetails($tokenAddress: Address!, $blockchain: TokenBlockchain!) {
-  Token(input: {address: $tokenAddress, blockchain: $blockchain}) {
+const query = `query TokenDetails($address: Address!, $blockchain: TokenBlockchain!) {
+  Token(input: {address: $address, blockchain: $blockchain}) {
     name
     symbol
     decimals
     totalSupply
+    type
+    baseURI
+    address
+    blockchain
+    logo {
+      large
+      medium
+      original
+      small
+    }
+    projectDetails {
+      collectionName
+      description
+      imageUrl
+      discordUrl
+      externalUrl
+      twitterUrl
+    }
   }
 }`;
 
 export type GetTokenDetailsVariables = {
-  tokenAddress: string;
+  address: string;
   blockchain: string;
 };
 

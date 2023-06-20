@@ -1,32 +1,8 @@
 import { useLazyQueryWithPagination } from "../useQueryWithPagination";
 
-const query = `query GetAllTransfersOfToken($tokenAddress: String, $blockchain: TokenBlockchain!, $limit: Int) {
-  ethereumTransfers: TokenTransfers(
-    input: {filter: {tokenId: {_eq: $tokenAddress}}, blockchain: $blockchain, limit: $limit}
-  ) {
-    TokenTransfer {
-      amount
-      blockNumber
-      blockTimestamp
-      from {
-        addresses
-      }
-      to {
-        addresses
-      }
-      tokenAddress
-      transactionHash
-      tokenId
-      tokenType
-      blockchain
-    }
-    pageInfo {
-      nextCursor
-      prevCursor
-    }
-  }
-  polygonTransfers: TokenTransfers(
-    input: {filter: {tokenId: {_eq: $tokenAddress}}, blockchain: $blockchain, limit: $limit}
+const query = `query GetAllTransfersOfTokenNFT($tokenAddress: Address, $tokenId: String, $blockchain: TokenBlockchain!, $limit: Int) {
+  TokenTransfers(
+    input: {filter: {tokenId: {_eq: $tokenId}, tokenAddress: {_eq: $tokenAddress}}, blockchain: $blockchain, limit: $limit}
   ) {
     TokenTransfer {
       amount
@@ -53,6 +29,7 @@ const query = `query GetAllTransfersOfToken($tokenAddress: String, $blockchain: 
 
 export type GetAllTransfersOfTokenVariables = {
   tokenAddress: string;
+  tokenId: string;
   blockchain: string;
   limit: number;
 };

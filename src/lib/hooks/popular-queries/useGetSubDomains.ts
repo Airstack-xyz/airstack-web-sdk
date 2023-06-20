@@ -1,7 +1,7 @@
 import { useQuery } from "../useQuery";
 
-const query = `query GetSubDomains($identity: Identity, $blockchain: Blockchain!) {
-  Domains(input: {filter: {owner: {_eq: $identity}}, blockchain: $blockchain}) {
+const query = `query GetSubDomains($owner: Identity, $blockchain: Blockchain!) {
+  Domains(input: {filter: {owner: {_eq: $owner}}, blockchain: $blockchain}) {
     Domain {
       subDomains {
         name
@@ -13,6 +13,8 @@ const query = `query GetSubDomains($identity: Identity, $blockchain: Blockchain!
         labelHash
         owner
         parent
+        expiryTimestamp
+        resolvedAddress
       }
       name
       dappName
@@ -24,11 +26,15 @@ const query = `query GetSubDomains($identity: Identity, $blockchain: Blockchain!
       owner
       parent
     }
+    pageInfo {
+      nextCursor
+      prevCursor
+    }
   }
 }`;
 
 export type GetSubDomainsVariables = {
-  identity: string;
+  owner: string;
   blockchain: string;
 };
 
