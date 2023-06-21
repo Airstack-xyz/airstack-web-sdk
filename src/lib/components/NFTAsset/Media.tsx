@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import React, { useCallback, useRef } from "react";
 import { PresetImageSize } from "../../constants";
 import { NFTAssetURL } from "../../types";
 import { getMediaType } from "./utils";
