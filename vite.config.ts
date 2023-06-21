@@ -1,6 +1,6 @@
 import react from "@vitejs/plugin-react";
 import path from "node:path";
-import { defineConfig } from "vite";
+import { defineConfig, configDefaults } from "vitest/config";
 import dts from "vite-plugin-dts";
 
 // https://vitejs.dev/config/
@@ -22,5 +22,11 @@ export default defineConfig({
         },
       },
     },
+  },
+  test: {
+    exclude: [...configDefaults.exclude],
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./setupTests.js"],
   },
 });
