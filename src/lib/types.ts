@@ -29,15 +29,32 @@ export type Config = {
 
 export type Variables = Record<string, any>;
 
-export interface NFTAssetURL {
+export type NFTAssetURL = {
   type: string;
-  value: {
-    extraSmall: string;
-    small: string;
-    medium: string;
-    large: string;
-    original: string;
-  };
-}
+  value: type["TokenNfts"]["TokenNft"][0]["contentValue"];
+};
 
 export type NFTCache = Record<string, NFTAssetURL>;
+
+export interface type {
+  TokenNfts: {
+    TokenNft: {
+      tokenId: string;
+      contentType: string;
+      contentValue: {
+        image?: {
+          extraSmall: string;
+          small: string;
+          medium: string;
+          large: string;
+          original: string;
+        };
+        video: string;
+        audio: string;
+        animation_url?: {
+          original: string;
+        };
+      };
+    }[];
+  };
+}

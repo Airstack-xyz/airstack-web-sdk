@@ -71,7 +71,7 @@ export const fetchNFTAssetURL = (
             const key = getCacheKey(chain, address, token.tokenId);
             const assetURLs: NFTAssetURL = {
               type: token.contentType,
-              value: token.contentValue?.image,
+              value: token.contentValue,
             };
             cache[key] = assetURLs;
           });
