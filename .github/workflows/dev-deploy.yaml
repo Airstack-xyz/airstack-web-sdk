@@ -43,5 +43,5 @@ jobs:
       # publish to prod environment
       - name: Deploy to S3
         run: |
-          aws s3 sync dist s3://test-sdk.dev.airstack.xyz
+          aws s3 sync dist-static s3://test-sdk.dev.airstack.xyz
           aws cloudfront create-invalidation --distribution-id EVKHJLP5XQ68I --paths /
