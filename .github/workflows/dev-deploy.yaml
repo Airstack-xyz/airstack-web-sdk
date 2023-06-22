@@ -1,6 +1,6 @@
 name: Dev - Deploy
 
-on: push
+on: workflow_dispatch
 
 permissions:
   id-token: write
