@@ -43,7 +43,8 @@
     "vitest": "^0.31.0"
   },
   "files": [
-    "dist"
+    "dist",
+    "dist/style.css"
   ],
   "main": "./dist/airstack-web-sdk.umd.js",
   "module": "./dist/airstack-web-sdk.es.js",
