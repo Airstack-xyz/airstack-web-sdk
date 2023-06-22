@@ -1,11 +1,64 @@
-import { IntrospectionInputObjectType, print, parse } from "graphql";
+import {
+  IntrospectionInputObjectType,
+  print,
+  parse,
+  ObjectFieldNode,
+  FieldNode,
+} from "graphql";
 import { getArguments } from "./query";
-import { getIntrospectionQueryMap } from "./query/getIntrospectionQuery";
+import {
+  SchemaMap,
+  getIntrospectionQueryMap,
+} from "./query/getIntrospectionQuery";
 import { moveArgumentsToParams } from "./query/moveArgumentsToParams";
 import { getQueries } from "./query/getQueries";
 import { QueryContext } from "../types";
 import { addPageInfoFields } from "./addPageInfoFields";
 import { config } from "../config";
+
+type InputFields = readonly ObjectFieldNode[];
+type QueryWithoutCursor = {
+  queryName: string;
+  inputFields: InputFields;
+  query: FieldNode;
+};
+
+function getQueriesWithoutCursorAndUpdateContext(
+  queries: FieldNode[],
+  schemaMap: SchemaMap,
+  globalCtx: QueryContext
+): QueryWithoutCursor[] {
+  const queriesWithCursor: QueryWithoutCursor[] = [];
+
+  queries.forEach((query) => {
+    const { args, inputFields } = getArguments(schemaMap, query, {
+      variableNamesMap: {},
+    });
+    const cursor = args.find((arg) => arg.name === "cursor");
+    const queryName = query.name.value;
+
+    if (!cursor) {
+      queriesWithCursor.push({
+        queryName,
+        inputFields,
+        query,
+      });
+      return;
+    }
+
+    // if cursor value is some fixed value given by user, then we don't need to add variable
+    if (cursor.valueKind !== "Variable") return;
+
+    const variableName =
+      cursor.assignedVariable || cursor.uniqueName || cursor.name;
+
+    addPageInfoFields(query, variableName);
+
+    globalCtx.variableNamesMap[variableName] =
+      (globalCtx.variableNamesMap[variableName] || 0) + 1;
+  });
+  return queriesWithCursor;
+}
 
 async function addVariable(
   queryString: string,
@@ -20,62 +73,60 @@ async function addVariable(
       variableNamesMap: {},
     };
 
-    queries.forEach((query) => {
-      const { args, inputFields } = getArguments(schemaMap, query, {
-        variableNamesMap: {},
-      });
-      const hasCursor = args.find((arg) => arg.name === "cursor");
+    const queriesWithoutCursor = getQueriesWithoutCursorAndUpdateContext(
+      queries,
+      schemaMap,
+      globalCtx
+    );
 
-      if (!hasCursor) {
-        const queryName = query.name.value;
-        const queryInputTypeName = queryName.toLowerCase() + "input";
+    queriesWithoutCursor.forEach(({ queryName, inputFields, query }) => {
+      const queryInputTypeName = queryName.toLowerCase() + "input";
 
-        const queryInputType = schemaMap[
-          queryInputTypeName
-        ] as IntrospectionInputObjectType;
+      const queryInputType = schemaMap[
+        queryInputTypeName
+      ] as IntrospectionInputObjectType;
 
-        const supportsCursor = queryInputType.inputFields.find(
-          (field) => field.name === "cursor"
-        );
-        if (!supportsCursor) {
-          if (config.env === "dev") {
-            console.error(`query "${queryName}" does not support pagination.`);
-          }
-          return;
+      const querySupportsCursor = queryInputType.inputFields.find(
+        (field) => field.name === "cursor"
+      );
+
+      if (!querySupportsCursor) {
+        if (config.env === "dev") {
+          console.error(`query "${queryName}" does not support pagination.`);
         }
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        inputFields.push({
-          kind: "ObjectField",
-          name: {
-            kind: "Name",
-            value: "cursor",
-          },
-          value: {
-            kind: "StringValue",
-          },
-        });
-
-        const ctx = { variableNamesMap: { ...globalCtx.variableNamesMap } };
-
-        const { args: argsWithCursor } = getArguments(schemaMap, query, ctx);
-        const cursor = argsWithCursor.find((arg) => arg.name === "cursor");
-
-        if (!cursor) {
-          return;
-        }
-
-        if (cursor) {
-          moveArgumentsToParams(queryDocument, [cursor]);
-          addPageInfoFields(query, cursor.uniqueName || cursor.name);
-        }
-
-        globalCtx.variableNamesMap = {
-          ...globalCtx.variableNamesMap,
-          ...ctx.variableNamesMap,
-        };
+        return;
       }
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      inputFields.push({
+        kind: "ObjectField",
+        name: {
+          kind: "Name",
+          value: "cursor",
+        },
+        value: {
+          kind: "StringValue",
+        },
+      });
+
+      // get arguments with cursor, so we can get the args with new args ref
+      const { args: argsWithCursor } = getArguments(
+        schemaMap,
+        query,
+        globalCtx
+      );
+
+      const cursor = argsWithCursor.find((arg) => arg.name === "cursor");
+
+      // cursor should be there, but just in case
+      if (!cursor) {
+        return;
+      }
+
+      moveArgumentsToParams(queryDocument, [cursor]);
+      addPageInfoFields(query, cursor.uniqueName || cursor.name);
     });
+
     const updatedQueryString = print(queryDocument);
     callback(updatedQueryString);
   } catch (error) {
