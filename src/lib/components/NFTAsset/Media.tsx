@@ -111,7 +111,7 @@ export function Media({
   const [mediaType, setMediaType] = useState<MediaType | null>(null);
   const isLoadingRef = useRef(false);
 
-  let url = "";
+  let url: string | null = null;
 
   if (data) {
     // use animation url if available, otherwise use video, audio, or image
@@ -148,7 +148,8 @@ export function Media({
   );
 
   useEffect(() => {
-    if (!url) return;
+    if (url === null) return;
+
     const type = getMediaType(url);
 
     if (type === "unknown") {
@@ -159,7 +160,7 @@ export function Media({
     }
   }, [handleUrlWithoutExtension, onComplete, url]);
 
-  if (!mediaType) return null;
+  if (!mediaType || !url) return null;
 
   if (mediaType === "image") {
     return (

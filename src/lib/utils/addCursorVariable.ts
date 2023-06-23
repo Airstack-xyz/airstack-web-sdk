@@ -147,7 +147,10 @@ export async function addCursorVariable(queryString: string) {
   if (cachedPromise) return cachedPromise;
 
   promiseCache[queryString] = new Promise<string>((resolve) =>
-    addVariable(queryString, resolve)
+    addVariable(queryString, (query: string) => {
+      resolve(query);
+      delete promiseCache[queryString];
+    })
   );
 
   return promiseCache[queryString];

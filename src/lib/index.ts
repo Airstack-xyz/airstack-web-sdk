@@ -6,13 +6,15 @@ import {
 } from "./hooks/useQueryWithPagination";
 import { Asset } from "./components/NFTAsset/AssetWrapper";
 import { init } from "./config";
+import { fetchQueryWithPagination } from "./apis/fetchQueryWithPagination";
 
 export {
   init,
   useQuery,
-  useLazyQuery,
   useQueryWithPagination,
+  useLazyQuery,
   useLazyQueryWithPagination,
   fetchQuery,
+  fetchQueryWithPagination,
   Asset,
 };
