@@ -1,10 +1,7 @@
 import { getNftContent } from "../../apis/getNftContent";
+import { addToAssetCache, getFromAssetCache } from "../../cache/assets";
 import { Chain } from "../../constants";
-import type { NFTCache, NFTAssetURL } from "../../types";
-
-export function getCacheKey(chain: Chain, address: string, tokenId: string) {
-  return `${chain}-${address.toLowerCase()}-${tokenId.toLowerCase()}`;
-}
+import type { NFTAssetURL } from "../../types";
 
 export interface AirstackAssetContextInterface {
   fetchCachedNFTAssetURL: (
@@ -26,17 +23,6 @@ export interface AirstackAssetContextInterface {
   ) => Promise<NFTAssetURL>;
 }
 
-const cache: NFTCache = {};
-
-export const fetchCachedNFTAssetURL = (
-  chain: Chain,
-  address: string,
-  tokenId: string
-): NFTAssetURL => {
-  const key = getCacheKey(chain, address, tokenId);
-  return cache[key];
-};
-
 export const fetchNFTAssetURL = (
   chain: Chain,
   address: string,
@@ -53,8 +39,7 @@ export const fetchNFTAssetURL = (
       return;
     }
 
-    const cacheKey = getCacheKey(chain, address, tokenId);
-    const nftAssetURL = cache[cacheKey];
+    const nftAssetURL = getFromAssetCache(chain, address, tokenId);
     if (nftAssetURL) {
       //cache hit
       resolve(nftAssetURL);
@@ -68,16 +53,17 @@ export const fetchNFTAssetURL = (
           }
 
           tokenNfts.forEach((token) => {
-            const key = getCacheKey(chain, address, token.tokenId);
             const assetURLs: NFTAssetURL = {
               type: token.contentType,
               value: token.contentValue,
             };
-            cache[key] = assetURLs;
+            addToAssetCache(chain, address, token.tokenId, assetURLs);
           });
 
-          if (cache[cacheKey]) {
-            resolve(cache[cacheKey]);
+          const cache = getFromAssetCache(chain, address, tokenId);
+
+          if (cache) {
+            resolve(cache);
           } else {
             reject(new Error("nft content is not available"));
           }
