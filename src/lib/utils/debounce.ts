@@ -2,7 +2,8 @@ export function debounce<T extends (...args: any) => void>(
   callback: T,
   timeout = 300
 ) {
-  let timer: number;
+  // eslint-disable-next-line
+  let timer: any;
   return (...args: Parameters<T>) => {
     clearTimeout(timer);
     timer = setTimeout(() => {

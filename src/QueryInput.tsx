@@ -1,27 +1,54 @@
 import * as React from "react";
 import { useLazyQueryWithPagination } from "./lib";
 
-const defaultQuery = `query QB2($address: Address, $blockchain: TokenBlockchain!, $limit: Int) {
-    TokenNfts(input: {filter: {address: {_eq: $address}}, blockchain: $blockchain, limit: $limit}) {
-      TokenNft {
-        address
-        id
-        type
-        tokenId
+const defaultQuery = `query GetPOAPs($owner: Identity, $cursor: String) {
+  Poaps(input: {filter: {owner: {_eq: $owner}}, blockchain: ALL, cursor: $cursor}) {
+    Poap {
+      poapEvent {
+        eventName
+        startDate
+        isVirtualEvent
+        eventId
+        logo: contentValue {
+          image {
+            small
+          }
+        }
       }
     }
-  }`;
+    pageInfo {
+      nextCursor
+      prevCursor
+    }
+  }
+}`;
 
 const defaultVariables = {
-  address: "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
-  blockchain: "ethereum",
-  limit: 3,
+  owner: "vitalik.eth",
+  limit: 20,
 };
+
+const getQuery = () => {
+  return localStorage.getItem("query") || defaultQuery;
+};
+
+const getVariables = () => {
+  return localStorage.getItem("variables") || JSON.stringify(defaultVariables);
+};
+
 export function QueryInput() {
-  const [query, setQuery] = React.useState(defaultQuery);
-  const [variables, setVariables] = React.useState(
-    JSON.stringify(defaultVariables)
-  );
+  const [query, _setQuery] = React.useState(getQuery);
+  const [variables, _setVariables] = React.useState(getVariables);
+
+  const setQuery = (query: string) => {
+    localStorage.setItem("query", query);
+    _setQuery(query);
+  };
+
+  const setVariables = (variables: string) => {
+    localStorage.setItem("variables", variables);
+    _setVariables(variables);
+  };
 
   const [
     _fetch,

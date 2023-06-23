@@ -3,7 +3,7 @@ import "./App.css";
 import { Asset, init, useLazyQuery, useQueryWithPagination } from "./lib";
 import { QueryInput } from "./QueryInput";
 
-init("ef3d1cdeafb642d3a8d6a44664ce566c");
+init("ef3d1cdeafb642d3a8d6a44664ce566c", { env: "dev" });
 
 const query = `
 query MyQuery($limit: Int, $blockchain: TokenBlockchain!) {
@@ -86,22 +86,22 @@ function LazyLoad() {
 }
 
 function App() {
-  const _variables = { ...variables };
-  const {
-    data,
-    error,
-    loading,
-    pagination: { hasNextPage, hasPrevPage, getNextPage, getPrevPage },
-  } = useQueryWithPagination(query, _variables);
+  // const _variables = { ...variables };
+  // const {
+  //   data,
+  //   error,
+  //   loading,
+  //   pagination: { hasNextPage, hasPrevPage, getNextPage, getPrevPage },
+  // } = useQueryWithPagination(query, _variables);
 
-  if (error) {
-    console.log({ error }, error);
-  }
+  // if (error) {
+  //   console.log({ error }, error);
+  // }
 
   return (
     <div>
       <QueryInput />
-      =========================================
+      {/* =========================================
       <br />
       <br />
       <h2> useQueryWithPagination </h2>
@@ -149,7 +149,7 @@ function App() {
         address="0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"
         tokenId="0"
         preset="original"
-      />
+      /> */}
     </div>
   );
 }
