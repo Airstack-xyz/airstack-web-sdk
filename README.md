@@ -1,7 +1,7 @@
 # Airstack Web SDK
 
-The Airstack Web SDK provides a set of react hooks and components for web developers to easily integrate Airstack's blockchain functionalities into their web applications.
-With this SDK, developers can perform various tasks, such as querying and fetching data from smart contracts, displaying NFT assets.
+The Airstack Web SDK provides a convenient way for web developers to integrate Airstack's blockchain functionalities into their applications.
+With the provided hooks and components, you can easily query and fetch data from smart contracts and display NFT assets.
 
 ## Installation
 
@@ -65,7 +65,7 @@ The `useQuery` hook loads query data as soon as the component is mounted. It ret
 - `loading`: a boolean indicating whether the query is currently loading.
 - `error`: any error that occurred while loading the query.
 
-#### Example
+##### Example
 
 ```jsx
 import { useQuery } from "@airstack/airstack-react";
@@ -92,7 +92,7 @@ The `useLazyQuery` hook is used when you want to fetch query data manually, inst
 - `fetch`: a function that can be called to execute the query.
 - An object with the same properties as the object returned by `useQuery`: `data`, `loading`, and `error`.
 
-#### Example
+##### Example
 
 ```jsx
 import { useLazyQuery } from "@airstack/airstack-react";
@@ -118,17 +118,8 @@ const MyComponent = () => {
 
 ### Pagination Hooks
 
-**Note:** _pagination hooks only works with queries that has support for pagination, and the query passed to hook must have a cursor as argument for it to work._
+**Note:** pagination hooks only works with queries that has support for pagination.
 
-**Example of a Query with cursor**
-
-```jsx
-query GetNfts($cursor: String) {
-  TokenNfts(input: {cursor: $cursor}) {
-    .....
-  }
-}
-```
 
 ### useQueryWithPagination
 
@@ -140,7 +131,7 @@ The `useQueryWithPagination` hook provides a simple way to paginate the data ret
   - `getNextPage`: a function that can be called to fetch the next page of data.
   - `getPrevPage`: a function that can be called to fetch the previous page of data.
 
-#### Example
+##### Example
 
 ```jsx
 import { useQueryWithPagination } from "@airstack/airstack-react";
@@ -233,7 +224,7 @@ The `Asset` component can be used to load and display NFT assets in your React a
 - `imgProps` (optional): an object of HTML image attributes to pass to the underlying image element.
 - `preset` (optional): a string representing the size of the asset image to display. Can be one of `"extraSmall"`, `"small"`, `"medium"`, `"large"`, or `"original"`. Defaults to `"medium"`.
 
-### Example
+##### Example
 
 ```jsx
 import { Asset } from "@airstack/airstack-react";
@@ -257,9 +248,27 @@ function App() {
 
 ## fetchQuery
 
-fetchQuery can be used in places where using hooks is not possible. `fetchQuery` take same parameter as hooks.
+fetchQuery can be used in places where using hooks is not possible. `fetchQuery` accepts same parameter as hooks .
 
 `fetchQuery` returns a promise with an object, which contains the following properties:
+
+- `data`: The response data returned by the server.
+- `error`: An error object, if an error occurred during the network request.
+
+##### Example
+
+```typescript
+import { fetchQuery } from "./fetchQuery";
+
+const { data, error } =
+  await fetchQuery(query, variables, config);
+```
+
+## fetchQueryWithPagination
+
+`fetchQueryWithPagination` take same parameter as `fetchQuery`.
+
+It returns a promise with an object, which contains the following properties:
 
 - `data`: The response data returned by the server.
 - `error`: An error object, if an error occurred during the network request.
@@ -268,13 +277,55 @@ fetchQuery can be used in places where using hooks is not possible. `fetchQuery`
 - `getNextPage()`: A function that returns a next page of data. Returns `null` if there is no next page.
 - `getPrevPage()`: A function that returns previous page of data. Returns `null` if there is no previous page.
 
-**Note: you must pass a query which supports pagination, the query must have `pageInfo` field for pagination to work.**
+**Note:** fetchQueryWithPagination only works with queries that has support for pagination.
 
-### Example
+##### Example
 
 ```typescript
-import { fetchQuery } from "./fetchQuery";
+import { fetchQueryWithPagination } from "./fetchQueryWithPagination";
 
 const { data, error, hasNextPage, hasPrevPage, getNextPage, getPrevPage } =
-  await fetchQuery(query, variables, config);
+  await fetchQueryWithPagination(query, variables, config);
+```
+
+## Hooks for Popular Queries
+
+**useGetTokenBalances** - Get all tokens(ERC20, ERC721, ERC1155) held by an wallet address
+
+**useGetTokenDetails** - Get token details(Name, Symbol, Decimals, TotalSupply) for given contract address
+
+**useGetNFTDetails** - Get NFT details (Name, Symbol, Decimals, TotalSupply, Metadata, TokenURI, Images) for a given contract address and tokenId
+
+**useGetNFTs** - Get all NFTs of an collection
+
+**useGetNFTImages** - Get image of an NFT
+
+**useGetWalletENSAndSocial** - Get all social profile and ENS name of an wallet
+
+**useGetWalletENS** - Get the ENS name of an wallet address
+
+**useGetBalanceOfToken** - Get balance of wallet address for a particular token
+
+**useGetHoldersOfCollection** - Get all owners of a token collection
+
+**useGetHoldersOfNFT** - Get owner(s) of the NFT
+
+**useGetPrimaryENS** - Get Primary Domain for an address
+
+**useGetENSSubDomains** - Get sub domains for an address
+
+**useGetTokenTransfers** - Get all transfer of a token
+
+**useGetNFTTransfers** - Get all transfer of a token NFT
+
+
+##### Example
+
+```jsx
+import { useGetTokenDetails } from "@airstack/airstack-react";
+
+const MyComponent = () => {
+  const { data, loading, error } = useGetTokenDetails(query, variables);
+  // Render your component using the data returned by the query
+};
 ```
