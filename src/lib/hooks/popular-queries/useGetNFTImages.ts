@@ -1,6 +1,6 @@
 import { useQuery } from "../useQuery";
 
-const query = `query GetImageOfNFT($address: Address!, $tokenId: String!, $blockchain: TokenBlockchain!) {
+const query = `query GetNFTImages($address: Address!, $tokenId: String!, $blockchain: TokenBlockchain!) {
   TokenNft(input: {address: $address, tokenId: $tokenId, blockchain: $blockchain}) {
     contentValue {
       image {
@@ -14,12 +14,12 @@ const query = `query GetImageOfNFT($address: Address!, $tokenId: String!, $block
   }
 }`;
 
-export type GetImageOfNFTVariables = {
+export type GetNFTImagesVariables = {
   address: string;
   tokenId: string;
   blockchain: string;
 };
 
-export function useGetImageOfNFT(variables: GetImageOfNFTVariables) {
+export function useGetNFTImages(variables: GetNFTImagesVariables) {
   return useQuery(query, variables);
 }

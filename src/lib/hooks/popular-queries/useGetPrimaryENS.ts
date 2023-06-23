@@ -1,6 +1,6 @@
 import { useQuery } from "../useQuery";
 
-const query = `query GetPrimaryDomain($identity: Identity!, $blockchain: TokenBlockchain!) {
+const query = `query GetPrimaryENS($identity: Identity!, $blockchain: TokenBlockchain!) {
   Wallet(input: {identity: $identity, blockchain: $blockchain}) {
     primaryDomain {
       name
@@ -16,11 +16,11 @@ const query = `query GetPrimaryDomain($identity: Identity!, $blockchain: TokenBl
   }
 }`;
 
-export type GetPrimaryDomainVariables = {
+export type GetPrimaryENSVariables = {
   identity: string;
   blockchain: string;
 };
 
-export function useGetPrimaryDomain(variables: GetPrimaryDomainVariables) {
+export function useGetPrimaryENS(variables: GetPrimaryENSVariables) {
   return useQuery(query, variables);
 }

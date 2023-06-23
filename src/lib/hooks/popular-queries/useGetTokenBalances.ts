@@ -55,15 +55,13 @@ const query = `query GetTokensHeldByWalletAddress($identitity: Identity, $tokenT
   }
 }`;
 
-export type GetTokenByWalletAddressVariables = {
+export type GetTokenBalancesVariables = {
   identitity: string;
   tokenType: string[];
   blockchain: string;
   limit: number;
 };
 
-export function useGetTokenByWalletAddress(
-  variables: GetTokenByWalletAddressVariables
-) {
+export function useGetTokenBalances(variables: GetTokenBalancesVariables) {
   return useLazyQueryWithPagination(query, variables);
 }

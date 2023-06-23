@@ -1,6 +1,6 @@
 import { useQuery } from "../useQuery";
 
-const query = `query GetSubDomains($owner: Identity, $blockchain: Blockchain!) {
+const query = `query GetENSSubDomains($owner: Identity, $blockchain: Blockchain!) {
   Domains(input: {filter: {owner: {_eq: $owner}}, blockchain: $blockchain}) {
     Domain {
       subDomains {
@@ -33,11 +33,11 @@ const query = `query GetSubDomains($owner: Identity, $blockchain: Blockchain!) {
   }
 }`;
 
-export type GetSubDomainsVariables = {
+export type GetENSSubDomainsVariables = {
   owner: string;
   blockchain: string;
 };
 
-export function useGetSubDomains(variables: GetSubDomainsVariables) {
+export function useGetENSSubDomains(variables: GetENSSubDomainsVariables) {
   return useQuery(query, variables);
 }
