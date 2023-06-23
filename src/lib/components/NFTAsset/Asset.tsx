@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { fetchCachedNFTAssetURL, fetchNFTAssetURL } from "./fetchNFTAssetURL";
+import { fetchNFTAssetURL } from "./fetchNFTAssetURL";
 import { Chain, PresetImageSize } from "../../constants";
 import { Media, MediaProps } from "./Media";
 import { getPreset } from "./utils";
@@ -13,6 +13,7 @@ import { getPreset } from "./utils";
 // @ts-ignore
 import styles from "./styles.module.css";
 import { debounce } from "../../utils/debounce";
+import { getFromAssetCache } from "../../cache/assets";
 
 export type AssetProps = {
   chain?: Chain;
@@ -23,7 +24,7 @@ export type AssetProps = {
   progressCallback?: (status: Status) => void;
   preset?: PresetImageSize;
   containerClassName?: string;
-} & Omit<MediaProps, "data" | "onError" | "preset">;
+} & Omit<MediaProps, "data" | "onError" | "preset" | "onComplete">;
 
 enum Status {
   Loading = "loading",
@@ -52,7 +53,8 @@ export const AssetContent = (props: AssetProps) => {
   });
 
   const cachedData = useMemo(() => {
-    const assetCache = fetchCachedNFTAssetURL(chain, address, tokenId);
+    const assetCache = getFromAssetCache(chain, address, tokenId);
+
     if (assetCache && assetCache.value) {
       return assetCache.value;
     }

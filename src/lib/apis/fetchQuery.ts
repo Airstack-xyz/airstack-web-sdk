@@ -8,6 +8,7 @@ import {
 import { cacheResponse, getFromCache } from "../cache";
 import { stringifyObjectValues } from "../utils/stringifyObjectValues";
 import { config as globalConfig } from "../config";
+import { cacheImagesFromQuery } from "../utils/cacheImagesFromQuery";
 
 export async function fetchQuery(
   query: string,
@@ -30,6 +31,7 @@ export async function fetchQuery(
     if (config.cache && data && !error) {
       cacheResponse(response, query, _variables);
     }
+    cacheImagesFromQuery(data);
   }
 
   return {

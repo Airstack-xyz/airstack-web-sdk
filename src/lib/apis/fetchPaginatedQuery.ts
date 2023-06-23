@@ -11,6 +11,7 @@ import { getPaginationData } from "../utils/getPaginationData";
 import { stringifyObjectValues } from "../utils/stringifyObjectValues";
 import { removeQueriesIfNoNextPage } from "../utils/removeQueriesIfNoNextPage";
 import { config as globalConfig } from "../config";
+import { cacheImagesFromQuery } from "../utils/cacheImagesFromQuery";
 
 export async function fetchPaginatedQuery(
   originalQuery: string,
@@ -53,6 +54,7 @@ export async function fetchPaginatedQuery(
       if (config.cache && data && !error) {
         cacheResponse(response, _query, variables);
       }
+      cacheImagesFromQuery(data);
     }
 
     paginationData = getPaginationData(data);

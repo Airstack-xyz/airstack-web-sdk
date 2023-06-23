@@ -154,6 +154,7 @@ export function Media({
     if (type === "unknown") {
       handleUrlWithoutExtension(url);
     } else {
+      setMediaType(type);
       onComplete();
     }
   }, [handleUrlWithoutExtension, onComplete, url]);
