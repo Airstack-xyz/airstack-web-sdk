@@ -1,7 +1,7 @@
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { PresetImageSize } from "../../constants";
 import { NFTAssetURL } from "../../types";
-import { getMediaType } from "./utils";
+import { MediaType, getMediaType, getMediaTypeFromUrl } from "./utils";
 // eslint-disable-next-line
 // @ts-ignore
 import styles from "./styles.module.css";
@@ -28,10 +28,11 @@ export type MediaProps = {
   >;
   preset: PresetImageSize;
   data?: NFTAssetURL["value"];
-  onError?: () => void;
+  onError: () => void;
+  onComplete: () => void;
 };
 
-type AudioVideoProps = Omit<MediaProps, "data" | "preset"> & {
+type AudioVideoProps = Omit<MediaProps, "data" | "preset" | "onComplete"> & {
   url: string;
 };
 
@@ -42,7 +43,7 @@ function Audio({ url, audioProps, onError }: AudioVideoProps) {
       className={styles.media}
       {...audioProps}
       onError={(error) => {
-        onError && onError();
+        onError();
         audioProps?.onError && audioProps.onError(error);
       }}
     >
@@ -88,7 +89,7 @@ function Video({ url, videoProps: elementProps, onError }: AudioVideoProps) {
       onLoadedMetadata={handleMetadata}
       ref={ref}
       onError={(error) => {
-        onError && onError();
+        onError();
         videoProps?.onError && videoProps.onError(error);
       }}
     >
@@ -105,19 +106,61 @@ export function Media({
   videoProps,
   audioProps,
   onError,
+  onComplete,
 }: Omit<MediaProps, "url">) {
-  if (!data) return null;
-  // use animation url if available, otherwise use video, audio, or image
-  const url =
-    data.animation_url?.original ||
-    data.video ||
-    data.audio ||
-    (data.image || {})[preset] ||
-    "";
+  const [mediaType, setMediaType] = useState<MediaType | null>(null);
+  const isLoadingRef = useRef(false);
 
-  const type = getMediaType(url);
+  let url = "";
 
-  if (type === "image") {
+  if (data) {
+    // use animation url if available, otherwise use video, audio, or image
+    url =
+      data.animation_url?.original ||
+      data.video ||
+      data.audio ||
+      (data.image || {})[preset] ||
+      "";
+  }
+
+  const handleUrlWithoutExtension = useCallback(
+    async (url: string) => {
+      if (isLoadingRef.current) return;
+
+      isLoadingRef.current = true;
+      try {
+        const type = await getMediaTypeFromUrl(url);
+
+        if (type !== "unknown") {
+          setMediaType(type);
+          onComplete();
+        } else {
+          // unsupported media, show error
+          onError();
+        }
+      } catch (error) {
+        onError();
+      } finally {
+        isLoadingRef.current = false;
+      }
+    },
+    [onComplete, onError]
+  );
+
+  useEffect(() => {
+    if (!url) return;
+    const type = getMediaType(url);
+
+    if (type === "unknown") {
+      handleUrlWithoutExtension(url);
+    } else {
+      onComplete();
+    }
+  }, [handleUrlWithoutExtension, onComplete, url]);
+
+  if (!mediaType) return null;
+
+  if (mediaType === "image") {
     return (
       <img
         alt="NFT"
@@ -125,23 +168,23 @@ export function Media({
         {...imgProps}
         src={url}
         onError={(error) => {
-          onError && onError();
+          onError();
           imgProps?.onError && imgProps.onError(error);
         }}
       />
     );
   }
 
-  if (type === "video") {
+  if (mediaType === "video") {
     return <Video url={url} videoProps={videoProps} onError={onError} />;
   }
 
-  if (type === "audio") {
+  if (mediaType === "audio") {
     return <Audio url={url} audioProps={audioProps} onError={onError} />;
   }
 
   // unsupported media, show error
-  onError && onError();
+  onError();
 
   return null;
 }

@@ -106,7 +106,6 @@ export const AssetContent = (props: AssetProps) => {
     fetchNFTAssetURL(chain, address, tokenId)
       .then((res) => {
         setData(res.value);
-        updateState(Status.Loaded);
       })
       .catch(() => {
         updateState(Status.Error);
@@ -129,6 +128,7 @@ export const AssetContent = (props: AssetProps) => {
           onError={() => {
             updateState(Status.Error);
           }}
+          onComplete={() => updateState(Status.Loaded)}
         />
       );
     }

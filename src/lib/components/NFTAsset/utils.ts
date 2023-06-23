@@ -1,6 +1,6 @@
 import { PresetArray, PresetPXSize } from "../../constants";
 
-type MediaType = "image" | "video" | "audio" | "unknown";
+export type MediaType = "image" | "video" | "audio" | "unknown";
 
 export function getMediaType(media: string): MediaType {
   const imageRegex = /\.(jpe?g|png|webp|gif|bmp|svg)$/i;
@@ -50,4 +50,26 @@ export function getPreset(el?: HTMLElement | null) {
     default:
       return "original";
   }
+}
+
+export async function getMediaTypeFromUrl(url: string) {
+  const response = await fetch(url, {
+    method: "HEAD",
+  });
+
+  const contentType = response.headers.get("content-type");
+
+  if (contentType?.includes("image")) {
+    return "image";
+  }
+
+  if (contentType?.includes("video")) {
+    return "video";
+  }
+
+  if (contentType?.includes("audio")) {
+    return "audio";
+  }
+
+  return "unknown";
 }
