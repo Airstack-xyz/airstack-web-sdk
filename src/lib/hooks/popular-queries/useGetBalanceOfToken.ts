@@ -1,6 +1,6 @@
 import { useQuery } from "../useQuery";
 
-const query = `query GetBalance($blockchain: TokenBlockchain!, $tokenAddress: Address!, $owner: Identity) {
+const query = `query GetBalanceOfToken($blockchain: TokenBlockchain!, $tokenAddress: Address!, $owner: Identity) {
   TokenBalance(
     input: {blockchain: $blockchain, tokenAddress: $tokenAddress, owner: $owner}
   ) {
@@ -52,12 +52,12 @@ const query = `query GetBalance($blockchain: TokenBlockchain!, $tokenAddress: Ad
   }
 }`;
 
-export type GetBalanceVariables = {
+export type GetBalanceOfTokenVariables = {
   blockchain: string;
   tokenAddress: string;
   owner: string;
 };
 
-export function useGetBalance(variables: GetBalanceVariables) {
+export function useGetBalanceOfToken(variables: GetBalanceOfTokenVariables) {
   return useQuery(query, variables);
 }

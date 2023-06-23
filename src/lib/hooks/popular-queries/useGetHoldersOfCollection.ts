@@ -1,6 +1,6 @@
 import { useLazyQueryWithPagination } from "../useQueryWithPagination";
 
-const query = `query GetOwners($tokenAddress: Address, $blockchain: TokenBlockchain!, $limit: Int) {
+const query = `query GetHoldersOfCollection($tokenAddress: Address, $blockchain: TokenBlockchain!, $limit: Int) {
   TokenBalances(
     input: {filter: {tokenAddress: {_eq: $tokenAddress}}, blockchain: $blockchain, limit: $limit}
   ) {
@@ -54,14 +54,14 @@ const query = `query GetOwners($tokenAddress: Address, $blockchain: TokenBlockch
   }
 }`;
 
-export type GetOwnersOfTokenCollectionVariables = {
+export type GetHoldersOfCollectionOfTokenCollectionVariables = {
   tokenAddress: string[];
   blockchain: string;
   limit: number;
 };
 
-export function useGetOwnersOfTokenCollection(
-  variables: GetOwnersOfTokenCollectionVariables
+export function useGetHoldersOfCollectionOfTokenCollection(
+  variables: GetHoldersOfCollectionOfTokenCollectionVariables
 ) {
   return useLazyQueryWithPagination(query, variables);
 }

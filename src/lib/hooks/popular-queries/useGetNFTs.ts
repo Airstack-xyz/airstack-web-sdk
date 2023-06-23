@@ -1,6 +1,6 @@
 import { useLazyQueryWithPagination } from "../useQueryWithPagination";
 
-const query = `query GetAllNFTs($address: Address!, $blockchain: TokenBlockchain!, $limit: Int) {
+const query = `query GetNFTs($address: Address!, $blockchain: TokenBlockchain!, $limit: Int) {
   TokenNfts(
     input: {blockchain: $blockchain, limit: $limit, filter: {address: {_eq: $address}}}
   ) {
@@ -49,12 +49,12 @@ const query = `query GetAllNFTs($address: Address!, $blockchain: TokenBlockchain
   }
 }`;
 
-export type GetAllNFTsVariables = {
+export type GetNFTsVariables = {
   blockchain: string;
   limit: number;
   address: string;
 };
 
-export function useGetAllNFTs(variables: GetAllNFTsVariables) {
+export function useGetNFTs(variables: GetNFTsVariables) {
   return useLazyQueryWithPagination(query, variables);
 }

@@ -1,6 +1,6 @@
 import { useLazyQueryWithPagination } from "../useQueryWithPagination";
 
-const query = `query GetOwners($tokenAddress: Address, $tokenId: String, $blockchain: TokenBlockchain!) {
+const query = `query GetHoldersOfNFT($tokenAddress: Address, $tokenId: String, $blockchain: TokenBlockchain!) {
   TokenBalances(
     input: {filter: {tokenAddress: {_eq: $tokenAddress}, tokenId: {_eq: $tokenId}}, blockchain: $blockchain}
   ) {
@@ -54,12 +54,12 @@ const query = `query GetOwners($tokenAddress: Address, $tokenId: String, $blockc
   }
 }`;
 
-export type GetOwnerOfNFTVariables = {
+export type GetHoldersOfNFTVariables = {
   tokenAddress: string;
   tokenId: string;
   blockchain: string;
 };
 
-export function useGetOwnerOfNFT(variables: GetOwnerOfNFTVariables) {
+export function useGetHoldersOfNFT(variables: GetHoldersOfNFTVariables) {
   return useLazyQueryWithPagination(query, variables);
 }

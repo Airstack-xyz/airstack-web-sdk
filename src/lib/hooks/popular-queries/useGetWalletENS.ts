@@ -1,6 +1,6 @@
 import { useQuery } from "../useQuery";
 
-const query = `query GetENSName($identity: Identity!, $blockchain: TokenBlockchain!) {
+const query = `query GetWalletENS($identity: Identity!, $blockchain: TokenBlockchain!) {
   Wallet(input: {identity: $identity, blockchain: $blockchain}) {
     primaryDomain {
       name
@@ -26,11 +26,11 @@ const query = `query GetENSName($identity: Identity!, $blockchain: TokenBlockcha
   }
 }`;
 
-export type GetENSNameVariables = {
+export type GetWalletENSVariables = {
   identity: string;
   blockchain: string;
 };
 
-export function useGetENSName(variables: GetENSNameVariables) {
+export function useGetWalletENS(variables: GetWalletENSVariables) {
   return useQuery(query, variables);
 }
