@@ -115,25 +115,28 @@ export const AssetContent = (props: AssetProps) => {
   }, [chain, cachedData, address, tokenId, updateState]);
 
   const media = useMemo(() => {
-    if (state === Status.Loading) {
-      return loading || <div className={styles.loading}>Loading...</div>;
-    } else if (state === Status.Error) {
+    if (state === Status.Error) {
       return error || <div className={styles.error}>Error!</div>;
-    } else {
-      return (
-        <Media
-          data={data}
-          preset={preset}
-          imgProps={imgProps}
-          videoProps={videoProps}
-          audioProps={audioProps}
-          onError={() => {
-            updateState(Status.Error);
-          }}
-          onComplete={() => updateState(Status.Loaded)}
-        />
-      );
     }
+    return (
+      <>
+        {state === Status.Loading &&
+          (loading || <div className={styles.loading}>Loading...</div>)}
+        {data && (
+          <Media
+            data={data}
+            preset={preset}
+            imgProps={imgProps}
+            videoProps={videoProps}
+            audioProps={audioProps}
+            onError={() => {
+              updateState(Status.Error);
+            }}
+            onComplete={() => updateState(Status.Loaded)}
+          />
+        )}
+      </>
+    );
   }, [
     audioProps,
     data,
