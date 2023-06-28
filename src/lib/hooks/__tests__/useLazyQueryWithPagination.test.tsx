@@ -1,7 +1,7 @@
 import { vi, describe, expect, beforeEach, it } from "vitest";
 import { render, act } from "@testing-library/react";
 import { useLazyQueryWithPagination } from "../useQueryWithPagination";
-import { init } from "../../config";
+import { init } from "../../init";
 import { pageOneData } from "./pageOneData";
 import { pageTwoData } from "./pageTwoData";
 import { mockFetch } from "./utils";

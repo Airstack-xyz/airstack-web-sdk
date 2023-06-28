@@ -1,6 +1,6 @@
 {
   "name": "@airstack/airstack-react",
-  "version": "0.3.3",
+  "version": "0.4.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,9 @@
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "vitest",
-    "prepack": "npm run build"
+    "copy-package-json": "cp package.json dist/ && cp README.md dist/",
+    "publish-ready": "npm run build && npm run copy-package-json",
+    "publish-package": "npm run publish-ready && cd dist/ && npm publish"
   },
   "dependencies": {
     "graphql": "16.6.0"
@@ -36,6 +38,7 @@
     "jsdom": "^22.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "rollup-plugin-rename-node-modules": "^1.3.1",
     "typescript": "^5.0.2",
     "vite": "^4.2.0",
     "vite-dts": "^1.0.4",
@@ -43,17 +46,9 @@
     "vitest": "^0.31.0"
   },
   "files": [
-    "dist",
-    "dist/style.css"
+    "*"
   ],
-  "main": "./dist/airstack-web-sdk.umd.js",
-  "module": "./dist/airstack-web-sdk.es.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/airstack-web-sdk.es.js",
-      "require": "./dist/airstack-web-sdk.umd.js"
-    }
-  }
+  "main": "./index.js",
+  "module": "./index.js",
+  "types": "./index.d.ts"
 }
