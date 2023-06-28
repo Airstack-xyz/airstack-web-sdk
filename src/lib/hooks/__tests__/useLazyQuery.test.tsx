@@ -1,7 +1,7 @@
 import { vi, describe, expect, beforeEach, it } from "vitest";
 import { render, act } from "@testing-library/react";
 import { useLazyQuery } from "../useQuery";
-import { init } from "../../config";
+import { init } from "../../init";
 import { pageOneData } from "./pageOneData";
 import { mockFetch } from "./utils";
 
