@@ -55,6 +55,9 @@ export async function fetchPaginatedQuery(
         cacheResponse(response, _query, variables);
       }
       cacheImagesFromQuery(data);
+    } else {
+      // return a new reference to the data object, so reference equality check in React components/hooks will work
+      data = { ...data };
     }
 
     paginationData = getPaginationData(data);

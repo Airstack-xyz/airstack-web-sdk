@@ -32,6 +32,9 @@ export async function fetchQuery(
       cacheResponse(response, query, _variables);
     }
     cacheImagesFromQuery(data);
+  } else {
+    // return a new reference to the data object, so reference equality check in React components/hooks will work
+    data = { ...data };
   }
 
   return {
