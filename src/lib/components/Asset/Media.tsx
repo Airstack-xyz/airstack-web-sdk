@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  ComponentProps,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { PresetImageSize } from "../../constants";
 import { NFTAssetURL } from "../../types";
 import { MediaType, getMediaType, getMediaTypeFromUrl } from "./utils";
@@ -8,10 +14,8 @@ import styles from "./styles.module.css";
 
 // !!! TODO: handle html, svg markup (SENITISE markup)
 
-type HTMLVideoProps = React.DetailedHTMLProps<
-  React.ImgHTMLAttributes<HTMLVideoElement>,
-  HTMLVideoElement
->;
+type HTMLVideoProps = ComponentProps<"video">;
+type HTMLAudioProps = ComponentProps<"audio">;
 
 export type MediaProps = {
   imgProps?: React.DetailedHTMLProps<
@@ -22,10 +26,7 @@ export type MediaProps = {
     // max duration in seconds, if videos are shorter than this, they will be auto played, default 10 seconds
     maxDurationForAutoPlay?: number;
   } & HTMLVideoProps;
-  audioProps?: React.DetailedHTMLProps<
-    React.ImgHTMLAttributes<HTMLAudioElement>,
-    HTMLAudioElement
-  >;
+  audioProps?: HTMLAudioProps;
   preset: PresetImageSize;
   data?: NFTAssetURL["value"];
   onError: () => void;
