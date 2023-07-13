@@ -1,6 +1,6 @@
 {
-  "name": "@airstack/airstack-react",
-  "version": "0.4.4",
+  "name": "@himanshu-bisht27/himanshu-test",
+  "version": "60.4.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
