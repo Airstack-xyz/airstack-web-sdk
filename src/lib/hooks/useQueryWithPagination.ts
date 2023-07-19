@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import {
   Config,
   FetchQuery,
@@ -108,20 +108,31 @@ export function useLazyQueryWithPagination(
     handleResponse(res);
   }, [handleResponse, setLoading]);
 
-  return [
-    fetch,
-    {
-      data,
-      error,
-      loading,
-      pagination: {
-        hasNextPage,
-        hasPrevPage,
-        getNextPage,
-        getPrevPage,
+  return useMemo(() => {
+    return [
+      fetch,
+      {
+        data,
+        error,
+        loading,
+        pagination: {
+          hasNextPage,
+          hasPrevPage,
+          getNextPage,
+          getPrevPage,
+        },
       },
-    },
-  ];
+    ];
+  }, [
+    data,
+    error,
+    fetch,
+    getNextPage,
+    getPrevPage,
+    hasNextPage,
+    hasPrevPage,
+    loading,
+  ]);
 }
 
 export function useQueryWithPagination(
