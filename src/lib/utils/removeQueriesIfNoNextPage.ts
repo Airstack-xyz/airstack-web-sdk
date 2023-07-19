@@ -40,13 +40,18 @@ export async function removeQueriesIfNoNextPage(
   };
 
   const schemaMap = await getIntrospectionQueryMap();
+
   (
     queryDocument.definitions[0] as FragmentDefinitionNode
   ).selectionSet.selections = queries.filter((query) => {
     const queryName = query.name.value;
+    const aliasedQueryName = query?.alias?.value || "";
     const queryVariables = getVariables(query, schemaMap, ctx);
 
-    if (queriesWithLastPage[queryName]) {
+    if (
+      queriesWithLastPage[queryName] ||
+      queriesWithLastPage[aliasedQueryName]
+    ) {
       variablesToDelete = [...variablesToDelete, ...queryVariables];
       return false;
     }
