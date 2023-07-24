@@ -17,8 +17,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-          registry-url: https://registry.npmjs.org/
+          registry-url: 'https://registry.npmjs.org'
       - run: npm install --legacy-peer-deps
-      - run: npm run publish-package
+      - run: npm run publish-package --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.TEST_NPM_TOKEN}}
