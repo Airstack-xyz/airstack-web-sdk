@@ -58,7 +58,17 @@ export function QueryInput() {
       loading,
       pagination: { hasNextPage, hasPrevPage, getNextPage, getPrevPage },
     },
-  ] = useLazyQueryWithPagination(query, {});
+  ] = useLazyQueryWithPagination(query, {}, {
+    onCompleted: (data) => {
+      console.log(" onCompleted: ", data)
+    },
+    onError: (error) => {
+      console.log(" onError: ", error)
+    },
+    dataFormatter: (data) => {
+      return [data.erc20, data._erc20]
+    }
+  });
 
   const fetch = () => {
     _fetch(JSON.parse(variables));

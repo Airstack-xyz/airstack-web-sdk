@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { fetchQuery } from "../apis/fetchQuery";
-import { Config, FetchQueryReturnType, Variables } from "../types";
+import { Config, ConfigAndCallbacks, FetchQueryReturnType, Variables } from "../types";
 import { useRequestState } from "./useDataState";
 
 type UseQueryReturnType = {
@@ -17,21 +17,37 @@ type UseLazyQueryReturnType = [
 export function useLazyQuery(
   query: string,
   variables?: Variables,
-  config?: Config
+  configAndCallbacks?: ConfigAndCallbacks
 ): UseLazyQueryReturnType {
-  const { data, error, loading, setData, setError, setLoading, configRef } =
-    useRequestState(config);
-  const variablesRef = useRef<Variables>(variables || {});
+  const {
+    data,
+    error,
+    loading,
+    configRef,
+    callbacksRef,
+    originalData,
+    variablesRef,
+    setData,
+    setError,
+    setLoading
+  } = useRequestState(variables, configAndCallbacks);
 
   const handleResponse = useCallback(
     (res: Awaited<FetchQueryReturnType>) => {
       if (!res) return;
-      const { data, error } = res;
+      const { data: rawData, error } = res;
+      originalData.current = rawData;
+      const data = rawData ? callbacksRef.current.dataFormatter(rawData) : null;
       setData(data);
       setError(error);
       setLoading(false);
+      if (error) {
+        callbacksRef.current.onError(error);
+        return;
+      }
+      callbacksRef.current.onCompleted(data);
     },
-    [setData, setError, setLoading]
+    [callbacksRef, originalData, setData, setError, setLoading]
   );
 
   const fetch = useCallback(
