@@ -46,6 +46,16 @@ export function useLazyQueryWithPagination(
   const prevRef = useRef<null | (() => Promise<FetchQuery | null>)>(null);
   const variablesRef = useRef<Variables>(variables || {});
 
+  const reset = useCallback(() => {
+    nextRef.current = null;
+    prevRef.current = null;
+    setData(null);
+    setError(null);
+    setLoading(false);
+    setHasNextPage(false);
+    setHasPrevPage(false);
+  }, [setData, setError, setLoading]);
+
   const handleResponse = useCallback(
     (res: null | Awaited<FetchPaginatedQueryReturnType>) => {
       if (!res) return;
@@ -70,7 +80,7 @@ export function useLazyQueryWithPagination(
 
   const fetch: FetchType = useCallback(
     async (_variables?: Variables) => {
-      setError(null);
+      reset();
       setLoading(true);
 
       const queryWithPagination = await addPaginationToQuery(query);
@@ -91,7 +101,7 @@ export function useLazyQueryWithPagination(
         },
       };
     },
-    [configRef, handleResponse, query, setError, setLoading]
+    [configRef, handleResponse, query, reset, setLoading]
   );
 
   const getNextPage = useCallback(async () => {

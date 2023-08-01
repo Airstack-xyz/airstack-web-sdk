@@ -1,4 +1,4 @@
-type Env = "dev" | "prod";
+export type Env = "dev" | "prod";
 export type Config = {
   authKey: string;
   env?: Env;
