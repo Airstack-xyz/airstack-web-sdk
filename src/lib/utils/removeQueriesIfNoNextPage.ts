@@ -4,16 +4,15 @@ import {
   OperationDefinitionNode,
   parse,
   print,
-} from "graphql";
-import { QueryContext, ResponseType } from "../types";
-import { getQueriesWithLastPage } from "./findQueriesWithLastPage";
-import { getQueries } from "./query/getQueries";
+} from 'graphql';
+import { QueryContext, ResponseType } from '../types';
+import { getQueriesWithLastPage } from './findQueriesWithLastPage';
+import { getQueries } from './query/getQueries';
 import {
   SchemaMap,
   getIntrospectionQueryMap,
-} from "./query/getIntrospectionQuery";
-import { getArguments } from "./query";
-import { Argument } from "./query/types";
+} from './query/getIntrospectionQuery';
+import { getArguments } from './query';
 
 function getVariables(
   query: FieldNode,
@@ -21,7 +20,20 @@ function getVariables(
   ctx: QueryContext
 ) {
   const { args } = getArguments(schemaMap, query, ctx);
-  return args.filter((arg) => arg.valueKind === "Variable");
+  const variables: string[] = [];
+  args.forEach((arg) => {
+    if (arg.valueKind === 'Variable') {
+      variables.push(arg.assignedVariable || arg.uniqueName || arg.name);
+    }
+    if (arg.valueKind === 'ListValue' && Array.isArray(arg.defaultValue)) {
+      arg.defaultValue.forEach((value) => {
+        if (value.kind === 'Variable') {
+          variables.push(value.name.value);
+        }
+      })
+    }
+  });
+  return variables;
 }
 
 export async function removeQueriesIfNoNextPage(
@@ -33,8 +45,8 @@ export async function removeQueriesIfNoNextPage(
 
   const queryDocument = parse(query);
   const queries = getQueries(queryDocument);
-  let remainingVariables: Argument[] = [];
-  let variablesToDelete: Argument[] = [];
+  let variablesForRemainingQueryies: string[] = [];
+  let variablesToDelete: string[] = [];
   const ctx = {
     variableNamesMap: {},
   };
@@ -45,7 +57,7 @@ export async function removeQueriesIfNoNextPage(
     queryDocument.definitions[0] as FragmentDefinitionNode
   ).selectionSet.selections = queries.filter((query) => {
     const queryName = query.name.value;
-    const aliasedQueryName = query?.alias?.value || "";
+    const aliasedQueryName = query?.alias?.value || '';
     const queryVariables = getVariables(query, schemaMap, ctx);
 
     if (
@@ -55,7 +67,7 @@ export async function removeQueriesIfNoNextPage(
       variablesToDelete = [...variablesToDelete, ...queryVariables];
       return false;
     }
-    remainingVariables = [...remainingVariables, ...queryVariables];
+    variablesForRemainingQueryies = [...variablesForRemainingQueryies, ...queryVariables];
     return true;
   });
 
@@ -64,9 +76,8 @@ export async function removeQueriesIfNoNextPage(
 
   // remove unsed variables
   variablesToDelete = variablesToDelete.filter((deletedVariable) => {
-    const { assignedVariable } = deletedVariable;
-    return !remainingVariables.find((remainingVariable) => {
-      return remainingVariable.assignedVariable === assignedVariable;
+    return !variablesForRemainingQueryies.find((remainingVariable) => {
+      return remainingVariable === deletedVariable;
     });
   });
 
@@ -77,7 +88,7 @@ export async function removeQueriesIfNoNextPage(
     (variable) => {
       return !variablesToDelete.find((deletedVariable) => {
         return (
-          deletedVariable.assignedVariable === variable.variable.name.value
+          deletedVariable === variable.variable.name.value
         );
       });
     }
