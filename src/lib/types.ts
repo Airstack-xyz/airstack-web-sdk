@@ -27,6 +27,13 @@ export type Config = {
   cache?: boolean;
 };
 
+
+export type ConfigAndCallbacks = Config & {
+  onCompleted?: (data: any) => void;
+  onError?: (error: any) => void;
+  dataFormatter?: any;
+}
+
 export type Variables = Record<string, any>;
 
 export type NFTAssetURL = {

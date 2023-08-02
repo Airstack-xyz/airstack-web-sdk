@@ -4,6 +4,7 @@ import {
   FetchQuery,
   FetchPaginatedQueryReturnType,
   Variables,
+  ConfigAndCallbacks,
 } from "../types";
 import { useRequestState } from "./useDataState";
 import { addPaginationToQuery } from "../utils/addPaginationToQuery";
@@ -36,15 +37,24 @@ type LazyHookReturnType = [FetchType, UseQueryReturnType];
 export function useLazyQueryWithPagination(
   query: string,
   variables?: Variables,
-  config?: Config
+  configAndCallbacks?: ConfigAndCallbacks
 ): LazyHookReturnType {
-  const { data, error, loading, setData, setError, setLoading, configRef } =
-    useRequestState(config);
+  const {
+    data,
+    error,
+    loading,
+    configRef,
+    callbacksRef,
+    originalData,
+    variablesRef,
+    setData,
+    setError,
+    setLoading
+  } = useRequestState(variables, configAndCallbacks);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPrevPage, setHasPrevPage] = useState(false);
   const nextRef = useRef<null | (() => Promise<FetchQuery | null>)>(null);
   const prevRef = useRef<null | (() => Promise<FetchQuery | null>)>(null);
-  const variablesRef = useRef<Variables>(variables || {});
 
   const reset = useCallback(() => {
     nextRef.current = null;
@@ -60,7 +70,7 @@ export function useLazyQueryWithPagination(
     (res: null | Awaited<FetchPaginatedQueryReturnType>) => {
       if (!res) return;
       const {
-        data,
+        data: rawData,
         error,
         getNextPage,
         getPrevPage,
@@ -69,13 +79,20 @@ export function useLazyQueryWithPagination(
       } = res;
       nextRef.current = getNextPage;
       prevRef.current = getPrevPage;
+      originalData.current = rawData;
+      const data = rawData ? callbacksRef.current.dataFormatter(rawData) : null;
       setData(data);
       setError(error);
       setLoading(false);
       setHasNextPage(hasNextPage);
       setHasPrevPage(hasPrevPage);
+      if (error) {
+        callbacksRef.current.onError(error);
+        return;
+      }
+      callbacksRef.current.onCompleted(data);
     },
-    [setData, setError, setLoading]
+    [callbacksRef, originalData, setData, setError, setLoading]
   );
 
   const fetch: FetchType = useCallback(
