@@ -17,11 +17,19 @@ npm install @airstack/airstack-react
 yarn add @airstack/airstack-react
 ```
 
+#### With pnpm
+
+```sh
+pnpm install @airstack/airstack-react
+```
+
 ## Getting started
 
-To use the SDK you will need airstack api-key, which you can find in your profile setting section in [airstack web](https://app.airstack.xyz), once you have it you can call the `init` function with the api-key.
+To use the SDK you will need airstack api-key, which you can find in your profile setting section in [airstack web](https://app.airstack.xyz), once you have it you can call the `init` function with the api-key or use `AirstackProvider`.
 
-**`init` must be called before any of the SDK hook or component is used**, we recommend to use `init` in the _App.ts_ file.
+**`init` must be called before any of the SDK hook or component is used or you can use AirstackProvider**, we recommend to use `init` or `AirstackProvider` in the _App.ts_ file.
+
+**Example with init**
 
 ```jsx
 import { init, useQuery } from "@airstack/airstack-react";
@@ -43,13 +51,54 @@ const MyComponent = () => {
 };
 ```
 
+**Example with AirstackProvider**
+
+```jsx
+import { AirstackProvider, useQuery } from "@airstack/airstack-react";
+
+
+const App () => {
+  return (
+    <AirstackProvider apiKey={"api-key"}>
+      <MyComponent/>
+    </AirstackProvider>
+  )
+}
+
+const MyComponent = () => {
+  const { data, loading, error } = useQuery(query, variables, { cache: false });
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p>Error: {error.message}</p>;
+  }
+
+  // Render your component using the data returned by the query
+};
+```
+
+
 ## Hooks
 
-**All the hooks take 3 parameters**
+**All the hooks can take 3 arguments**
 
-- `query` (required): A string that represents the Airstack GraphQL query to be executed.
-- `variables`: An object that contains variables used in the query.
-- `config` (optional): An object that contains optional configuration parameters for the request. Currently, the only available parameter is `cache`, which is a boolean that determines whether to cache the response or not.
+| Argument               | Description                                                   | Options                              |
+|------------------------|---------------------------------------------------------------|--------------------------------------|
+| query (required)       | The GraphQL query string to be executed.                     | String                               |
+| variables              | Variables to be used in the GraphQL query.                   | Record<string, any>                  |
+| configAndCallbacks     | Additional configuration and callback options.               | ConfigAndCallbacks                   |
+
+**ConfigAndCallbacks Options**
+
+| Option                 | Description                                                                           | Type                    | Default |
+|------------------------|---------------------------------------------------------------------------------------|-------------------------|---------|
+| onCompleted            | A callback function that will be called when the query is successfully completed.      | (data: any) => void     | -       |
+| onError                | A callback function that will be called when an error occurs during the query.        | (error: any) => void    | -       |
+| dataFormatter          | A function that allows custom formatting of the data before returning it to the user. | (data: any) => any                     | -       |
+| cache                  | Determines whether to cache the query result.                                        | boolean                 | true    |
 
 ```jsx
 const { data, loading, error } = useQuery(query, variables, { cache: false });

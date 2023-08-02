@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import { fetchQuery } from "../apis/fetchQuery";
 import { Config, ConfigAndCallbacks, FetchQueryReturnType, Variables } from "../types";
 import { useRequestState } from "./useDataState";
@@ -62,7 +62,7 @@ export function useLazyQuery(
       handleResponse(res);
       return { data: res?.data, error: res?.error };
     },
-    [setError, setLoading, query, configRef, handleResponse]
+    [setError, setLoading, query, variablesRef, configRef, handleResponse]
   );
 
   return [fetch, { data, error, loading }];
