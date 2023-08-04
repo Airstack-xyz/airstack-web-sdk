@@ -80,25 +80,24 @@ const MyComponent = () => {
 };
 ```
 
-
 ## Hooks
 
 **All the hooks can take 3 arguments**
 
-| Argument               | Description                                                   | Options                              |
-|------------------------|---------------------------------------------------------------|--------------------------------------|
-| query (required)       | The GraphQL query string to be executed.                     | String                               |
-| variables              | Variables to be used in the GraphQL query.                   | Record<string, any>                  |
-| configAndCallbacks     | Additional configuration and callback options.               | ConfigAndCallbacks                   |
+| Argument           | Description                                    | Options             |
+| ------------------ | ---------------------------------------------- | ------------------- |
+| query (required)   | The GraphQL query string to be executed.       | String              |
+| variables          | Variables to be used in the GraphQL query.     | Record<string, any> |
+| configAndCallbacks | Additional configuration and callback options. | ConfigAndCallbacks  |
 
 **ConfigAndCallbacks Options**
 
-| Option                 | Description                                                                           | Type                    | Default |
-|------------------------|---------------------------------------------------------------------------------------|-------------------------|---------|
-| onCompleted            | A callback function that will be called when the query is successfully completed.      | (data: any) => void     | -       |
-| onError                | A callback function that will be called when an error occurs during the query.        | (error: any) => void    | -       |
-| dataFormatter          | A function that allows custom formatting of the data before returning it to the user. | (data: any) => any                     | -       |
-| cache                  | Determines whether to cache the query result.                                        | boolean                 | true    |
+| Option        | Description                                                                           | Type                 | Default |
+| ------------- | ------------------------------------------------------------------------------------- | -------------------- | ------- |
+| onCompleted   | A callback function that will be called when the query is successfully completed.     | (data: any) => void  | -       |
+| onError       | A callback function that will be called when an error occurs during the query.        | (error: any) => void | -       |
+| dataFormatter | A function that allows custom formatting of the data before returning it to the user. | (data: any) => any   | -       |
+| cache         | Determines whether to cache the query result.                                         | boolean              | true    |
 
 ```jsx
 const { data, loading, error } = useQuery(query, variables, { cache: false });
@@ -168,7 +167,6 @@ const MyComponent = () => {
 ### Pagination Hooks
 
 **Note:** pagination hooks only works with queries that has support for pagination.
-
 
 ### useQueryWithPagination
 
@@ -307,10 +305,9 @@ fetchQuery can be used in places where using hooks is not possible. `fetchQuery`
 ##### Example
 
 ```typescript
-import { fetchQuery } from "./fetchQuery";
+import { fetchQuery } from "@airstack/airstack-react";
 
-const { data, error } =
-  await fetchQuery(query, variables, config);
+const { data, error } = await fetchQuery(query, variables, config);
 ```
 
 ## fetchQueryWithPagination
@@ -331,7 +328,7 @@ It returns a promise with an object, which contains the following properties:
 ##### Example
 
 ```typescript
-import { fetchQueryWithPagination } from "./fetchQueryWithPagination";
+import { fetchQueryWithPagination } from "@airstack/airstack-react";
 
 const { data, error, hasNextPage, hasPrevPage, getNextPage, getPrevPage } =
   await fetchQueryWithPagination(query, variables, config);
@@ -366,7 +363,6 @@ const { data, error, hasNextPage, hasPrevPage, getNextPage, getPrevPage } =
 **useGetTokenTransfers** - Get all transfer of a token
 
 **useGetNFTTransfers** - Get all transfer of a token NFT
-
 
 ##### Example
 
