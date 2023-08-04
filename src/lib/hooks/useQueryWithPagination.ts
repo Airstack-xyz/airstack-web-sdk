@@ -118,7 +118,7 @@ export function useLazyQueryWithPagination(
         },
       };
     },
-    [configRef, handleResponse, query, reset, setLoading]
+    [configRef, handleResponse, query, reset, setLoading, variablesRef]
   );
 
   const getNextPage = useCallback(async () => {
