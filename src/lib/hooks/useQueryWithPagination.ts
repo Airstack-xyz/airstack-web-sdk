@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import {
-  Config,
   FetchQuery,
   FetchPaginatedQueryReturnType,
   Variables,
@@ -49,7 +48,7 @@ export function useLazyQueryWithPagination(
     variablesRef,
     setData,
     setError,
-    setLoading
+    setLoading,
   } = useRequestState(variables, configAndCallbacks);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPrevPage, setHasPrevPage] = useState(false);
@@ -165,9 +164,13 @@ export function useLazyQueryWithPagination(
 export function useQueryWithPagination(
   query: string,
   variables?: Variables,
-  config?: Config
+  configAndCallbacks?: ConfigAndCallbacks
 ): UseQueryReturnType {
-  const [fetch, data] = useLazyQueryWithPagination(query, variables, config);
+  const [fetch, data] = useLazyQueryWithPagination(
+    query,
+    variables,
+    configAndCallbacks
+  );
   useEffect(() => {
     fetch();
   }, [fetch]);
