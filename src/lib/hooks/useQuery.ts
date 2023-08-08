@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react";
 import { fetchQuery } from "../apis/fetchQuery";
-import { Config, ConfigAndCallbacks, FetchQueryReturnType, Variables } from "../types";
+import { ConfigAndCallbacks, FetchQueryReturnType, Variables } from "../types";
 import { useRequestState } from "./useDataState";
 
 type UseQueryReturnType = {
@@ -29,7 +29,7 @@ export function useLazyQuery(
     variablesRef,
     setData,
     setError,
-    setLoading
+    setLoading,
   } = useRequestState(variables, configAndCallbacks);
 
   const handleResponse = useCallback(
@@ -71,12 +71,12 @@ export function useLazyQuery(
 export function useQuery(
   query: string,
   variables?: Variables,
-  config?: Config
+  configAndCallbacks?: ConfigAndCallbacks
 ): UseQueryReturnType {
   const [fetch, { data, error, loading }] = useLazyQuery(
     query,
     variables,
-    config
+    configAndCallbacks
   );
 
   useEffect(() => {

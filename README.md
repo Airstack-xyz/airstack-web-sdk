@@ -119,7 +119,7 @@ The `useQuery` hook loads query data as soon as the component is mounted. It ret
 import { useQuery } from "@airstack/airstack-react";
 
 const MyComponent = () => {
-  const { data, loading, error } = useQuery(query, variables);
+  const { data, loading, error } = useQuery(query, variables, configAndCallbacks);
 
   if (loading) {
     return <p>Loading...</p>;
@@ -186,7 +186,8 @@ import { useQueryWithPagination } from "@airstack/airstack-react";
 const MyComponent = () => {
   const { data, loading, pagination } = useQueryWithPagination(
     query,
-    variables
+    variables,
+    configAndCallbacks
   );
   const { hasNextPage, hasPrevPage, getNextPage, getPrevPage } = pagination;
 
@@ -295,7 +296,8 @@ function App() {
 
 ## fetchQuery
 
-fetchQuery can be used in places where using hooks is not possible. `fetchQuery` accepts same parameter as hooks .
+fetchQuery can be used in places where using hooks is not possible. `fetchQuery` accepts same parameter as hooks.
+**Note**: fetchQuery only accepts config and do not accept callbacks in the third parameter.
 
 `fetchQuery` returns a promise with an object, which contains the following properties:
 
