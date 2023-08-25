@@ -11,7 +11,7 @@ import { MediaType, getMediaType, getMediaTypeFromUrl } from "./utils";
 // eslint-disable-next-line
 // @ts-ignore
 import styles from "./styles.module.css";
-import { config } from "../../config";
+import { logError } from "../../utils/log";
 
 // !!! TODO: handle html, svg markup (SENITISE markup)
 
@@ -134,13 +134,11 @@ export function Media({
         const type = await getMediaTypeFromUrl(url);
         setMediaType(type);
         onComplete();
-        if (type === "unknown" && config?.env === "dev") {
-          console.error("unknown media type", url);
+        if (type === "unknown") {
+          logError("unknown media type", url);
         }
       } catch (error) {
-        if (config?.env === "dev") {
-          console.error(error);
-        }
+        logError(error);
       } finally {
         isLoadingRef.current = false;
       }
@@ -160,6 +158,13 @@ export function Media({
       onComplete();
     }
   }, [handleUrlWithoutExtension, onComplete, url]);
+
+  useEffect(() => {
+    if (!url && mediaType) {
+      logError("url is null");
+      onError();
+    }
+  }, [data, mediaType, onError, preset, url]);
 
   if (!mediaType || !url) return null;
 
