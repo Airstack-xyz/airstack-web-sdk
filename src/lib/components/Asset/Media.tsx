@@ -11,6 +11,7 @@ import { MediaType, getMediaType, getMediaTypeFromUrl } from "./utils";
 // eslint-disable-next-line
 // @ts-ignore
 import styles from "./styles.module.css";
+import { config } from "../../config";
 
 // !!! TODO: handle html, svg markup (SENITISE markup)
 
@@ -131,21 +132,20 @@ export function Media({
       isLoadingRef.current = true;
       try {
         const type = await getMediaTypeFromUrl(url);
-
-        if (type !== "unknown") {
-          setMediaType(type);
-          onComplete();
-        } else {
-          // unsupported media, show error
-          onError();
+        setMediaType(type);
+        onComplete();
+        if (type === "unknown" && config?.env === "dev") {
+          console.error("unknown media type", url);
         }
       } catch (error) {
-        onError();
+        if (config?.env === "dev") {
+          console.error(error);
+        }
       } finally {
         isLoadingRef.current = false;
       }
     },
-    [onComplete, onError]
+    [onComplete]
   );
 
   useEffect(() => {
@@ -163,21 +163,6 @@ export function Media({
 
   if (!mediaType || !url) return null;
 
-  if (mediaType === "image") {
-    return (
-      <img
-        alt="NFT"
-        className={styles.media}
-        {...imgProps}
-        src={url}
-        onError={(error) => {
-          onError();
-          imgProps?.onError && imgProps.onError(error);
-        }}
-      />
-    );
-  }
-
   if (mediaType === "video") {
     return <Video url={url} videoProps={videoProps} onError={onError} />;
   }
@@ -186,8 +171,17 @@ export function Media({
     return <Audio url={url} audioProps={audioProps} onError={onError} />;
   }
 
-  // unsupported media, show error
-  onError();
-
-  return null;
+  // if we don't know the media type, we assume it's an image
+  return (
+    <img
+      alt="NFT"
+      className={styles.media}
+      {...imgProps}
+      src={url}
+      onError={(error) => {
+        onError();
+        imgProps?.onError && imgProps.onError(error);
+      }}
+    />
+  );
 }
