@@ -11,6 +11,7 @@ import { MediaType, getMediaType, getMediaTypeFromUrl } from "./utils";
 // eslint-disable-next-line
 // @ts-ignore
 import styles from "./styles.module.css";
+import { logError } from "../../utils/log";
 
 // !!! TODO: handle html, svg markup (SENITISE markup)
 
@@ -131,21 +132,18 @@ export function Media({
       isLoadingRef.current = true;
       try {
         const type = await getMediaTypeFromUrl(url);
-
-        if (type !== "unknown") {
-          setMediaType(type);
-          onComplete();
-        } else {
-          // unsupported media, show error
-          onError();
+        setMediaType(type);
+        onComplete();
+        if (type === "unknown") {
+          logError("unknown media type", url);
         }
       } catch (error) {
-        onError();
+        logError(error);
       } finally {
         isLoadingRef.current = false;
       }
     },
-    [onComplete, onError]
+    [onComplete]
   );
 
   useEffect(() => {
@@ -161,22 +159,14 @@ export function Media({
     }
   }, [handleUrlWithoutExtension, onComplete, url]);
 
-  if (!mediaType || !url) return null;
+  useEffect(() => {
+    if (!url && mediaType) {
+      logError("url is null");
+      onError();
+    }
+  }, [data, mediaType, onError, preset, url]);
 
-  if (mediaType === "image") {
-    return (
-      <img
-        alt="NFT"
-        className={styles.media}
-        {...imgProps}
-        src={url}
-        onError={(error) => {
-          onError();
-          imgProps?.onError && imgProps.onError(error);
-        }}
-      />
-    );
-  }
+  if (!mediaType || !url) return null;
 
   if (mediaType === "video") {
     return <Video url={url} videoProps={videoProps} onError={onError} />;
@@ -186,8 +176,17 @@ export function Media({
     return <Audio url={url} audioProps={audioProps} onError={onError} />;
   }
 
-  // unsupported media, show error
-  onError();
-
-  return null;
+  // if we don't know the media type, we assume it's an image
+  return (
+    <img
+      alt="NFT"
+      className={styles.media}
+      {...imgProps}
+      src={url}
+      onError={(error) => {
+        onError();
+        imgProps?.onError && imgProps.onError(error);
+      }}
+    />
+  );
 }
