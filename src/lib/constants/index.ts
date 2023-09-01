@@ -1,4 +1,4 @@
-export const AIRSTACK_ENDPOINT = "https://api.airstack.xyz/gql";
+export const AIRSTACK_ENDPOINT = "https://api.dev.airstack.xyz/gql";
 
 export enum PresetPXSize {
   ExtraSmall = 125,
@@ -22,4 +22,4 @@ export const PresetArray = [
 
 export type Chain = "ethereum" | "polygon";
 
-export const API_ENDPOINT_PROD = "https://api.airstack.xyz/gql";
+export const API_ENDPOINT_PROD = "https://api.dev.airstack.xyz/gql";
