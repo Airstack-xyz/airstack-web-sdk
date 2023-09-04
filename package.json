@@ -11,7 +11,8 @@
     "test": "vitest",
     "copy-package-json": "cp package.json dist/ && cp README.md dist/",
     "publish-ready": "npm run build && npm run copy-package-json",
-    "publish-package": "npm run publish-ready && cd dist/ && npm publish"
+    "publish-package": "npm run publish-ready && cd dist/ && npm publish",
+    "prepare": "vite build"
   },
   "dependencies": {
     "graphql": "16.6.0"
