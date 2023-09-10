@@ -338,41 +338,196 @@ const { data, error, hasNextPage, hasPrevPage, getNextPage, getPrevPage } =
 
 ## Hooks for Popular Queries
 
-**useGetTokenBalances** - Get all tokens(ERC20, ERC721, ERC1155) held by an wallet address
+### `useGetTokenBalances`
 
-**useGetTokenDetails** - Get token details(Name, Symbol, Decimals, TotalSupply) for given contract address
+Get all tokens(ERC20, ERC721, ERC1155) held by an wallet address
 
-**useGetNFTDetails** - Get NFT details (Name, Symbol, Decimals, TotalSupply, Metadata, TokenURI, Images) for a given contract address and tokenId
+```jsx
+import { useGetTokenBalances } from "@airstack/airstack-react";
 
-**useGetNFTs** - Get all NFTs of an collection
+const [fetchData, { data, loading, pagination }] = useGetTokenBalances({
+  identitity: "vitalik.eth",
+  tokenType: ["ERC20", "ERC721", "ERC1155"],
+  blockchain: "ethereum",
+  limit: 200
+});
+```
 
-**useGetNFTImages** - Get image of an NFT
+### `useGetTokenDetails`
 
-**useGetWalletENSAndSocial** - Get all social profile and ENS name of an wallet
+Get token details(Name, Symbol, Decimals, TotalSupply) for given contract address
 
-**useGetWalletENS** - Get the ENS name of an wallet address
-
-**useGetBalanceOfToken** - Get balance of wallet address for a particular token
-
-**useGetHoldersOfCollection** - Get all owners of a token collection
-
-**useGetHoldersOfNFT** - Get owner(s) of the NFT
-
-**useGetPrimaryENS** - Get Primary Domain for an address
-
-**useGetENSSubDomains** - Get sub domains for an address
-
-**useGetTokenTransfers** - Get all transfer of a token
-
-**useGetNFTTransfers** - Get all transfer of a token NFT
-
-##### Example
+#### Code
 
 ```jsx
 import { useGetTokenDetails } from "@airstack/airstack-react";
 
-const MyComponent = () => {
-  const { data, loading, error } = useGetTokenDetails(query, variables);
-  // Render your component using the data returned by the query
-};
+const [fetchData, { data, loading, pagination }] = useGetTokenDetails({
+  address: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
+  blockchain: "ethereum"
+});
+```
+
+### `useGetNFTDetails`
+
+Get NFT details (Name, Symbol, Decimals, TotalSupply, Metadata, TokenURI, Images) for a given contract address and tokenId
+
+```jsx
+import { useGetNFTDetails } from "@airstack/airstack-react";
+
+const [fetchData, { data, loading, pagination }] = useGetNFTDetails({
+  address: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
+  tokenId: "1751",
+  blockchain: "ethereum"
+});
+```
+
+### `useGetNFTs`
+
+Get all NFTs of an collection
+
+```jsx
+import { useGetNFTs } from "@airstack/airstack-react";
+
+const [fetchData, { data, loading, pagination }] = useGetNFTs({
+  blockchain: "ethereum",
+  limit: 200,
+  address: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D"
+});
+```
+
+### `useGetNFTImages`
+
+Get image of an NFT
+
+```jsx
+import { useGetNFTImages } from "@airstack/airstack-react";
+
+const [fetchData, { data, loading, pagination }] = useGetNFTImages({
+  address: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
+  tokenId: "1751",
+  blockchain: "ethereum",
+});
+```
+
+### `useGetWalletENSAndSocial`
+
+Get all social profile and ENS name of an wallet
+
+```jsx
+import { useGetWalletENSAndSocial } from "@airstack/airstack-react";
+
+const [fetchData, { data, loading, pagination }] = useGetWalletENSAndSocial({
+  identity: "vitalik.eth",
+  blockchain: "ethereum"
+});
+```
+
+### `useGetWalletENS`
+
+Get the ENS name of an wallet address
+
+```jsx
+import { useGetWalletENS } from "@airstack/airstack-react";
+
+const [fetchData, { data, loading, pagination }] = useGetWalletENS({
+  identity: "vitalik.eth",
+  blockchain: "ethereum"
+});
+```
+
+### `useGetBalanceOfToken`
+
+Get balance of wallet address for a particular token
+
+```jsx
+import { useGetBalanceOfToken } from "@airstack/airstack-react";
+
+const [fetchData, { data, loading, pagination }] = useGetBalanceOfToken({
+  blockchain: "ethereum",
+  tokenAddress: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
+  owner: "vitalik.eth"
+});
+```
+
+### `useGetHoldersOfCollection`
+
+Get all owners of a token collection
+
+```jsx
+import { useGetHoldersOfCollection } from "@airstack/airstack-react";
+
+const [fetchData, { data, loading, pagination }] = useGetHoldersOfCollection({
+  tokenAddress: ["0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D"],
+  blockchain: "ethereum",
+  limit: 200
+});
+```
+
+### `useGetHoldersOfNFT`
+
+Get owner(s) of the NFT
+
+```jsx
+import { useGetHoldersOfNFT } from "@airstack/airstack-react";
+
+const [fetchData, { data, loading, pagination }] = useGetHoldersOfNFT({
+  tokenAddress: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
+  tokenId: "1751",
+  blockchain: "ethereum"
+});
+```
+
+### `useGetPrimaryENS`
+
+Get Primary Domain for an address
+
+```jsx
+import { useGetPrimaryENS } from "@airstack/airstack-react";
+
+const [fetchData, { data, loading, pagination }] = useGetPrimaryENS({
+  identity: "vitalik.eth",
+  blockchain: "ethereum"
+});
+```
+
+### `useGetENSSubDomains`
+
+Get sub domains for an address
+
+```jsx
+import { useGetENSSubDomains } from "@airstack/airstack-react";
+
+const [fetchData, { data, loading, pagination }] = useGetENSSubDomains({
+  owner: "vitalik.eth",
+  blockchain: "ethereum"
+});
+```
+
+### `useGetTokenTransfers`
+
+Get all transfer of a token
+
+```jsx
+import { useGetNFTTransfers } from "@airstack/airstack-react";
+
+const [fetchData, { data, loading, pagination }] = useGetNFTTransfers({
+  address: "vitalik.eth",
+  blockchain: "ethereum"
+});
+```
+
+### `useGetNFTTransfers`
+
+Get all transfer of a token NFT
+
+```jsx
+import { useGetNFTTransfers } from "@airstack/airstack-react";
+
+const [fetchData, { data, loading, pagination }] = useGetNFTTransfers({
+  tokenAddress: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
+  tokenId: "1751",
+  blockchain: "ethereum",
+  limit: 200
+});
 ```
