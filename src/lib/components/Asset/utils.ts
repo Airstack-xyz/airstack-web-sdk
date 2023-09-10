@@ -53,7 +53,9 @@ export function getPreset(el?: HTMLElement | null) {
 }
 
 export async function getMediaTypeFromUrl(url: string) {
-  if (!url) return "unknown";
+  if (!url) {
+    return "unknown";
+  }
 
   const response = await fetch(url, {
     method: "HEAD",
