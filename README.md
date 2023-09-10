@@ -22,7 +22,7 @@ With the provided hooks and components, you can easily query and fetch data from
 - [fetchQueryWithPagination](#fetchquerywithpagination)
 - [Hooks for Popular Queries](#hooks-for-popular-queries)
   - [useGetTokenBalances](#usegettokenbalances)
-  - [useGetTokenDetails](#usegetokendetails)
+  - [useGetTokenDetails](#usegettokendetails)
   - [useGetNFTDetails](#usegetnftdetails)
   - [useGetNFTs](#usegetnfts)
   - [useGetNFTImages](#usegetnftimages)
