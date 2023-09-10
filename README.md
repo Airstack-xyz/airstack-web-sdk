@@ -3,6 +3,39 @@
 The Airstack Web SDK provides a convenient way for web developers to integrate Airstack's blockchain functionalities into their applications.
 With the provided hooks and components, you can easily query and fetch data from smart contracts and display NFT assets.
 
+## Table of Contents
+
+- [Installation](#installation)
+  - [With NPM](#with-npm)
+  - [With yarn](#with-yarn)
+  - [With pnpm](#with-pnpm)
+- [Getting Started](#getting-started)
+- [Hooks](#hooks)
+  - [Query Hooks](#query-hooks)
+    - [useQuery](#usequery)
+    - [useLazyQuery](#uselazyquery)
+  - [Pagination Hooks](#pagination-hooks)
+- [Components](#components)
+  - [Asset](#asset)
+  - [Props](#props)
+- [fetchQuery](#fetchquery)
+- [fetchQueryWithPagination](#fetchquerywithpagination)
+- [Hooks for Popular Queries](#hooks-for-popular-queries)
+  - [useGetTokenBalances](#usegettokenbalances)
+  - [useGetTokenDetails](#usegetokendetails)
+  - [useGetNFTDetails](#usegetnftdetails)
+  - [useGetNFTs](#usegetnfts)
+  - [useGetNFTImages](#usegetnftimages)
+  - [useGetWalletENSAndSocial](#usegetwalletensandsocial)
+  - [useGetWalletENS](#usegetwalletens)
+  - [useGetBalanceOfToken](#usegetbalanceoftoken)
+  - [useGetHoldersOfCollection](#usegetholdersofcollection)
+  - [useGetHoldersOfNFT](usegetholdersofnft)
+  - [useGetPrimaryENS](#usegetprimaryens)
+  - [useGetENSSubDomains](#usegetenssubdomains)
+  - [useGetTokenTransfers](#usegettokentransfers)
+  - [useGetNFTTransfers](#usegetnfttransfers)
+
 ## Installation
 
 #### With NPM
