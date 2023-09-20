@@ -2,6 +2,11 @@ import { IntrospectionSchema, IntrospectionType } from "graphql";
 import { API_ENDPOINT_PROD } from "../../constants";
 import { introspectionQuery } from "../../constants/introspectionQuery";
 
+const mismatchedQueryMap = {
+  socialfollowingsinput: "socialfollowinginput",
+  socialfollowersinput: "socialfollowerinput",
+} as const;
+
 export type SchemaMap = Record<string, IntrospectionType>;
 const cache: {
   schema: SchemaMap | null;
@@ -38,6 +43,19 @@ export async function getIntrospectionQueryMap(): Promise<SchemaMap> {
         schemaMap[type.name.toLowerCase()] = type;
       });
 
+      // fix for known query-name to schema-input-name mismatch
+      for (const expectedQueryInputName in mismatchedQueryMap) {
+        const actualQueryInputNameInResponse =
+          mismatchedQueryMap[
+            expectedQueryInputName as keyof typeof mismatchedQueryMap
+          ];
+        const value =
+          schemaMap[expectedQueryInputName] ||
+          schemaMap[actualQueryInputNameInResponse];
+        if (value) {
+          schemaMap[expectedQueryInputName] = value;
+        }
+      }
       cache.schema = schemaMap;
       return schemaMap;
     });
