@@ -24,15 +24,15 @@ function isCacheValid(createdAt: number) {
   return Date.now() - createdAt < CACHE_EXPIRATION;
 }
 
-export function getFromCache(
+export function getFromCache<C extends ResponseType>(
   query: string,
   variables = {}
-): ResponseType | null {
+): C | null {
   const key = createCacheKey(query, variables);
   const cachedData = cache[key];
   if (!cachedData) return null;
   const isValidCache = isCacheValid(cachedData.createdAt);
-  return isValidCache ? cachedData.data : null;
+  return isValidCache ? (cachedData.data as C) : null;
 }
 
 export function cacheResponse(

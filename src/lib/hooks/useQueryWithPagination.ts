@@ -4,13 +4,14 @@ import {
   FetchPaginatedQueryReturnType,
   Variables,
   ConfigAndCallbacks,
+  ResponseType,
 } from "../types";
 import { useRequestState } from "./useDataState";
 import { addPaginationToQuery } from "../utils/addPaginationToQuery";
 import { fetchPaginatedQuery } from "../apis/fetchPaginatedQuery";
 
-type BaseReturnType = {
-  data: any;
+type BaseReturnType<D> = {
+  data: null | D;
   error: any;
 };
 type Pagination = {
@@ -20,24 +21,24 @@ type Pagination = {
   getPrevPage: () => Promise<void>;
 };
 
-type UseQueryReturnType = BaseReturnType & {
+type UseQueryReturnType<D> = BaseReturnType<D> & {
   loading: boolean;
   pagination: Pagination;
 };
 
-type FetchType = (variables?: Variables) => Promise<
-  BaseReturnType & {
+type FetchType<D> = (variables?: Variables) => Promise<
+  BaseReturnType<D> & {
     pagination: Omit<Pagination, "getNextPage" | "getPrevPage">;
   }
 >;
 
-type LazyHookReturnType = [FetchType, UseQueryReturnType];
+type LazyHookReturnType<D> = [FetchType<D>, UseQueryReturnType<D>];
 
-export function useLazyQueryWithPagination(
+export function useLazyQueryWithPagination<D extends ResponseType>(
   query: string,
   variables?: Variables,
   configAndCallbacks?: ConfigAndCallbacks
-): LazyHookReturnType {
+): LazyHookReturnType<D> {
   const {
     data,
     error,
@@ -52,8 +53,8 @@ export function useLazyQueryWithPagination(
   } = useRequestState(variables, configAndCallbacks);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPrevPage, setHasPrevPage] = useState(false);
-  const nextRef = useRef<null | (() => Promise<FetchQuery | null>)>(null);
-  const prevRef = useRef<null | (() => Promise<FetchQuery | null>)>(null);
+  const nextRef = useRef<null | (() => Promise<FetchQuery<D> | null>)>(null);
+  const prevRef = useRef<null | (() => Promise<FetchQuery<D> | null>)>(null);
 
   const reset = useCallback(() => {
     nextRef.current = null;
@@ -66,7 +67,7 @@ export function useLazyQueryWithPagination(
   }, [setData, setError, setLoading]);
 
   const handleResponse = useCallback(
-    (res: null | Awaited<FetchPaginatedQueryReturnType>) => {
+    (res: null | Awaited<FetchPaginatedQueryReturnType<D>>) => {
       if (!res) return;
       const {
         data: rawData,
@@ -94,14 +95,14 @@ export function useLazyQueryWithPagination(
     [callbacksRef, originalData, setData, setError, setLoading]
   );
 
-  const fetch: FetchType = useCallback(
+  const fetch: FetchType<D> = useCallback(
     async (_variables?: Variables) => {
       reset();
       setLoading(true);
 
       const queryWithPagination = await addPaginationToQuery(query);
 
-      const res = await fetchPaginatedQuery(
+      const res = await fetchPaginatedQuery<D>(
         queryWithPagination,
         _variables || variablesRef.current,
         configRef.current
@@ -161,12 +162,12 @@ export function useLazyQueryWithPagination(
   ]);
 }
 
-export function useQueryWithPagination(
+export function useQueryWithPagination<D extends ResponseType>(
   query: string,
   variables?: Variables,
   configAndCallbacks?: ConfigAndCallbacks
-): UseQueryReturnType {
-  const [fetch, data] = useLazyQueryWithPagination(
+): UseQueryReturnType<D> {
+  const [fetch, data] = useLazyQueryWithPagination<D>(
     query,
     variables,
     configAndCallbacks

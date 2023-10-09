@@ -1,24 +1,29 @@
 import { useCallback, useEffect } from "react";
 import { fetchQuery } from "../apis/fetchQuery";
-import { ConfigAndCallbacks, FetchQueryReturnType, Variables } from "../types";
+import {
+  ConfigAndCallbacks,
+  FetchQueryReturnType,
+  ResponseType,
+  Variables,
+} from "../types";
 import { useRequestState } from "./useDataState";
 
-type UseQueryReturnType = {
-  data: any;
+type UseQueryReturnType<D> = {
+  data: D | null;
   error: any;
   loading: boolean;
 };
 
-type UseLazyQueryReturnType = [
-  (variables?: Variables) => Promise<Omit<UseQueryReturnType, "loading">>,
-  UseQueryReturnType
+type UseLazyQueryReturnType<D extends ResponseType> = [
+  (variables?: Variables) => Promise<Omit<UseQueryReturnType<D>, "loading">>,
+  UseQueryReturnType<D>
 ];
 
-export function useLazyQuery(
+export function useLazyQuery<D extends ResponseType>(
   query: string,
   variables?: Variables,
   configAndCallbacks?: ConfigAndCallbacks
-): UseLazyQueryReturnType {
+): UseLazyQueryReturnType<D> {
   const {
     data,
     error,
@@ -33,7 +38,7 @@ export function useLazyQuery(
   } = useRequestState(variables, configAndCallbacks);
 
   const handleResponse = useCallback(
-    (res: Awaited<FetchQueryReturnType>) => {
+    (res: Awaited<FetchQueryReturnType<D>>) => {
       if (!res) return;
       const { data: rawData, error } = res;
       originalData.current = rawData;
@@ -54,7 +59,7 @@ export function useLazyQuery(
     async (_variables?: Variables) => {
       setError(null);
       setLoading(true);
-      const res = await fetchQuery(
+      const res = await fetchQuery<D>(
         query,
         _variables || variablesRef.current,
         configRef.current
@@ -68,12 +73,12 @@ export function useLazyQuery(
   return [fetch, { data, error, loading }];
 }
 
-export function useQuery(
+export function useQuery<D extends ResponseType>(
   query: string,
   variables?: Variables,
   configAndCallbacks?: ConfigAndCallbacks
-): UseQueryReturnType {
-  const [fetch, { data, error, loading }] = useLazyQuery(
+): UseQueryReturnType<D> {
+  const [fetch, { data, error, loading }] = useLazyQuery<D>(
     query,
     variables,
     configAndCallbacks

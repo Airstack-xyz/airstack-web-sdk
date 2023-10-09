@@ -10,26 +10,26 @@ import { stringifyObjectValues } from "../utils/stringifyObjectValues";
 import { config as globalConfig } from "../config";
 import { cacheImagesFromQuery } from "../utils/cacheImagesFromQuery";
 
-export async function fetchQuery(
+export async function fetchQuery<D extends ResponseType>(
   query: string,
   variables?: Variables,
   _config?: Config
-): FetchQueryReturnType {
+): FetchQueryReturnType<D> {
   const _variables: Variables = stringifyObjectValues(variables || {});
 
   const config = { ...globalConfig, ..._config };
 
-  let data: null | ResponseType = config.cache
-    ? getFromCache(query, _variables || {})
+  let data: null | D = config.cache
+    ? getFromCache<D>(query, _variables || {})
     : null;
   let error = null;
 
   if (!data) {
-    const [response, _error] = await fetchGql<any>(query, _variables);
+    const [response, _error] = await fetchGql<D>(query, _variables);
     data = response;
     error = _error;
     if (config.cache && data && !error) {
-      cacheResponse(response, query, _variables);
+      cacheResponse(data, query, _variables);
     }
     cacheImagesFromQuery(data);
   } else {
@@ -42,3 +42,12 @@ export async function fetchQuery(
     error,
   };
 }
+
+// type Test = {
+//   user: {
+//     name: string;
+//   };
+// };
+
+// const u  = await fetchQuery<Test>("");
+// u.data?.user.name

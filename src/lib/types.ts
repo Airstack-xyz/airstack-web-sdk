@@ -3,36 +3,33 @@ export type PageInfo = {
   nextCursor: string;
 };
 
-export type ResponseType = {
-  [key: string]: {
-    pageInfo: PageInfo;
-  };
-};
+export type ResponseType = Record<string, any>;
 
 export type QueryContext = { variableNamesMap: Record<string, number> };
 
-export type FetchQuery = {
-  data: any;
+export type FetchQuery<D> = {
+  data: D | null;
   error: any;
   hasNextPage: boolean;
   hasPrevPage: boolean;
-  getNextPage: () => Promise<FetchQuery | null>;
-  getPrevPage: () => Promise<FetchQuery | null>;
+  getNextPage: () => Promise<FetchQuery<D> | null>;
+  getPrevPage: () => Promise<FetchQuery<D> | null>;
 };
 
-export type FetchPaginatedQueryReturnType = Promise<FetchQuery>;
-export type FetchQueryReturnType = Promise<Pick<FetchQuery, "data" | "error">>;
+export type FetchPaginatedQueryReturnType<D> = Promise<FetchQuery<D>>;
+export type FetchQueryReturnType<D> = Promise<
+  Pick<FetchQuery<D>, "data" | "error">
+>;
 
 export type Config = {
   cache?: boolean;
 };
 
-
 export type ConfigAndCallbacks = Config & {
   onCompleted?: (data: any) => void;
   onError?: (error: any) => void;
   dataFormatter?: any;
-}
+};
 
 export type Variables = Record<string, any>;
 
