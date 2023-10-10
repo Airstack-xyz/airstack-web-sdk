@@ -26,7 +26,8 @@ export interface AirstackAssetContextInterface {
 export const fetchNFTAssetURL = (
   chain: Chain,
   address: string,
-  tokenId: string
+  tokenId: string,
+  forceFetch = false
 ): Promise<NFTAssetURL> => {
   return new Promise((resolve, reject) => {
     if (address.length === 0) {
@@ -40,7 +41,7 @@ export const fetchNFTAssetURL = (
     }
 
     const nftAssetURL = getFromAssetCache(chain, address, tokenId);
-    if (nftAssetURL) {
+    if (!forceFetch && nftAssetURL) {
       //cache hit
       resolve(nftAssetURL);
     } else {

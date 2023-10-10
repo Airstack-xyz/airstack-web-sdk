@@ -13,7 +13,7 @@ import { MediaType, getMediaType, getMediaTypeFromUrl } from "./utils";
 import styles from "./styles.module.css";
 import { logError } from "../../utils/log";
 
-// !!! TODO: handle html, svg markup (SENITISE markup)
+// !!! TODO: handle html, svg markup (SANITIZE markup)
 
 type HTMLVideoProps = ComponentProps<"video">;
 type HTMLAudioProps = ComponentProps<"audio">;
@@ -32,9 +32,13 @@ export type MediaProps = {
   data?: NFTAssetURL["value"];
   onError: () => void;
   onComplete: () => void;
+  url: string | null;
 };
 
-type AudioVideoProps = Omit<MediaProps, "data" | "preset" | "onComplete"> & {
+type AudioVideoProps = Omit<
+  MediaProps,
+  "data" | "preset" | "onComplete" | "url"
+> & {
   url: string;
 };
 
@@ -100,30 +104,17 @@ function Video({ url, videoProps: elementProps, onError }: AudioVideoProps) {
     </video>
   );
 }
-
 export function Media({
-  data,
   preset,
   imgProps,
   videoProps,
   audioProps,
   onError,
   onComplete,
-}: Omit<MediaProps, "url">) {
+  url,
+}: MediaProps) {
   const [mediaType, setMediaType] = useState<MediaType | null>(null);
   const isLoadingRef = useRef(false);
-
-  let url: string | null = null;
-
-  if (data) {
-    // use animation url if available, otherwise use video, audio, or image
-    url =
-      data.animation_url?.original ||
-      data.video ||
-      data.audio ||
-      (data.image || {})[preset] ||
-      "";
-  }
 
   const handleUrlWithoutExtension = useCallback(
     async (url: string) => {
@@ -164,7 +155,7 @@ export function Media({
       logError("url is null");
       onError();
     }
-  }, [data, mediaType, onError, preset, url]);
+  }, [mediaType, onError, preset, url]);
 
   if (!mediaType || !url) return null;
 
