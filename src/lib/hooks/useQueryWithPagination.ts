@@ -40,7 +40,7 @@ type LazyHookReturnType<D extends ResponseType, V extends VariablesType> = [
 ];
 
 export function useLazyQueryWithPagination<
-  ReturnedData extends ResponseType,
+  ReturnedData = ResponseType,
   Variables extends VariablesType = VariablesType,
   Formatter extends (data: ResponseType) => ReturnedData = (
     data: ResponseType
@@ -190,7 +190,7 @@ export function useLazyQueryWithPagination<
 }
 
 export function useQueryWithPagination<
-  ReturnedData extends ResponseType,
+  ReturnedData = ResponseType,
   Variables extends VariablesType = VariablesType,
   Formatter extends (data: ResponseType) => ReturnedData = (
     data: ResponseType

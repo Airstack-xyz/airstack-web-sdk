@@ -13,7 +13,7 @@ import { removeQueriesIfNoNextPage } from "../utils/removeQueriesIfNoNextPage";
 import { config as globalConfig } from "../config";
 import { cacheImagesFromQuery } from "../utils/cacheImagesFromQuery";
 
-export async function fetchPaginatedQuery<D extends ResponseType>(
+export async function fetchPaginatedQuery<D = ResponseType>(
   originalQuery: string,
   variables?: VariablesType,
   config?: Config

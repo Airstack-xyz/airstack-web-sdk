@@ -10,7 +10,7 @@ import { stringifyObjectValues } from "../utils/stringifyObjectValues";
 import { config as globalConfig } from "../config";
 import { cacheImagesFromQuery } from "../utils/cacheImagesFromQuery";
 
-export async function fetchQuery<D extends ResponseType>(
+export async function fetchQuery<D = ResponseType>(
   query: string,
   variables?: VariablesType,
   _config?: Config

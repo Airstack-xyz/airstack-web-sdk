@@ -23,7 +23,7 @@ type UseLazyQueryReturnType<
 ];
 
 export function useLazyQuery<
-  ReturnedData extends ResponseType,
+  ReturnedData = ResponseType,
   Variables extends VariablesType = VariablesType,
   Formatter extends (data: ResponseType) => ReturnedData = (
     data: ResponseType
@@ -93,7 +93,7 @@ export function useLazyQuery<
 }
 
 export function useQuery<
-  ReturnedData extends ResponseType,
+  ReturnedData = ResponseType,
   Variables extends VariablesType = VariablesType,
   Formatter extends (data: ResponseType) => ReturnedData = (
     data: ResponseType
