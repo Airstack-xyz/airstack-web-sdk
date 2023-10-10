@@ -64,12 +64,9 @@ export function useLazyQuery<
       setLoading(false);
       if (error) {
         callbacksRef.current.onError(error);
-        return {
-          data,
-          error,
-        };
+      } else {
+        callbacksRef.current.onCompleted(data as ReturnType<Formatter>);
       }
-      callbacksRef.current.onCompleted(data as ReturnType<Formatter>);
       return {
         data,
         error,
@@ -79,7 +76,7 @@ export function useLazyQuery<
   );
 
   const fetch = useCallback(
-    async (_variables?: typeof variables) => {
+    async (_variables?: Variables) => {
       setError(null);
       setLoading(true);
       const res = await fetchQuery<ResponseType>(

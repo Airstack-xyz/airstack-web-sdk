@@ -38,7 +38,7 @@ export type ConfigAndCallbacks<D extends ResponseType, F> = Config & {
   dataFormatter?: F;
 };
 
-export type VariablesType = Record<string, unknown>;
+export type VariablesType = Record<string, any>;
 
 export type NFTAssetURL = {
   type: string;

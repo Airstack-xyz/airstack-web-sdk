@@ -42,12 +42,3 @@ export async function fetchQuery<D extends ResponseType>(
     error,
   };
 }
-
-// type Test = {
-//   user: {
-//     name: string;
-//   };
-// };
-
-// const u  = await fetchQuery<Test>("");
-// u.data?.user.name
