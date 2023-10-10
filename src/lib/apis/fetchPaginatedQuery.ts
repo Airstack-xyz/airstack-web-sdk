@@ -4,7 +4,7 @@ import {
   FetchPaginatedQueryReturnType,
   FetchQuery,
   ResponseType,
-  Variables,
+  VariablesType,
 } from "../types";
 import { cacheResponse, getFromCache } from "../cache";
 import { getPaginationData } from "../utils/getPaginationData";
@@ -15,7 +15,7 @@ import { cacheImagesFromQuery } from "../utils/cacheImagesFromQuery";
 
 export async function fetchPaginatedQuery<D extends ResponseType>(
   originalQuery: string,
-  variables?: Variables,
+  variables?: VariablesType,
   config?: Config
 ): FetchPaginatedQueryReturnType<D> {
   let query = originalQuery;
@@ -36,10 +36,10 @@ export async function fetchPaginatedQuery<D extends ResponseType>(
 
   async function fetch(
     _query: string,
-    _variables?: Variables,
+    _variables?: VariablesType,
     _config?: Config
   ): FetchPaginatedQueryReturnType<D> {
-    const variables: Variables = stringifyObjectValues(_variables || {});
+    const variables: VariablesType = stringifyObjectValues(_variables || {});
     const config = { cache: globalConfig.cache, ..._config };
 
     let data: null | D = config.cache
@@ -54,7 +54,7 @@ export async function fetchPaginatedQuery<D extends ResponseType>(
       if (config.cache && data && !error) {
         cacheResponse(response, _query, variables);
       }
-      cacheImagesFromQuery(data);
+      cacheImagesFromQuery(data as any);
     } else {
       // return a new reference to the data object, so reference equality check in React components/hooks will work
       data = { ...data };

@@ -3,7 +3,7 @@ export type PageInfo = {
   nextCursor: string;
 };
 
-export type ResponseType = Record<string, any>;
+export type ResponseType = any;
 
 export type QueryContext = { variableNamesMap: Record<string, number> };
 
@@ -25,13 +25,20 @@ export type Config = {
   cache?: boolean;
 };
 
-export type ConfigAndCallbacks = Config & {
-  onCompleted?: (data: any) => void;
-  onError?: (error: any) => void;
-  dataFormatter?: any;
+export type DataFormatter<
+  D extends ResponseType,
+  P extends (data: D) => any = (data: D) => D
+> = {
+  dataFormatter: P;
 };
 
-export type Variables = Record<string, any>;
+export type ConfigAndCallbacks<D extends ResponseType, F> = Config & {
+  onCompleted?: (data: D) => void;
+  onError?: (error: any) => void;
+  dataFormatter?: F;
+};
+
+export type VariablesType = Record<string, unknown>;
 
 export type NFTAssetURL = {
   type: string;

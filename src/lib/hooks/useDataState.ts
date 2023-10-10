@@ -1,5 +1,10 @@
 import { useRef, useState } from "react";
-import { Config, ConfigAndCallbacks, Variables } from "../types";
+import {
+  Config,
+  ConfigAndCallbacks,
+  ResponseType,
+  VariablesType,
+} from "../types";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 function noop() {}
@@ -8,19 +13,25 @@ function defaultDataFormatter(data: any) {
   return data;
 }
 
-export function useRequestState(
+export function useRequestState<
+  ReturnedData extends ResponseType,
+  Variables,
+  Formatter
+>(
   variables?: Variables,
-  configAndCallbacks?: ConfigAndCallbacks
+  configAndCallbacks?: ConfigAndCallbacks<ReturnedData, Formatter>
 ) {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<ReturnedData | null>(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const configRef = useRef<Config | undefined>(configAndCallbacks);
-  const variablesRef = useRef<Variables>(variables || {});
-  const callbacksRef = useRef<Required<Omit<ConfigAndCallbacks, "cache">>>({
+  const variablesRef = useRef<VariablesType>(variables || {});
+  const callbacksRef = useRef<
+    Required<Omit<ConfigAndCallbacks<ReturnedData, Formatter>, "cache">>
+  >({
     onCompleted: noop,
     onError: noop,
-    dataFormatter: defaultDataFormatter,
+    dataFormatter: defaultDataFormatter as Formatter,
   });
   const originalData = useRef<any>(null);
 
@@ -37,7 +48,7 @@ export function useRequestState(
     ...callbacksRef.current,
     onCompleted,
     onError,
-    dataFormatter: dataFormatter,
+    dataFormatter: dataFormatter as Formatter,
   }; // update callbacksRef.current when configAndCallbacks changes
 
   return {

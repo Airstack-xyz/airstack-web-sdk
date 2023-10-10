@@ -46,7 +46,7 @@ function WithPagginationNoCaching() {
     data,
     loading,
     pagination: { hasNextPage, hasPrevPage, getNextPage, getPrevPage },
-  } = useQueryWithPagination(query, variables, {
+  } = useQueryWithPagination<{ name: "test" }>(query, variables, {
     cache: false,
   });
 
@@ -66,9 +66,16 @@ function WithPagginationNoCaching() {
     </div>
   );
 }
-
+type Vars = typeof variables;
 function LazyLoad() {
-  const [fetch, { data, loading }] = useLazyQuery(query, variables);
+  const [fetch, { data, loading }] = useLazyQuery(query, variables, {
+    cache: false,
+    dataFormatter: (data) => {
+      return data.user.data as {
+        name: string;
+      };
+    },
+  });
 
   return (
     <div>

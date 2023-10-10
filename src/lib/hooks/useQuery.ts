@@ -4,7 +4,7 @@ import {
   ConfigAndCallbacks,
   FetchQueryReturnType,
   ResponseType,
-  Variables,
+  VariablesType,
 } from "../types";
 import { useRequestState } from "./useDataState";
 
@@ -14,16 +14,25 @@ type UseQueryReturnType<D> = {
   loading: boolean;
 };
 
-type UseLazyQueryReturnType<D extends ResponseType> = [
+type UseLazyQueryReturnType<
+  D extends ResponseType,
+  Variables extends VariablesType
+> = [
   (variables?: Variables) => Promise<Omit<UseQueryReturnType<D>, "loading">>,
   UseQueryReturnType<D>
 ];
 
-export function useLazyQuery<D extends ResponseType>(
+export function useLazyQuery<
+  ReturnedData extends ResponseType,
+  Variables extends VariablesType = VariablesType,
+  Formatter extends (data: ResponseType) => ReturnedData = (
+    data: ResponseType
+  ) => ReturnedData
+>(
   query: string,
   variables?: Variables,
-  configAndCallbacks?: ConfigAndCallbacks
-): UseLazyQueryReturnType<D> {
+  configAndCallbacks?: ConfigAndCallbacks<ReturnedData, Formatter>
+): UseLazyQueryReturnType<ReturnType<Formatter>, Variables> {
   const {
     data,
     error,
@@ -35,37 +44,50 @@ export function useLazyQuery<D extends ResponseType>(
     setData,
     setError,
     setLoading,
-  } = useRequestState(variables, configAndCallbacks);
+  } = useRequestState<ReturnType<Formatter>, Variables, Formatter>(
+    variables,
+    configAndCallbacks
+  );
 
   const handleResponse = useCallback(
-    (res: Awaited<FetchQueryReturnType<D>>) => {
-      if (!res) return;
-      const { data: rawData, error } = res;
-      originalData.current = rawData;
-      const data = rawData ? callbacksRef.current.dataFormatter(rawData) : null;
+    (res: Awaited<FetchQueryReturnType<ResponseType>>) => {
+      if (!res) return { data: null, error: null };
+      const { data: ResponseType, error } = res;
+      originalData.current = ResponseType;
+      const data: ReturnType<Formatter> | null = ResponseType
+        ? (callbacksRef.current.dataFormatter(
+            ResponseType
+          ) as ReturnType<Formatter>)
+        : null;
       setData(data);
       setError(error);
       setLoading(false);
       if (error) {
         callbacksRef.current.onError(error);
-        return;
+        return {
+          data,
+          error,
+        };
       }
-      callbacksRef.current.onCompleted(data);
+      callbacksRef.current.onCompleted(data as ReturnType<Formatter>);
+      return {
+        data,
+        error,
+      };
     },
     [callbacksRef, originalData, setData, setError, setLoading]
   );
 
   const fetch = useCallback(
-    async (_variables?: Variables) => {
+    async (_variables?: typeof variables) => {
       setError(null);
       setLoading(true);
-      const res = await fetchQuery<D>(
+      const res = await fetchQuery<ResponseType>(
         query,
         _variables || variablesRef.current,
         configRef.current
       );
-      handleResponse(res);
-      return { data: res?.data, error: res?.error };
+      return handleResponse(res);
     },
     [setError, setLoading, query, variablesRef, configRef, handleResponse]
   );
@@ -73,16 +95,22 @@ export function useLazyQuery<D extends ResponseType>(
   return [fetch, { data, error, loading }];
 }
 
-export function useQuery<D extends ResponseType>(
+export function useQuery<
+  ReturnedData extends ResponseType,
+  Variables extends VariablesType = VariablesType,
+  Formatter extends (data: ResponseType) => ReturnedData = (
+    data: ResponseType
+  ) => ReturnedData
+>(
   query: string,
   variables?: Variables,
-  configAndCallbacks?: ConfigAndCallbacks
-): UseQueryReturnType<D> {
-  const [fetch, { data, error, loading }] = useLazyQuery<D>(
-    query,
-    variables,
-    configAndCallbacks
-  );
+  configAndCallbacks?: ConfigAndCallbacks<ReturnedData, Formatter>
+): UseQueryReturnType<ReturnedData> {
+  const [fetch, { data, error, loading }] = useLazyQuery<
+    ReturnedData,
+    Variables,
+    Formatter
+  >(query, variables, configAndCallbacks);
 
   useEffect(() => {
     fetch();

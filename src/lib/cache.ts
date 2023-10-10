@@ -1,4 +1,4 @@
-import { ResponseType, Variables } from "./types";
+import { ResponseType, VariablesType } from "./types";
 
 const CACHE_EXPIRATION = 1000 * 60; // 1 minute
 
@@ -11,7 +11,7 @@ type Cache = {
 
 const cache: Cache = {};
 
-export function createCacheKey(query: string, variables: Variables = {}) {
+export function createCacheKey(query: string, variables: VariablesType = {}) {
   let key = `${query}=`;
   const keys = Object.keys(variables).sort();
   for (const k of keys) {
