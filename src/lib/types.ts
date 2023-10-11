@@ -3,38 +3,42 @@ export type PageInfo = {
   nextCursor: string;
 };
 
-export type ResponseType = {
-  [key: string]: {
-    pageInfo: PageInfo;
-  };
-};
+export type ResponseType = any;
 
 export type QueryContext = { variableNamesMap: Record<string, number> };
 
-export type FetchQuery = {
-  data: any;
+export type FetchQuery<D> = {
+  data: D | null;
   error: any;
   hasNextPage: boolean;
   hasPrevPage: boolean;
-  getNextPage: () => Promise<FetchQuery | null>;
-  getPrevPage: () => Promise<FetchQuery | null>;
+  getNextPage: () => Promise<FetchQuery<D> | null>;
+  getPrevPage: () => Promise<FetchQuery<D> | null>;
 };
 
-export type FetchPaginatedQueryReturnType = Promise<FetchQuery>;
-export type FetchQueryReturnType = Promise<Pick<FetchQuery, "data" | "error">>;
+export type FetchPaginatedQueryReturnType<D> = Promise<FetchQuery<D>>;
+export type FetchQueryReturnType<D> = Promise<
+  Pick<FetchQuery<D>, "data" | "error">
+>;
 
 export type Config = {
   cache?: boolean;
 };
 
+export type DataFormatter<
+  D extends ResponseType,
+  P extends (data: D) => any = (data: D) => D
+> = {
+  dataFormatter: P;
+};
 
-export type ConfigAndCallbacks = Config & {
-  onCompleted?: (data: any) => void;
+export type ConfigAndCallbacks<D extends ResponseType, F> = Config & {
+  onCompleted?: (data: D) => void;
   onError?: (error: any) => void;
-  dataFormatter?: any;
-}
+  dataFormatter?: F;
+};
 
-export type Variables = Record<string, any>;
+export type VariablesType = Record<string, any>;
 
 export type NFTAssetURL = {
   type: string;

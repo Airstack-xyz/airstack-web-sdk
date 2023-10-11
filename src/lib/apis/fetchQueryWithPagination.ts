@@ -1,12 +1,17 @@
-import { Config, FetchPaginatedQueryReturnType, Variables } from "../types";
+import {
+  Config,
+  FetchPaginatedQueryReturnType,
+  ResponseType,
+  VariablesType,
+} from "../types";
 import { addPaginationToQuery } from "../utils/addPaginationToQuery";
 import { fetchPaginatedQuery } from "./fetchPaginatedQuery";
 
-export async function fetchQueryWithPagination(
+export async function fetchQueryWithPagination<D = ResponseType>(
   query: string,
-  variables?: Variables,
+  variables?: VariablesType,
   config?: Config
-): FetchPaginatedQueryReturnType {
+): FetchPaginatedQueryReturnType<D> {
   const queryWithPagination = await addPaginationToQuery(query);
 
   return fetchPaginatedQuery(

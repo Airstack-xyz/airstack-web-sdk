@@ -1,11 +1,11 @@
 import { createCacheKey } from "../cache";
 import { config } from "../config";
 import { AIRSTACK_ENDPOINT } from "../constants";
-import { Variables } from "../types";
+import { VariablesType } from "../types";
 
 export async function _fetch<ResponseType = any>(
   query: string,
-  variables: Variables
+  variables: VariablesType
 ): Promise<[ResponseType | null, any]> {
   if (!config.authKey) {
     throw new Error("No API key provided");
@@ -25,8 +25,8 @@ export async function _fetch<ResponseType = any>(
     const json = await res.json();
     const data = json?.data;
     let error = null;
-    if (json.errors) {
-      error = json.errors;
+    if (json?.errors) {
+      error = json?.errors;
     }
     return [data, error];
   } catch (error) {
@@ -40,7 +40,7 @@ const promiseCache: { [key: string]: Promise<any> } = {};
 
 export async function fetchGql<ResponseType = any>(
   query: string,
-  variables: Variables
+  variables: VariablesType
 ): Promise<[ResponseType | null, any]> {
   const key = createCacheKey(query, variables);
   if (!promiseCache[key]) {

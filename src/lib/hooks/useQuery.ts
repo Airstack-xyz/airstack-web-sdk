@@ -1,24 +1,38 @@
 import { useCallback, useEffect } from "react";
 import { fetchQuery } from "../apis/fetchQuery";
-import { ConfigAndCallbacks, FetchQueryReturnType, Variables } from "../types";
+import {
+  ConfigAndCallbacks,
+  FetchQueryReturnType,
+  ResponseType,
+  VariablesType,
+} from "../types";
 import { useRequestState } from "./useDataState";
 
-type UseQueryReturnType = {
-  data: any;
+type UseQueryReturnType<D> = {
+  data: D | null;
   error: any;
   loading: boolean;
 };
 
-type UseLazyQueryReturnType = [
-  (variables?: Variables) => Promise<Omit<UseQueryReturnType, "loading">>,
-  UseQueryReturnType
+type UseLazyQueryReturnType<
+  D extends ResponseType,
+  Variables extends VariablesType
+> = [
+  (variables?: Variables) => Promise<Omit<UseQueryReturnType<D>, "loading">>,
+  UseQueryReturnType<D>
 ];
 
-export function useLazyQuery(
+export function useLazyQuery<
+  ReturnedData = ResponseType,
+  Variables extends VariablesType = VariablesType,
+  Formatter extends (data: ResponseType) => ReturnedData = (
+    data: ResponseType
+  ) => ReturnedData
+>(
   query: string,
   variables?: Variables,
-  configAndCallbacks?: ConfigAndCallbacks
-): UseLazyQueryReturnType {
+  configAndCallbacks?: ConfigAndCallbacks<ReturnedData, Formatter>
+): UseLazyQueryReturnType<ReturnType<Formatter>, Variables> {
   const {
     data,
     error,
@@ -30,22 +44,39 @@ export function useLazyQuery(
     setData,
     setError,
     setLoading,
-  } = useRequestState(variables, configAndCallbacks);
+  } = useRequestState<ReturnType<Formatter>, Variables, Formatter>(
+    variables,
+    configAndCallbacks
+  );
 
   const handleResponse = useCallback(
-    (res: Awaited<FetchQueryReturnType>) => {
-      if (!res) return;
-      const { data: rawData, error } = res;
-      originalData.current = rawData;
-      const data = rawData ? callbacksRef.current.dataFormatter(rawData) : null;
+    (res: Awaited<FetchQueryReturnType<ResponseType>>) => {
+      let data: ReturnType<Formatter> | null = null;
+      let error = null;
+
+      if (res) {
+        const { data: rawData, error: _error } = res;
+        originalData.current = rawData;
+        data = rawData
+          ? (callbacksRef.current.dataFormatter(
+              rawData
+            ) as ReturnType<Formatter>)
+          : null;
+        error = _error;
+      }
+
       setData(data);
       setError(error);
       setLoading(false);
       if (error) {
         callbacksRef.current.onError(error);
-        return;
+      } else {
+        callbacksRef.current.onCompleted(data as ReturnType<Formatter>);
       }
-      callbacksRef.current.onCompleted(data);
+      return {
+        data,
+        error,
+      };
     },
     [callbacksRef, originalData, setData, setError, setLoading]
   );
@@ -54,13 +85,12 @@ export function useLazyQuery(
     async (_variables?: Variables) => {
       setError(null);
       setLoading(true);
-      const res = await fetchQuery(
+      const res = await fetchQuery<ResponseType>(
         query,
         _variables || variablesRef.current,
         configRef.current
       );
-      handleResponse(res);
-      return { data: res?.data, error: res?.error };
+      return handleResponse(res);
     },
     [setError, setLoading, query, variablesRef, configRef, handleResponse]
   );
@@ -68,16 +98,22 @@ export function useLazyQuery(
   return [fetch, { data, error, loading }];
 }
 
-export function useQuery(
+export function useQuery<
+  ReturnedData = ResponseType,
+  Variables extends VariablesType = VariablesType,
+  Formatter extends (data: ResponseType) => ReturnedData = (
+    data: ResponseType
+  ) => ReturnedData
+>(
   query: string,
   variables?: Variables,
-  configAndCallbacks?: ConfigAndCallbacks
-): UseQueryReturnType {
-  const [fetch, { data, error, loading }] = useLazyQuery(
-    query,
-    variables,
-    configAndCallbacks
-  );
+  configAndCallbacks?: ConfigAndCallbacks<ReturnedData, Formatter>
+): UseQueryReturnType<ReturnedData> {
+  const [fetch, { data, error, loading }] = useLazyQuery<
+    ReturnedData,
+    Variables,
+    Formatter
+  >(query, variables, configAndCallbacks);
 
   useEffect(() => {
     fetch();

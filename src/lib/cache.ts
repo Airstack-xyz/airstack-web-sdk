@@ -1,4 +1,4 @@
-import { ResponseType, Variables } from "./types";
+import { ResponseType, VariablesType } from "./types";
 
 const CACHE_EXPIRATION = 1000 * 60; // 1 minute
 
@@ -11,7 +11,7 @@ type Cache = {
 
 const cache: Cache = {};
 
-export function createCacheKey(query: string, variables: Variables = {}) {
+export function createCacheKey(query: string, variables: VariablesType = {}) {
   let key = `${query}=`;
   const keys = Object.keys(variables).sort();
   for (const k of keys) {
@@ -24,15 +24,15 @@ function isCacheValid(createdAt: number) {
   return Date.now() - createdAt < CACHE_EXPIRATION;
 }
 
-export function getFromCache(
+export function getFromCache<C extends ResponseType>(
   query: string,
   variables = {}
-): ResponseType | null {
+): C | null {
   const key = createCacheKey(query, variables);
   const cachedData = cache[key];
   if (!cachedData) return null;
   const isValidCache = isCacheValid(cachedData.createdAt);
-  return isValidCache ? cachedData.data : null;
+  return isValidCache ? (cachedData.data as C) : null;
 }
 
 export function cacheResponse(
