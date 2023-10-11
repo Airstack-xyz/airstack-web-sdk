@@ -1,4 +1,5 @@
-import { PresetArray, PresetPXSize } from "../../constants";
+import { PresetArray, PresetImageSize, PresetPXSize } from "../../constants";
+import { NFTAssetURL } from "../../types";
 
 export type MediaType = "image" | "video" | "audio" | "unknown";
 
@@ -76,4 +77,23 @@ export async function getMediaTypeFromUrl(url: string) {
   }
 
   return "unknown";
+}
+
+export function getUrlFromData({
+  data,
+  preset,
+}: {
+  data?: NFTAssetURL["value"] | null;
+  preset: PresetImageSize;
+}) {
+  if (!data) return null;
+
+  // use animation url if available, otherwise use video, audio, or image
+  return (
+    data.animation_url?.original ||
+    data.video ||
+    data.audio ||
+    (data.image || {})[preset] ||
+    ""
+  );
 }

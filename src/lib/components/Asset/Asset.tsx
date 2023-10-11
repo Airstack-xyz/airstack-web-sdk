@@ -8,7 +8,7 @@ import React, {
 import { fetchNFTAssetURL } from "./fetchNFTAssetURL";
 import { Chain, PresetImageSize } from "../../constants";
 import { Media, MediaProps } from "./Media";
-import { getPreset } from "./utils";
+import { getPreset, getUrlFromData } from "./utils";
 // eslint-disable-next-line
 // @ts-ignore
 import styles from "./styles.module.css";
@@ -24,7 +24,7 @@ export type AssetProps = {
   progressCallback?: (status: Status) => void;
   preset?: PresetImageSize;
   containerClassName?: string;
-} & Omit<MediaProps, "data" | "onError" | "preset" | "onComplete">;
+} & Omit<MediaProps, "data" | "onError" | "preset" | "onComplete" | "url">;
 
 enum Status {
   Loading = "loading",
@@ -47,6 +47,7 @@ export const AssetContent = (props: AssetProps) => {
   } = props;
 
   const ref = useRef<HTMLDivElement>(null);
+  const loadingRef = useRef(false);
   const [preset, setPreset] = useState<PresetImageSize>(() => {
     if (presetProp) return presetProp;
     return getPreset(ref.current);
@@ -67,6 +68,7 @@ export const AssetContent = (props: AssetProps) => {
 
   const updateState = useCallback(
     (stateVal: Status) => {
+      loadingRef.current = stateVal === Status.Loading;
       setState((prevState: Status) => {
         if (prevState != stateVal) {
           progressCallback && progressCallback(stateVal);
@@ -101,35 +103,64 @@ export const AssetContent = (props: AssetProps) => {
     };
   }, [handleResize, presetProp]);
 
+  const url: string | null = getUrlFromData({ data, preset });
+  const imageData = data?.image;
+  const forceFetch = Boolean(url === "" && imageData);
+  /**
+   * fetch if no data
+   * or
+   * if no url but image data exists, it means that the preset image size is not cached, so fetch it
+   **/
+  const shouldFetchData = !data || forceFetch;
+
   useEffect(() => {
-    if (cachedData) {
+    if (loadingRef.current || !shouldFetchData) {
       return;
     }
-    fetchNFTAssetURL(chain, address, tokenId)
+
+    updateState(Status.Loading);
+
+    fetchNFTAssetURL(chain, address, tokenId, forceFetch)
       .then((res) => {
+        // if url is empty again then show error
+        const showError =
+          forceFetch && !getUrlFromData({ data: res.value, preset });
+        if (showError) {
+          updateState(Status.Error);
+        }
         setData(res.value);
       })
       .catch(() => {
         updateState(Status.Error);
       });
-  }, [chain, cachedData, address, tokenId, updateState]);
+  }, [
+    address,
+    chain,
+    preset,
+    tokenId,
+    updateState,
+    shouldFetchData,
+    forceFetch,
+  ]);
 
   const media = useMemo(() => {
     if (state === Status.Error) {
       return error || <div className={styles.error}>Error!</div>;
     }
+
     return (
       <>
         {state === Status.Loading &&
           (loading || <div className={styles.loading}>Loading...</div>)}
-        {data && (
+        {url && (
           <Media
-            data={data}
             preset={preset}
             imgProps={imgProps}
             videoProps={videoProps}
             audioProps={audioProps}
+            url={url}
             onError={() => {
+              setData(undefined);
               updateState(Status.Error);
             }}
             onComplete={() => updateState(Status.Loaded)}
@@ -139,13 +170,13 @@ export const AssetContent = (props: AssetProps) => {
     );
   }, [
     audioProps,
-    data,
     error,
     imgProps,
     loading,
     preset,
     state,
     updateState,
+    url,
     videoProps,
   ]);
 
