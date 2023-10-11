@@ -66,6 +66,7 @@ function WithPagginationNoCaching() {
     </div>
   );
 }
+
 function LazyLoad() {
   const [fetch, { data, loading }] = useLazyQuery(query, variables);
 
