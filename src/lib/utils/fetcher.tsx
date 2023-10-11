@@ -25,8 +25,8 @@ export async function _fetch<ResponseType = any>(
     const json = await res.json();
     const data = json?.data;
     let error = null;
-    if (json.errors) {
-      error = json.errors;
+    if (json?.errors) {
+      error = json?.errors;
     }
     return [data, error];
   } catch (error) {

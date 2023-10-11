@@ -51,14 +51,20 @@ export function useLazyQuery<
 
   const handleResponse = useCallback(
     (res: Awaited<FetchQueryReturnType<ResponseType>>) => {
-      if (!res) return { data: null, error: null };
-      const { data: ResponseType, error } = res;
-      originalData.current = ResponseType;
-      const data: ReturnType<Formatter> | null = ResponseType
-        ? (callbacksRef.current.dataFormatter(
-            ResponseType
-          ) as ReturnType<Formatter>)
-        : null;
+      let data: ReturnType<Formatter> | null = null;
+      let error = null;
+
+      if (res) {
+        const { data: rawData, error: _error } = res;
+        originalData.current = rawData;
+        data = rawData
+          ? (callbacksRef.current.dataFormatter(
+              rawData
+            ) as ReturnType<Formatter>)
+          : null;
+        error = _error;
+      }
+
       setData(data);
       setError(error);
       setLoading(false);

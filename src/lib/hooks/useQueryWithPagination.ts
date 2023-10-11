@@ -86,29 +86,27 @@ export function useLazyQueryWithPagination<
 
   const handleResponse = useCallback(
     (res: null | Awaited<FetchPaginatedQueryReturnType<ResponseType>>) => {
-      if (!res)
-        return {
-          data: null,
-          error: null,
-          pagination: {
-            hasNextPage: false,
-            hasPrevPage: false,
-          },
-        };
-      const {
-        data: rawData,
-        error,
-        getNextPage,
-        getPrevPage,
-        hasNextPage,
-        hasPrevPage,
-      } = res;
-      nextRef.current = getNextPage;
-      prevRef.current = getPrevPage;
-      originalData.current = rawData;
-      const data = rawData
-        ? (callbacksRef.current.dataFormatter(rawData) as ReturnType<Formatter>)
-        : null;
+      let data: ReturnType<Formatter> | null = null;
+      let error = null;
+      let hasNextPage = false;
+      let hasPrevPage = false;
+
+      if (res) {
+        const { data: rawData, getNextPage, getPrevPage } = res;
+
+        nextRef.current = getNextPage;
+        prevRef.current = getPrevPage;
+        originalData.current = rawData;
+        data = rawData
+          ? (callbacksRef.current.dataFormatter(
+              rawData
+            ) as ReturnType<Formatter>)
+          : null;
+        error = res.error;
+        hasNextPage = res.hasNextPage;
+        hasPrevPage = res.hasPrevPage;
+      }
+
       setData(data);
       setError(error);
       setLoading(false);
