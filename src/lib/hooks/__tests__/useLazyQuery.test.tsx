@@ -1,14 +1,7 @@
-import { vi, describe, expect, beforeEach, it } from "vitest";
-import {
-  render,
-  act,
-  screen,
-  renderHook,
-  waitFor,
-} from "@testing-library/react";
-import { useLazyQuery, useQuery } from "../useQuery";
+import { vi, describe, expect, it } from "vitest";
+import { act, renderHook } from "@testing-library/react";
+import { useLazyQuery } from "../useQuery";
 import { init } from "../../init";
-import "./utils";
 import { waitForLoadingStartAndStop } from "./utils";
 
 const testAPIKey = "ef3d1cdeafb642d3a8d6a44664ce566c";
