@@ -2,9 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { useLazyQueryWithPagination } from "../useQueryWithPagination";
 import { init } from "../../init";
-import "./utils";
 import { waitForLoadingStartAndStop } from "./utils";
-import exp from "constants";
 const testAPIKey = "ef3d1cdeafb642d3a8d6a44664ce566c";
 const testQuery = `query tokens($address: Identity!, $limit: Int!) {
   erc20: TokenBalances(
