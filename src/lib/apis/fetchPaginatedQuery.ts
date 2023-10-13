@@ -4,7 +4,7 @@ import {
   FetchPaginatedQueryReturnType,
   FetchQuery,
   ResponseType,
-  Variables,
+  VariablesType,
 } from "../types";
 import { cacheResponse, getFromCache } from "../cache";
 import { getPaginationData } from "../utils/getPaginationData";
@@ -13,11 +13,11 @@ import { removeQueriesIfNoNextPage } from "../utils/removeQueriesIfNoNextPage";
 import { config as globalConfig } from "../config";
 import { cacheImagesFromQuery } from "../utils/cacheImagesFromQuery";
 
-export async function fetchPaginatedQuery(
+export async function fetchPaginatedQuery<D = ResponseType>(
   originalQuery: string,
-  variables?: Variables,
+  variables?: VariablesType,
   config?: Config
-): FetchPaginatedQueryReturnType {
+): FetchPaginatedQueryReturnType<D> {
   let query = originalQuery;
   const nextCursorsCache: Record<string, string>[] = [];
   const deletedQueryCache: (null | {
@@ -32,17 +32,17 @@ export async function fetchPaginatedQuery(
     prevCursors: {},
   };
   let lastResponse: ResponseType | null = null;
-  let inProgressRequest: Promise<FetchQuery> | null = null;
+  let inProgressRequest: Promise<FetchQuery<D>> | null = null;
 
   async function fetch(
     _query: string,
-    _variables?: Variables,
+    _variables?: VariablesType,
     _config?: Config
-  ): FetchPaginatedQueryReturnType {
-    const variables: Variables = stringifyObjectValues(_variables || {});
+  ): FetchPaginatedQueryReturnType<D> {
+    const variables: VariablesType = stringifyObjectValues(_variables || {});
     const config = { cache: globalConfig.cache, ..._config };
 
-    let data: null | ResponseType = config.cache
+    let data: null | D = config.cache
       ? getFromCache(_query, variables || {})
       : null;
     let error = null;
@@ -54,7 +54,7 @@ export async function fetchPaginatedQuery(
       if (config.cache && data && !error) {
         cacheResponse(response, _query, variables);
       }
-      cacheImagesFromQuery(data);
+      cacheImagesFromQuery(data as any);
     } else {
       // return a new reference to the data object, so reference equality check in React components/hooks will work
       data = { ...data };
@@ -80,20 +80,20 @@ export async function fetchPaginatedQuery(
 
     if (paginationData.hasNextPage) {
       nextCursorsCache.push(paginationData.nextCursors);
-      const upatedQuery = await removeQueriesIfNoNextPage(
+      const updatedQuery = await removeQueriesIfNoNextPage(
         query,
         lastResponse as ResponseType
       );
       deletedQueryCache.push(
-        upatedQuery
+        updatedQuery
           ? {
               query,
               cursors: paginationData.nextCursors,
             }
           : null
       );
-      if (upatedQuery) {
-        query = upatedQuery;
+      if (updatedQuery) {
+        query = updatedQuery;
       }
 
       inProgressRequest = fetch(

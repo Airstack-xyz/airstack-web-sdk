@@ -1,84 +1,100 @@
-import { vi, describe, expect, beforeEach, it } from "vitest";
-import { render, act } from "@testing-library/react";
+import { vi, describe, expect, it } from "vitest";
+import { act, renderHook } from "@testing-library/react";
 import { useLazyQuery } from "../useQuery";
 import { init } from "../../init";
-import { pageOneData } from "./pageOneData";
-import { mockFetch } from "./utils";
+import { waitForLoadingStartAndStop } from "./utils";
 
-init("123");
+const testAPIKey = "ef3d1cdeafb642d3a8d6a44664ce566c";
+const testQuery = `query tokens($address: Identity!) {
+  erc20: TokenBalances(
+    input: {filter: {owner: {_in: [$address]}, tokenType: {_in: [ERC20]}}, limit: 1, blockchain: ethereum}
+  ) {
+    data:TokenBalance {
+      amount
+      formattedAmount
+      chainId
+      id
+      tokenAddress
+      tokenId
+      tokenType
+      token {
+        name
+        symbol
+      }
+    }
+  }
+}`;
 
-function wait(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-const mockedResponse = vi.fn();
-mockFetch(mockedResponse);
-
-const TestComponent = () => {
-  const [fetch, { data, error, loading }] = useLazyQuery(``, {});
-
-  return (
-    <div>
-      {loading && <div data-testid="loading">Loading...</div>}
-      {error && <div data-testid="error">{error}</div>}
-      {data && <div data-testid="data">{JSON.stringify(data)}</div>}
-
-      <button
-        onClick={() => fetch({ date: Date.now() })}
-        data-testid="fetch-button"
-      >
-        Fetch
-      </button>
-    </div>
-  );
+const testVariables = {
+  address: "vitalik.eth",
 };
 
+init(testAPIKey);
+
 describe("useLazyQueryWithPagination", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("should fetch data successfully", async () => {
-    const { getByTestId, queryByTestId } = render(<TestComponent />);
-    mockedResponse.mockResolvedValueOnce({
-      data: {
-        ...pageOneData,
-      },
-    });
-
+    const { result } = renderHook(() => useLazyQuery(testQuery, testVariables));
+    expect(result.current[1].loading).toBe(false);
+    expect(result.current[1].data).toBe(null);
+    expect(result.current[1].error).toBe(null);
     await act(async () => {
-      getByTestId("fetch-button").click();
+      result.current[0]();
     });
-
-    expect(queryByTestId("loading")).toBeInTheDocument();
-
-    await wait(1000);
-
-    expect(queryByTestId("loading")).not.toBeInTheDocument();
-    expect(queryByTestId("data")).toHaveTextContent(
-      JSON.stringify(pageOneData)
-    );
-    expect(queryByTestId("error")).not.toBeInTheDocument();
+    await waitForLoadingStartAndStop(result);
+    expect(result.current[1].data).not.toBe(null);
+    expect(result.current[1].error).toBe(null);
   });
 
-  it("should handle error correctly", async () => {
-    const { getByTestId, queryByTestId } = render(<TestComponent />);
-
-    mockedResponse.mockResolvedValueOnce({
-      data: null,
-      errors: "Error message",
-    });
-
+  it("should return an error if the query fails", async () => {
+    const query = "query { unknownField }";
+    const { result } = renderHook(() => useLazyQuery(query, testVariables));
     await act(async () => {
-      getByTestId("fetch-button").click();
+      result.current[0]();
+    });
+    await waitForLoadingStartAndStop(result);
+    expect(result.current[1].data).toBe(null);
+    expect(result.current[1].error).not.toBe(null);
+  });
+
+  describe("config and callbacks", () => {
+    it("should call onCompleted callback when the query is completed", async () => {
+      const mockCompleteCallback = vi.fn();
+      const { result } = renderHook(() =>
+        useLazyQuery(testQuery, testVariables, {
+          cache: false,
+          onCompleted: mockCompleteCallback,
+        })
+      );
+      await act(async () => {
+        result.current[0]();
+      });
+      await waitForLoadingStartAndStop(result);
+      expect(mockCompleteCallback).toHaveBeenCalledWith(result.current[1].data);
     });
 
-    expect(queryByTestId("loading")).toBeInTheDocument();
+    it("should return formatted data if dataFormatter callback is provided", async () => {
+      const mockCompleteCallback = vi.fn();
+      const mockFormatterCallback = vi.fn();
+      const mockFormattedDataString = "mockFormattedDataString";
 
-    await wait(500);
-
-    expect(queryByTestId("loading")).not.toBeInTheDocument();
-    expect(queryByTestId("error")).toBeInTheDocument();
-    expect(queryByTestId("data")).not.toBeInTheDocument();
+      const { result } = renderHook(() =>
+        useLazyQuery<"string">(testQuery, testVariables, {
+          cache: false,
+          onCompleted: mockCompleteCallback,
+          dataFormatter: mockFormatterCallback.mockImplementation(
+            () => mockFormattedDataString
+          ),
+        })
+      );
+      await act(async () => {
+        result.current[0]();
+      });
+      await waitForLoadingStartAndStop(result);
+      expect(mockFormatterCallback).toHaveBeenCalled();
+      expect(mockCompleteCallback).toHaveBeenCalledWith(
+        mockFormattedDataString
+      );
+      expect(result.current[1].data).toBe(mockFormattedDataString);
+    });
   });
 });

@@ -1,22 +1,15 @@
-import { Mock } from "vitest";
-import { introspectionQuery } from "./introspectionQuery";
+import { waitFor } from "@testing-library/react";
+import crossFetch from "cross-fetch";
+global.fetch = crossFetch;
 
-export const mockFetch = (mockedResponse: Mock<any, any>) =>
-  (global.fetch = async (_, data: any) => {
-    const response = { data: {} };
-    const isIntrospectionQuery = data.body.indexOf("IntrospectionQuery") > -1;
-    if (isIntrospectionQuery) {
-      response.data = {
-        ...introspectionQuery,
-      };
+export async function waitForLoadingStartAndStop(result: any) {
+  expect(result.current[1].loading).toBe(true);
+  await waitFor(
+    () => {
+      expect(result.current[1].loading).toBe(false);
+    },
+    {
+      timeout: 20000,
     }
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          // eslint-disable-next-line
-          // @ts-ignore
-          json: isIntrospectionQuery ? () => response : mockedResponse,
-        });
-      }, 100);
-    });
-  });
+  );
+}
