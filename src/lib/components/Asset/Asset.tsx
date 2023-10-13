@@ -104,44 +104,28 @@ export const AssetContent = (props: AssetProps) => {
   }, [handleResize, presetProp]);
 
   const url: string | null = getUrlFromData({ data, preset });
-  const imageData = data?.image;
-  const forceFetch = Boolean(url === "" && imageData);
-  /**
-   * fetch if no data
-   * or
-   * if no url but image data exists, it means that the preset image size is not cached, so fetch it
-   **/
-  const shouldFetchData = !data || forceFetch;
+  // fetch only if there is no cached data, if cached data is there but no url
+  const shouldFetch = !cachedData || !url;
 
   useEffect(() => {
-    if (loadingRef.current || !shouldFetchData) {
+    if (!shouldFetch || loadingRef.current) {
       return;
     }
 
     updateState(Status.Loading);
+    const forceFetch = Boolean(cachedData);
 
     fetchNFTAssetURL(chain, address, tokenId, forceFetch)
       .then((res) => {
-        // if url is empty again then show error
-        const showError =
-          forceFetch && !getUrlFromData({ data: res.value, preset });
-        if (showError) {
-          updateState(Status.Error);
-        }
+        const url = getUrlFromData({ data: res.value, preset });
+        // show error if there is no url
+        updateState(!url ? Status.Error : Status.Loaded);
         setData(res.value);
       })
       .catch(() => {
         updateState(Status.Error);
       });
-  }, [
-    address,
-    chain,
-    preset,
-    tokenId,
-    updateState,
-    shouldFetchData,
-    forceFetch,
-  ]);
+  }, [address, chain, preset, tokenId, updateState, shouldFetch, cachedData]);
 
   const media = useMemo(() => {
     if (state === Status.Error) {
