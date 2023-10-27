@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useLazyQueryWithPagination } from "./lib";
+import { useLazyQueryWithPagination, useQueryWithPagination } from "./lib";
 
 const defaultQuery = `query GetPOAPs($owner: Identity, $cursor: String) {
   Poaps(input: {filter: {owner: {_eq: $owner}}, blockchain: ALL, cursor: $cursor}) {
@@ -50,28 +50,28 @@ export function QueryInput() {
     _setVariables(variables);
   };
 
-  const [
-    _fetch,
-    {
-      data,
-      error,
-      loading,
-      pagination: { hasNextPage, hasPrevPage, getNextPage, getPrevPage },
-    },
-  ] = useLazyQueryWithPagination(query, {}, {
+  const {
+    data,
+    error,
+    loading,
+    pagination: { hasNextPage, hasPrevPage, getNextPage, getPrevPage },
+    cancelRequest,
+  } = useQueryWithPagination(query, JSON.parse(variables), {
+    cancelRequestOnUnmount: true,
+    cache: true,
     onCompleted: (data) => {
-      console.log(" onCompleted: ", data)
+      console.log(" onCompleted: ", data);
     },
     onError: (error) => {
-      console.log(" onError: ", error)
+      console.log(" onError: ", error);
     },
     dataFormatter: (data) => {
-      return [data.erc20, data._erc20]
-    }
+      return [data.erc20, data._erc20];
+    },
   });
 
   const fetch = () => {
-    _fetch(JSON.parse(variables));
+    // _fetch(JSON.parse(variables));
   };
 
   return (
@@ -102,13 +102,14 @@ export function QueryInput() {
           fetch
         </button>
       )}
+      {loading && <button onClick={cancelRequest}> cancel request</button>}
       {loading && <h4> Loading... </h4>}
       {error && <h4> Error: {JSON.stringify(error, null, 4)} </h4>}
       {data && <h4>{JSON.stringify(data, null, 4)}</h4>}
-      <button onClick={getPrevPage} disabled={!hasPrevPage || loading}>
+      <button onClick={getPrevPage} disabled={loading}>
         Prev
       </button>
-      <button onClick={getNextPage} disabled={!hasNextPage || loading}>
+      <button onClick={getNextPage} disabled={loading}>
         Next
       </button>
     </div>

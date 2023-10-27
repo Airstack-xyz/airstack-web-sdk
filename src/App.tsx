@@ -1,9 +1,19 @@
 import React from "react";
 import "./App.css";
-import { Asset, init, useLazyQuery, useQueryWithPagination } from "./lib";
+import {
+  Asset,
+  fetchQuery,
+  fetchQueryWithPagination,
+  init,
+  useLazyQuery,
+  useQueryWithPagination,
+} from "./lib";
 import { QueryInput } from "./QueryInput";
 
-init("ef3d1cdeafb642d3a8d6a44664ce566c", { env: "dev" });
+init("ef3d1cdeafb642d3a8d6a44664ce566c", {
+  env: "dev",
+  cancelHookRequestsOnUnmount: true,
+});
 
 const query = `
 query MyQuery($limit: Int, $blockchain: TokenBlockchain!) {
@@ -98,9 +108,20 @@ function App() {
   //   console.log({ error }, error);
   // }
 
+  const [showQueryInput, setShowQueryInput] = React.useState(false);
+
   return (
     <div>
-      <QueryInput />
+      <button
+        style={{ position: "absolute", top: 0 }}
+        onClick={() => setShowQueryInput((show) => !show)}
+      >
+        {" "}
+        toggle Query Input{" "}
+      </button>
+      <br />
+      {showQueryInput && <QueryInput />}
+
       {/* =========================================
       <br />
       <br />
@@ -165,6 +186,29 @@ function App() {
         tokenId="0"
         preset="original"
       />
+      <button
+        onClick={async () => {
+          const controller = new AbortController();
+          fetchQueryWithPagination(
+            query,
+            { limit: 200, blockchain: "ethereum" },
+            {
+              abortController: controller,
+            }
+          )
+            .then(({ data, error }) => {
+              console.log({ data, error }, controller.signal.aborted);
+            })
+            .catch((error) => {
+              console.log({ error });
+            });
+          // setTimeout(() => {
+          //   controller.abort();
+          // }, 0);
+        }}
+      >
+        FETCH
+      </button>
     </div>
   );
 }
