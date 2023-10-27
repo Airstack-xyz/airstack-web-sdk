@@ -128,11 +128,11 @@ export const AssetContent = (props: AssetProps) => {
   }, [address, chain, preset, tokenId, updateState, shouldFetch, cachedData]);
 
   if (state === Status.Error) {
-    return error || <div className={styles.error}>Error!</div>;
+    return <>{error || <div className={styles.error}>Error!</div>}</>;
   }
 
   if (state === Status.Loading) {
-    return loading || <div className={styles.loading}>Loading...</div>;
+    return <>{loading || <div className={styles.loading}>Loading...</div>}</>;
   }
 
   if (url) {
