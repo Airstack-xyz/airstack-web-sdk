@@ -1,12 +1,19 @@
 import { PresetArray, PresetImageSize, PresetPXSize } from "../../constants";
 import { NFTAssetURL } from "../../types";
 
-export type MediaType = "image" | "video" | "audio" | "unknown";
+export type MediaType =
+  | "image"
+  | "video"
+  | "audio"
+  | "html"
+  | "binary"
+  | "unknown";
 
 export function getMediaType(media: string): MediaType {
   const imageRegex = /\.(jpe?g|png|webp|gif|bmp|svg)$/i;
   const videoRegex = /\.(mp4|webm|avi|mov|mwv|mkv|ogv)$/i;
   const audioRegex = /\.(mp3|wav|aac|ogg|wma|aiff)$/i;
+  const htmlRegex = /\.html$/i;
 
   if (imageRegex.test(media)) {
     return "image";
@@ -18,6 +25,10 @@ export function getMediaType(media: string): MediaType {
 
   if (audioRegex.test(media)) {
     return "audio";
+  }
+
+  if (htmlRegex.test(media)) {
+    return "html";
   }
 
   return "unknown";
@@ -74,6 +85,10 @@ export async function getMediaTypeFromUrl(url: string) {
 
   if (contentType?.includes("audio")) {
     return "audio";
+  }
+
+  if (contentType?.includes("octet-stream")) {
+    return "binary";
   }
 
   return "unknown";

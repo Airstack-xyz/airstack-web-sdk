@@ -150,6 +150,21 @@ function App() {
         tokenId="0"
         preset="original"
       /> */}
+
+      {/* token with html asset type */}
+      <Asset
+        address="0xb766e80b3ed77ac0742104396f85fca0d84d6ca5"
+        tokenId="166"
+        preset="medium"
+        chain="polygon"
+        error="===== Error!==="
+      />
+      <br />
+      <Asset
+        address="0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"
+        tokenId="0"
+        preset="original"
+      />
     </div>
   );
 }
