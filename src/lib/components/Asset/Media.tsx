@@ -167,6 +167,12 @@ export function Media({
     return <Audio url={url} audioProps={audioProps} onError={onError} />;
   }
 
+  // don't try to render html or binary, instead call onError to render error on parent
+  if (mediaType === "html" || mediaType === "binary") {
+    onError();
+    return null;
+  }
+
   // if we don't know the media type, we assume it's an image
   return (
     <img

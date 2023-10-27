@@ -105,7 +105,7 @@ export const AssetContent = (props: AssetProps) => {
 
   const url: string | null = getUrlFromData({ data, preset });
   // fetch only if there is no cached data, if cached data is there but no url
-  const shouldFetch = !cachedData || !url;
+  const shouldFetch = state !== Status.Error && (!data || !url);
 
   useEffect(() => {
     if (!shouldFetch || loadingRef.current) {
@@ -127,42 +127,30 @@ export const AssetContent = (props: AssetProps) => {
       });
   }, [address, chain, preset, tokenId, updateState, shouldFetch, cachedData]);
 
-  const media = useMemo(() => {
-    if (state === Status.Error) {
-      return error || <div className={styles.error}>Error!</div>;
-    }
+  if (state === Status.Error) {
+    return error || <div className={styles.error}>Error!</div>;
+  }
 
+  if (state === Status.Loading) {
+    return loading || <div className={styles.loading}>Loading...</div>;
+  }
+
+  if (url) {
     return (
-      <>
-        {state === Status.Loading &&
-          (loading || <div className={styles.loading}>Loading...</div>)}
-        {url && (
-          <Media
-            preset={preset}
-            imgProps={imgProps}
-            videoProps={videoProps}
-            audioProps={audioProps}
-            url={url}
-            onError={() => {
-              setData(undefined);
-              updateState(Status.Error);
-            }}
-            onComplete={() => updateState(Status.Loaded)}
-          />
-        )}
-      </>
+      <Media
+        preset={preset}
+        imgProps={imgProps}
+        videoProps={videoProps}
+        audioProps={audioProps}
+        url={url}
+        onError={() => {
+          // error in loading media or unsupported media
+          updateState(Status.Error);
+        }}
+        onComplete={() => updateState(Status.Loaded)}
+      />
     );
-  }, [
-    audioProps,
-    error,
-    imgProps,
-    loading,
-    preset,
-    state,
-    updateState,
-    url,
-    videoProps,
-  ]);
+  }
 
-  return <>{media}</>;
+  return null;
 };
