@@ -157,6 +157,12 @@ export function Media({
     }
   }, [mediaType, onError, preset, url]);
 
+  useEffect(() => {
+    if (mediaType === "html" || mediaType === "binary") {
+      onError();
+    }
+  }, [mediaType, onError]);
+
   if (!mediaType || !url) return null;
 
   if (mediaType === "video") {
@@ -167,9 +173,7 @@ export function Media({
     return <Audio url={url} audioProps={audioProps} onError={onError} />;
   }
 
-  // don't try to render html or binary, instead call onError to render error on parent
   if (mediaType === "html" || mediaType === "binary") {
-    onError();
     return null;
   }
 
