@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { fetchQuery } from "../apis/fetchQuery";
 import {
   ConfigAndCallbacks,
@@ -7,18 +7,22 @@ import {
   VariablesType,
 } from "../types";
 import { useRequestState } from "./useDataState";
+import { config } from "../config";
 
 type UseQueryReturnType<D> = {
   data: D | null;
   error: any;
   loading: boolean;
+  cancelRequest: () => void;
 };
 
 type UseLazyQueryReturnType<
   D extends ResponseType,
   Variables extends VariablesType
 > = [
-  (variables?: Variables) => Promise<Omit<UseQueryReturnType<D>, "loading">>,
+  (
+    variables?: Variables
+  ) => Promise<Omit<UseQueryReturnType<D>, "loading" | "cancelRequest">>,
   UseQueryReturnType<D>
 ];
 
@@ -33,6 +37,8 @@ export function useLazyQuery<
   variables?: Variables,
   configAndCallbacks?: ConfigAndCallbacks<ReturnedData, Formatter>
 ): UseLazyQueryReturnType<ReturnType<Formatter>, Variables> {
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const {
     data,
     error,
@@ -83,19 +89,44 @@ export function useLazyQuery<
 
   const fetch = useCallback(
     async (_variables?: Variables) => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
       setError(null);
       setLoading(true);
       const res = await fetchQuery<ResponseType>(
         query,
         _variables || variablesRef.current,
-        configRef.current
+        { ...configRef.current, abortController: abortControllerRef.current }
       );
       return handleResponse(res);
     },
     [setError, setLoading, query, variablesRef, configRef, handleResponse]
   );
 
-  return [fetch, { data, error, loading }];
+  const cancelRequest = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+  }, []);
+
+  // cleanup, cancel request on unmount if global or hook config says so
+  useEffect(
+    () => () => {
+      const { cancelRequestOnUnmount } = configRef.current || {};
+      if (
+        cancelRequestOnUnmount === undefined
+          ? config.cancelHookRequestsOnUnmount
+          : cancelRequestOnUnmount
+      ) {
+        cancelRequest();
+      }
+    },
+    [cancelRequest, configRef]
+  );
+
+  return [fetch, { data, error, loading, cancelRequest }];
 }
 
 export function useQuery<
@@ -109,7 +140,7 @@ export function useQuery<
   variables?: Variables,
   configAndCallbacks?: ConfigAndCallbacks<ReturnedData, Formatter>
 ): UseQueryReturnType<ReturnedData> {
-  const [fetch, { data, error, loading }] = useLazyQuery<
+  const [fetch, { data, error, loading, cancelRequest }] = useLazyQuery<
     ReturnedData,
     Variables,
     Formatter
@@ -119,5 +150,5 @@ export function useQuery<
     fetch();
   }, [fetch]);
 
-  return { data, error, loading };
+  return { data, error, loading, cancelRequest };
 }

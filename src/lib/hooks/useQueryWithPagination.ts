@@ -9,6 +9,7 @@ import {
 import { useRequestState } from "./useDataState";
 import { addPaginationToQuery } from "../utils/addPaginationToQuery";
 import { fetchPaginatedQuery } from "../apis/fetchPaginatedQuery";
+import { config } from "../config";
 
 type BaseReturnType<D> = {
   data: null | D;
@@ -24,6 +25,7 @@ type Pagination = {
 type UseQueryReturnType<D> = BaseReturnType<D> & {
   loading: boolean;
   pagination: Pagination;
+  cancelRequest: () => void;
 };
 
 type FetchType<D extends ResponseType, V extends VariablesType> = (
@@ -50,6 +52,7 @@ export function useLazyQueryWithPagination<
   variables?: Variables,
   configAndCallbacks?: ConfigAndCallbacks<ReturnedData, Formatter>
 ): LazyHookReturnType<ReturnType<Formatter>, Variables> {
+  const abortControllerRef = useRef<AbortController | null>(null);
   const {
     data,
     error,
@@ -132,6 +135,13 @@ export function useLazyQueryWithPagination<
   const fetch: FetchType<ReturnType<Formatter>, Variables> = useCallback(
     async (_variables?: Variables) => {
       reset();
+
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      const _abortController = new AbortController();
+      abortControllerRef.current = _abortController;
+
       setLoading(true);
 
       const queryWithPagination = await addPaginationToQuery(query);
@@ -139,9 +149,19 @@ export function useLazyQueryWithPagination<
       const res = await fetchPaginatedQuery<ResponseType>(
         queryWithPagination,
         _variables || variablesRef.current,
-        configRef.current
+        {
+          ...configRef.current,
+          abortController: abortControllerRef.current,
+        }
       );
-      return handleResponse(res);
+
+      const isResponseForAbortedRequest =
+        _abortController !== abortControllerRef.current;
+
+      // make sure the data remains null if the response is for an aborted request, this will make sure the onCompleted callback is called with null value
+      const response = isResponseForAbortedRequest ? null : res;
+
+      return handleResponse(response);
     },
     [configRef, handleResponse, query, reset, setLoading, variablesRef]
   );
@@ -160,6 +180,27 @@ export function useLazyQueryWithPagination<
     handleResponse(res);
   }, [handleResponse, setLoading]);
 
+  const cancelRequest = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+  }, []);
+
+  // cleanup, cancel request on unmount if global or hook config says so
+  useEffect(
+    () => () => {
+      const { cancelRequestOnUnmount } = configRef.current || {};
+      if (
+        cancelRequestOnUnmount === undefined
+          ? config.cancelHookRequestsOnUnmount
+          : cancelRequestOnUnmount
+      ) {
+        cancelRequest();
+      }
+    },
+    [cancelRequest, configRef]
+  );
+
   return useMemo(() => {
     return [
       fetch,
@@ -173,9 +214,11 @@ export function useLazyQueryWithPagination<
           getNextPage,
           getPrevPage,
         },
+        cancelRequest,
       },
     ];
   }, [
+    cancelRequest,
     data,
     error,
     fetch,
@@ -203,6 +246,7 @@ export function useQueryWithPagination<
     Variables,
     Formatter
   >(query, variables, configAndCallbacks);
+
   useEffect(() => {
     fetch();
   }, [fetch]);
