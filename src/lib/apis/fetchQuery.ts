@@ -25,7 +25,11 @@ export async function fetchQuery<D = ResponseType>(
   let error = null;
 
   if (!data) {
-    const [response, _error] = await fetchGql<D>(query, _variables);
+    const [response, _error] = await fetchGql<D>(
+      query,
+      _variables,
+      _config?.abortController
+    );
     data = response;
     error = _error;
     if (config.cache && data && !error) {

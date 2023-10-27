@@ -48,7 +48,11 @@ export async function fetchPaginatedQuery<D = ResponseType>(
     let error = null;
 
     if (!data) {
-      const [response, _error] = await fetchGql<any>(_query, variables);
+      const [response, _error] = await fetchGql<any>(
+        _query,
+        variables,
+        _config?.abortController
+      );
       data = response;
       error = _error;
       if (config.cache && data && !error) {

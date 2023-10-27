@@ -5,7 +5,8 @@ import { VariablesType } from "../types";
 
 export async function _fetch<ResponseType = any>(
   query: string,
-  variables: VariablesType
+  variables: VariablesType,
+  abortController?: AbortController
 ): Promise<[ResponseType | null, any]> {
   if (!config.authKey) {
     throw new Error("No API key provided");
@@ -17,6 +18,7 @@ export async function _fetch<ResponseType = any>(
         "Content-Type": "application/json",
         Authorization: config.authKey,
       },
+      signal: abortController ? abortController?.signal : null,
       body: JSON.stringify({
         query,
         variables,
@@ -40,11 +42,16 @@ const promiseCache: { [key: string]: Promise<any> } = {};
 
 export async function fetchGql<ResponseType = any>(
   query: string,
-  variables: VariablesType
+  variables: VariablesType,
+  abortController?: AbortController
 ): Promise<[ResponseType | null, any]> {
   const key = createCacheKey(query, variables);
   if (!promiseCache[key]) {
-    promiseCache[key] = _fetch<ResponseType>(query, variables).finally(() => {
+    promiseCache[key] = _fetch<ResponseType>(
+      query,
+      variables,
+      abortController
+    ).finally(() => {
       delete promiseCache[key];
     });
   }

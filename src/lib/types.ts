@@ -23,6 +23,7 @@ export type FetchQueryReturnType<D> = Promise<
 
 export type Config = {
   cache?: boolean;
+  abortController?: AbortController;
 };
 
 export type DataFormatter<
