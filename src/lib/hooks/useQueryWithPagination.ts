@@ -156,6 +156,8 @@ export function useLazyQueryWithPagination<
           ? new AbortController()
           : abortControllerRef.current;
 
+      abortControllerRef.current = _abortController;
+
       setLoading(true);
 
       const queryWithPagination = await addPaginationToQuery(query);
