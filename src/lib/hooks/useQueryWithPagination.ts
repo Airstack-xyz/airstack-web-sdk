@@ -77,6 +77,12 @@ export function useLazyQueryWithPagination<
     null | (() => Promise<FetchQuery<ResponseType> | null>)
   >(null);
 
+  const { cancelRequestOnUnmount } = configRef.current || {};
+  const shouldCancelRequestOnUnmount =
+    cancelRequestOnUnmount === undefined
+      ? config.cancelHookRequestsOnUnmount
+      : cancelRequestOnUnmount;
+
   const reset = useCallback(() => {
     nextRef.current = null;
     prevRef.current = null;
@@ -132,13 +138,18 @@ export function useLazyQueryWithPagination<
     [callbacksRef, originalData, setData, setError, setLoading]
   );
 
+  const cancelRequest = useCallback(() => {
+    if (abortControllerRef.current && shouldCancelRequestOnUnmount) {
+      abortControllerRef.current.abort();
+    }
+  }, [shouldCancelRequestOnUnmount]);
+
   const fetch: FetchType<ReturnType<Formatter>, Variables> = useCallback(
     async (_variables?: Variables) => {
       reset();
 
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+      cancelRequest();
+
       const _abortController = new AbortController();
       abortControllerRef.current = _abortController;
 
@@ -155,15 +166,21 @@ export function useLazyQueryWithPagination<
         }
       );
 
-      const isResponseForAbortedRequest =
-        _abortController !== abortControllerRef.current;
-
+      const isResponseForAbortedRequest = _abortController.signal.aborted;
       // make sure the data remains null if the response is for an aborted request, this will make sure the onCompleted callback is called with null value
       const response = isResponseForAbortedRequest ? null : res;
 
       return handleResponse(response);
     },
-    [configRef, handleResponse, query, reset, setLoading, variablesRef]
+    [
+      cancelRequest,
+      configRef,
+      handleResponse,
+      query,
+      reset,
+      setLoading,
+      variablesRef,
+    ]
   );
 
   const getNextPage = useCallback(async () => {
@@ -180,26 +197,8 @@ export function useLazyQueryWithPagination<
     handleResponse(res);
   }, [handleResponse, setLoading]);
 
-  const cancelRequest = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-  }, []);
-
-  // cleanup, cancel request on unmount if global or hook config says so
-  useEffect(
-    () => () => {
-      const { cancelRequestOnUnmount } = configRef.current || {};
-      if (
-        cancelRequestOnUnmount === undefined
-          ? config.cancelHookRequestsOnUnmount
-          : cancelRequestOnUnmount
-      ) {
-        cancelRequest();
-      }
-    },
-    [cancelRequest, configRef]
-  );
+  // cleanup, cancel request on unmount
+  useEffect(() => cancelRequest, [cancelRequest]);
 
   return useMemo(() => {
     return [
