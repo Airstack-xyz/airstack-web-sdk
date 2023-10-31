@@ -93,15 +93,21 @@ export function useLazyQuery<
     [callbacksRef, originalData, setData, setError, setLoading]
   );
 
-  const cancelRequest = useCallback(() => {
+  const abortRequest = useCallback(() => {
     if (abortControllerRef.current && shouldCancelRequestOnUnmount) {
       abortControllerRef.current.abort();
     }
   }, [shouldCancelRequestOnUnmount]);
 
+  const cancelRequest = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+  }, []);
+
   const fetch = useCallback(
     async (_variables?: Variables) => {
-      cancelRequest();
+      abortRequest();
 
       // create a new abort controller only if the previous one is aborted, changing the abort controller
       // even if it is not aborted will will make another api call instead of returning the cached promise
@@ -128,7 +134,7 @@ export function useLazyQuery<
       return handleResponse(response);
     },
     [
-      cancelRequest,
+      abortRequest,
       setError,
       setLoading,
       query,
@@ -139,7 +145,7 @@ export function useLazyQuery<
   );
 
   // cleanup, cancel request on unmount
-  useEffect(() => cancelRequest, [cancelRequest]);
+  useEffect(() => abortRequest, [abortRequest]);
 
   return [fetch, { data, error, loading, cancelRequest }];
 }

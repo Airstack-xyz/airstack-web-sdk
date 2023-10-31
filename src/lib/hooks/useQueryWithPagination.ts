@@ -138,16 +138,22 @@ export function useLazyQueryWithPagination<
     [callbacksRef, originalData, setData, setError, setLoading]
   );
 
-  const cancelRequest = useCallback(() => {
+  const abortRequest = useCallback(() => {
     if (abortControllerRef.current && shouldCancelRequestOnUnmount) {
       abortControllerRef.current.abort();
     }
   }, [shouldCancelRequestOnUnmount]);
 
+  const cancelRequest = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+  }, []);
+
   const fetch: FetchType<ReturnType<Formatter>, Variables> = useCallback(
     async (_variables?: Variables) => {
       reset();
-      cancelRequest();
+      abortRequest();
 
       // create a new abort controller only if the previous one is aborted, changing the abort controller
       // even if it is not aborted will will make another api call instead of returning the cached promise
@@ -178,7 +184,7 @@ export function useLazyQueryWithPagination<
       return handleResponse(response);
     },
     [
-      cancelRequest,
+      abortRequest,
       configRef,
       handleResponse,
       query,
@@ -203,7 +209,7 @@ export function useLazyQueryWithPagination<
   }, [handleResponse, setLoading]);
 
   // cleanup, cancel request on unmount
-  useEffect(() => cancelRequest, [cancelRequest]);
+  useEffect(() => abortRequest, [abortRequest]);
 
   return useMemo(() => {
     return [

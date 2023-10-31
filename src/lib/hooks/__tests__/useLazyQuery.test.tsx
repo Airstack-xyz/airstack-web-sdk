@@ -31,7 +31,7 @@ const testVariables = {
 
 init(testAPIKey);
 
-describe("useLazyQueryWithPagination", () => {
+describe("useLazyQuery", () => {
   it("should fetch data successfully", async () => {
     const { result } = renderHook(() => useLazyQuery(testQuery, testVariables));
     expect(result.current[1].loading).toBe(false);
@@ -95,6 +95,75 @@ describe("useLazyQueryWithPagination", () => {
         mockFormattedDataString
       );
       expect(result.current[1].data).toBe(mockFormattedDataString);
+    });
+  });
+
+  describe("api call cancellation", () => {
+    it("should cancel api call if cancel callback is called and return error", async () => {
+      const abortControllerSpy = vi.spyOn(AbortController.prototype, "abort");
+      const { result } = renderHook(() =>
+        useLazyQuery(testQuery, testVariables, {
+          cache: false,
+        })
+      );
+      expect(result.current[1].loading).toBe(false);
+      expect(result.current[1].data).toBe(null);
+      expect(result.current[1].error).toBe(null);
+
+      await act(async () => {
+        result.current[0]();
+      });
+      result.current[1].cancelRequest();
+      expect(abortControllerSpy).toHaveBeenCalledOnce();
+      await waitForLoadingStartAndStop(result);
+      expect(result.current[1].data).toBe(null);
+      expect(result.current[1].error).toBe(null);
+    });
+
+    it("should not cancel active api call on hook unmount if cancelRequestOnUnmount is falsy", async () => {
+      const abortControllerSpy = vi.spyOn(AbortController.prototype, "abort");
+      const { result, unmount } = renderHook(() =>
+        useLazyQuery(testQuery, testVariables, {
+          cache: false,
+        })
+      );
+      await act(async () => {
+        result.current[0]();
+      });
+      unmount();
+      expect(abortControllerSpy).not.toHaveBeenCalledOnce();
+    });
+
+    it("should cancel active api call on hook unmount if cancelRequestOnUnmount is true", async () => {
+      const abortControllerSpy = vi.spyOn(AbortController.prototype, "abort");
+      const { result, unmount } = renderHook(() =>
+        useLazyQuery(testQuery, testVariables, {
+          cache: false,
+          cancelRequestOnUnmount: true,
+        })
+      );
+      await act(async () => {
+        result.current[0]();
+      });
+      unmount();
+      expect(abortControllerSpy).toHaveBeenCalledOnce();
+    });
+
+    it("should cancel active api call on hook unmount if cancelHookRequestsOnUnmount is passed as true to init", async () => {
+      const abortControllerSpy = vi.spyOn(AbortController.prototype, "abort");
+      init(testAPIKey, {
+        cancelHookRequestsOnUnmount: true,
+      });
+      const { result, unmount } = renderHook(() =>
+        useLazyQuery(testQuery, testVariables, {
+          cache: false,
+        })
+      );
+      await act(async () => {
+        result.current[0]();
+      });
+      unmount();
+      expect(abortControllerSpy).toHaveBeenCalledOnce();
     });
   });
 });
