@@ -147,11 +147,14 @@ export function useLazyQueryWithPagination<
   const fetch: FetchType<ReturnType<Formatter>, Variables> = useCallback(
     async (_variables?: Variables) => {
       reset();
-
       cancelRequest();
 
-      const _abortController = new AbortController();
-      abortControllerRef.current = _abortController;
+      // create a new abort controller only if the previous one is aborted, changing the abort controller
+      // even if it is not aborted will will make another api call instead of returning the cached promise
+      const _abortController =
+        !abortControllerRef.current || abortControllerRef.current.signal.aborted
+          ? new AbortController()
+          : abortControllerRef.current;
 
       setLoading(true);
 

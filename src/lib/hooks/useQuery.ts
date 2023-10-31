@@ -94,7 +94,6 @@ export function useLazyQuery<
   );
 
   const cancelRequest = useCallback(() => {
-    console.log(" cancel ");
     if (abortControllerRef.current && shouldCancelRequestOnUnmount) {
       abortControllerRef.current.abort();
     }
@@ -104,7 +103,13 @@ export function useLazyQuery<
     async (_variables?: Variables) => {
       cancelRequest();
 
-      const _abortController = new AbortController();
+      // create a new abort controller only if the previous one is aborted, changing the abort controller
+      // even if it is not aborted will will make another api call instead of returning the cached promise
+      const _abortController =
+        !abortControllerRef.current || abortControllerRef.current.signal.aborted
+          ? new AbortController()
+          : abortControllerRef.current;
+
       abortControllerRef.current = _abortController;
 
       setError(null);
