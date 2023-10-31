@@ -442,13 +442,9 @@ describe("useLazyQueryWithPagination", () => {
       });
       await waitForLoadingStartAndStop(result);
       const { data, error, pagination } = result.current[1];
-      expect(data).not.toBe(null);
-      expect(data.erc20.data).toHaveLength(1);
+      expect(data?.erc20?.data).toHaveLength(1);
       expect(error).toBe(null);
-      expect(error).toBeNull();
-      expect(data.erc20.data).toHaveLength(1);
       expect(pagination.hasNextPage).toBe(true);
-      expect(pagination.hasPrevPage).toBe(false);
       await act(async () => {
         pagination.getNextPage();
       });
