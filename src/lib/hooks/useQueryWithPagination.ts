@@ -94,7 +94,14 @@ export function useLazyQueryWithPagination<
   }, [setData, setError, setLoading]);
 
   const handleResponse = useCallback(
-    (res: null | Awaited<FetchPaginatedQueryReturnType<ResponseType>>) => {
+    (
+      response: null | Awaited<FetchPaginatedQueryReturnType<ResponseType>>,
+      abortController: AbortController
+    ) => {
+      const isResponseForAbortedRequest = abortController.signal.aborted;
+      // make sure the data remains null if the response is for an aborted request, this will make sure the onCompleted callback is called with null value
+      const res = isResponseForAbortedRequest ? null : response;
+
       let data: ReturnType<Formatter> | null = null;
       let error = null;
       let hasNextPage = false;
@@ -145,25 +152,29 @@ export function useLazyQueryWithPagination<
   }, [shouldCancelRequestOnUnmount]);
 
   const cancelRequest = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+    if (configRef.current.abortController) {
+      configRef.current.abortController.abort();
     }
-  }, []);
+  }, [configRef]);
+
+  const updateAbortController = useCallback(() => {
+    // create a new abort controller only if the previous one is aborted
+    const abortController =
+      !configRef.current.abortController ||
+      configRef.current.abortController.signal.aborted
+        ? new AbortController()
+        : configRef.current.abortController;
+
+    configRef.current.abortController = abortController;
+
+    return abortController;
+  }, [configRef]);
 
   const fetch: FetchType<ReturnType<Formatter>, Variables> = useCallback(
     async (_variables?: Variables) => {
       reset();
-      abortRequest();
 
-      // create a new abort controller only if the previous one is aborted, changing the abort controller
-      // even if it is not aborted will will make another api call instead of returning the cached promise
-      const _abortController =
-        !abortControllerRef.current || abortControllerRef.current.signal.aborted
-          ? new AbortController()
-          : abortControllerRef.current;
-
-      abortControllerRef.current = _abortController;
-
+      const abortController = updateAbortController();
       setLoading(true);
 
       const queryWithPagination = await addPaginationToQuery(query);
@@ -171,42 +182,41 @@ export function useLazyQueryWithPagination<
       const res = await fetchPaginatedQuery<ResponseType>(
         queryWithPagination,
         _variables || variablesRef.current,
-        {
-          ...configRef.current,
-          abortController: abortControllerRef.current,
-        }
+        // always pass the whole config object to fetchPaginatedQuery
+        // this is nessasary because fetchPaginatedQuery will use the abortController from the config object
+        // and this also helps us to change the abortController
+        // in case user aborts the next/prev page request and then makes a new request next/prev page request
+        configRef.current
       );
 
-      const isResponseForAbortedRequest = _abortController.signal.aborted;
-      // make sure the data remains null if the response is for an aborted request, this will make sure the onCompleted callback is called with null value
-      const response = isResponseForAbortedRequest ? null : res;
-
-      return handleResponse(response);
+      return handleResponse(res, abortController);
     },
     [
-      abortRequest,
       configRef,
       handleResponse,
       query,
       reset,
       setLoading,
+      updateAbortController,
       variablesRef,
     ]
   );
 
   const getNextPage = useCallback(async () => {
     if (!nextRef.current) return;
+    const abortController = updateAbortController();
     setLoading(true);
     const res = await nextRef.current();
-    handleResponse(res);
-  }, [handleResponse, setLoading]);
+    handleResponse(res, abortController);
+  }, [handleResponse, setLoading, updateAbortController]);
 
   const getPrevPage = useCallback(async () => {
     if (!prevRef.current) return;
+    const abortController = updateAbortController();
     setLoading(true);
     const res = await prevRef.current();
-    handleResponse(res);
-  }, [handleResponse, setLoading]);
+    handleResponse(res, abortController);
+  }, [handleResponse, setLoading, updateAbortController]);
 
   // cleanup, cancel request on unmount
   useEffect(() => abortRequest, [abortRequest]);

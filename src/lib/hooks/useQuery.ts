@@ -107,8 +107,6 @@ export function useLazyQuery<
 
   const fetch = useCallback(
     async (_variables?: Variables) => {
-      abortRequest();
-
       // create a new abort controller only if the previous one is aborted, changing the abort controller
       // even if it is not aborted will will make another api call instead of returning the cached promise
       const _abortController =
@@ -133,15 +131,7 @@ export function useLazyQuery<
 
       return handleResponse(response);
     },
-    [
-      abortRequest,
-      setError,
-      setLoading,
-      query,
-      variablesRef,
-      configRef,
-      handleResponse,
-    ]
+    [setError, setLoading, query, variablesRef, configRef, handleResponse]
   );
 
   // cleanup, cancel request on unmount

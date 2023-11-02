@@ -53,7 +53,7 @@ export async function fetchGql<ResponseType = any>(
   const key = createCacheKey(query, variables);
   const cached = promiseCache[key];
   // if no cache promise or if the abort controller is different, create a new promise
-  if (!cached || cached?.abortController !== abortController) {
+  if (!cached || cached?.abortController?.signal.aborted) {
     const promise = _fetch<ResponseType>(
       query,
       variables,

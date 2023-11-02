@@ -26,13 +26,13 @@ export function useRequestState<
   const [data, setData] = useState<ReturnedData | null>(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const configRef = useRef<
-    | Pick<
+  const configRef =
+    useRef<
+      Pick<
         ConfigAndCallbacks<ReturnedData, Formatter>,
         "cache" | "cancelRequestOnUnmount" | "abortController"
       >
-    | undefined
-  >(config);
+    >(config);
 
   const variablesRef = useRef<VariablesType>(variables || {});
   const callbacksRef = useRef<
@@ -49,7 +49,8 @@ export function useRequestState<
   });
 
   const originalData = useRef<any>(null);
-  configRef.current = { ...configRef.current, ...config }; // update configRef.current when configAndCallbacks changes
+  configRef.current.cancelRequestOnUnmount = config.cancelRequestOnUnmount;
+  configRef.current.cache = config.cache;
   variablesRef.current = variables || {}; // update variablesRef.current when variables changes
   callbacksRef.current = {
     ...callbacksRef.current,

@@ -46,26 +46,31 @@ export async function fetchPaginatedQuery<D = ResponseType>(
       ? getFromCache(_query, variables || {})
       : null;
     let error = null;
-
+    const aboardController = _config?.abortController;
     if (!data) {
       const [response, _error] = await fetchGql<any>(
         _query,
         variables,
-        _config?.abortController
+        aboardController
       );
       data = response;
       error = _error;
+
       if (config.cache && data && !error) {
         cacheResponse(response, _query, variables);
       }
+
       cacheImagesFromQuery(data as any);
     } else {
       // return a new reference to the data object, so reference equality check in React components/hooks will work
       data = { ...data };
     }
 
-    paginationData = getPaginationData(data);
-    lastResponse = data;
+    // If the request was aborted, don't update the pagination data, so we can make the request again when the user clicks on the next/prev page button.
+    if (!aboardController?.signal.aborted) {
+      paginationData = getPaginationData(data);
+      lastResponse = data;
+    }
 
     return {
       data,
@@ -99,7 +104,6 @@ export async function fetchPaginatedQuery<D = ResponseType>(
       if (updatedQuery) {
         query = updatedQuery;
       }
-
       inProgressRequest = fetch(
         query,
         {
