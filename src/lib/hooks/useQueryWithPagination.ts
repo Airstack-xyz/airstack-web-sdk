@@ -52,7 +52,6 @@ export function useLazyQueryWithPagination<
   variables?: Variables,
   configAndCallbacks?: ConfigAndCallbacks<ReturnedData, Formatter>
 ): LazyHookReturnType<ReturnType<Formatter>, Variables> {
-  const abortControllerRef = useRef<AbortController | null>(null);
   const {
     data,
     error,
@@ -69,7 +68,9 @@ export function useLazyQueryWithPagination<
     configAndCallbacks
   );
   const [hasNextPage, setHasNextPage] = useState(false);
+  const hasNextPageRef = useRef(false);
   const [hasPrevPage, setHasPrevPage] = useState(false);
+  const hasPrevPageRef = useRef(false);
   const nextRef = useRef<
     null | (() => Promise<FetchQuery<ResponseType> | null>)
   >(null);
@@ -89,7 +90,9 @@ export function useLazyQueryWithPagination<
     setData(null);
     setError(null);
     setLoading(false);
+    hasNextPageRef.current = false;
     setHasNextPage(false);
+    hasPrevPageRef.current = false;
     setHasPrevPage(false);
   }, [setData, setError, setLoading]);
 
@@ -104,8 +107,12 @@ export function useLazyQueryWithPagination<
 
       let data: ReturnType<Formatter> | null = null;
       let error = null;
-      let hasNextPage = false;
-      let hasPrevPage = false;
+      let hasNextPage = isResponseForAbortedRequest
+        ? hasNextPageRef.current
+        : false;
+      let hasPrevPage = isResponseForAbortedRequest
+        ? hasPrevPageRef.current
+        : false;
 
       if (res) {
         const { data: rawData, getNextPage, getPrevPage } = res;
@@ -126,7 +133,9 @@ export function useLazyQueryWithPagination<
       setData(data);
       setError(error);
       setLoading(false);
+      hasNextPageRef.current = hasNextPage;
       setHasNextPage(hasNextPage);
+      hasPrevPageRef.current = hasPrevPage;
       setHasPrevPage(hasPrevPage);
       if (error) {
         callbacksRef.current.onError(error);
@@ -146,10 +155,10 @@ export function useLazyQueryWithPagination<
   );
 
   const abortRequest = useCallback(() => {
-    if (abortControllerRef.current && shouldCancelRequestOnUnmount) {
-      abortControllerRef.current.abort();
+    if (configRef.current.abortController && shouldCancelRequestOnUnmount) {
+      configRef.current.abortController.abort();
     }
-  }, [shouldCancelRequestOnUnmount]);
+  }, [configRef, shouldCancelRequestOnUnmount]);
 
   const cancelRequest = useCallback(() => {
     if (configRef.current.abortController) {

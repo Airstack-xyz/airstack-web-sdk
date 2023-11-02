@@ -37,8 +37,6 @@ export function useLazyQuery<
   variables?: Variables,
   configAndCallbacks?: ConfigAndCallbacks<ReturnedData, Formatter>
 ): UseLazyQueryReturnType<ReturnType<Formatter>, Variables> {
-  const abortControllerRef = useRef<AbortController | null>(null);
-
   const {
     data,
     error,
@@ -94,27 +92,28 @@ export function useLazyQuery<
   );
 
   const abortRequest = useCallback(() => {
-    if (abortControllerRef.current && shouldCancelRequestOnUnmount) {
-      abortControllerRef.current.abort();
+    if (configRef.current.abortController && shouldCancelRequestOnUnmount) {
+      configRef.current.abortController.abort();
     }
-  }, [shouldCancelRequestOnUnmount]);
+  }, [configRef, shouldCancelRequestOnUnmount]);
 
   const cancelRequest = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+    if (configRef.current.abortController) {
+      configRef.current.abortController.abort();
     }
-  }, []);
+  }, [configRef]);
 
   const fetch = useCallback(
     async (_variables?: Variables) => {
       // create a new abort controller only if the previous one is aborted, changing the abort controller
       // even if it is not aborted will will make another api call instead of returning the cached promise
-      const _abortController =
-        !abortControllerRef.current || abortControllerRef.current.signal.aborted
+      const abortController =
+        !configRef.current.abortController ||
+        configRef.current.abortController.signal.aborted
           ? new AbortController()
-          : abortControllerRef.current;
+          : configRef.current.abortController;
 
-      abortControllerRef.current = _abortController;
+      configRef.current.abortController = abortController;
 
       setError(null);
       setLoading(true);
@@ -122,10 +121,10 @@ export function useLazyQuery<
       const res = await fetchQuery<ResponseType>(
         query,
         _variables || variablesRef.current,
-        { ...configRef.current, abortController: abortControllerRef.current }
+        { ...configRef.current, abortController }
       );
 
-      const isResponseForAbortedRequest = _abortController.signal.aborted;
+      const isResponseForAbortedRequest = abortController.signal.aborted;
       // make sure the data remains null if the response is for an aborted request, this will make sure the onCompleted callback is called with null value
       const response = isResponseForAbortedRequest ? null : res;
 
