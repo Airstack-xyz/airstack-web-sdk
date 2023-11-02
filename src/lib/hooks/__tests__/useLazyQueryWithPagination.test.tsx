@@ -438,10 +438,14 @@ describe("useLazyQueryWithPagination", () => {
 
     it("should return hasNextPage/hasPrevPage as true even if the get next/prev page request was cancelled", async () => {
       const abortControllerSpy = vi.spyOn(AbortController.prototype, "abort");
+      const mockDataFormatterCallback = vi.fn((response) => response);
+      const mockOnCompletedCallback = vi.fn();
       const { result } = renderHook(() =>
         useLazyQueryWithPagination(testQuery, testVariables, {
           cache: false,
           cancelRequestOnUnmount: true,
+          onCompleted: mockOnCompletedCallback,
+          dataFormatter: mockDataFormatterCallback,
         })
       );
 
@@ -449,6 +453,10 @@ describe("useLazyQueryWithPagination", () => {
         result.current[0]();
       });
       await waitForLoadingStartAndStop(result);
+
+      mockDataFormatterCallback.mockClear();
+      mockOnCompletedCallback.mockClear();
+
       const { data, error, pagination, cancelRequest } = result.current[1];
       expect(data?.erc20?.data).toHaveLength(1);
       expect(error).toBe(null);
@@ -461,12 +469,16 @@ describe("useLazyQueryWithPagination", () => {
       });
       expect(abortControllerSpy).toHaveBeenCalledOnce();
       expect(result.current[1].pagination.hasNextPage).toBe(true);
-      expect(result.current[1].data).toBe(null);
+      expect(mockDataFormatterCallback).not.toBeCalled();
+      expect(mockOnCompletedCallback).not.toBeCalled();
+      expect(result.current[1].data).toBe(data);
       expect(result.current[1].error).toBe(null);
       await act(async () => {
         result.current[1].pagination.getNextPage();
       });
       await waitForLoadingStartAndStop(result);
+      expect(mockDataFormatterCallback).toHaveBeenCalledOnce();
+      expect(mockOnCompletedCallback).toHaveBeenCalledOnce();
       expect(result.current[1].data).not.toBe(null);
     });
   });

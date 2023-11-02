@@ -60,7 +60,13 @@ export function useLazyQuery<
       : cancelRequestOnUnmount;
 
   const handleResponse = useCallback(
-    (res: null | Awaited<FetchQueryReturnType<ResponseType>>) => {
+    (
+      response: null | Awaited<FetchQueryReturnType<ResponseType>>,
+      abortController: AbortController
+    ) => {
+      const isResponseForAbortedRequest = abortController.signal.aborted;
+      // make sure the data remains null if the response is for an aborted request, this will make sure the onCompleted callback is called with null value
+      const res = isResponseForAbortedRequest ? null : response;
       let data: ReturnType<Formatter> | null = null;
       let error = null;
 
@@ -75,14 +81,19 @@ export function useLazyQuery<
         error = _error;
       }
 
-      setData(data);
-      setError(error);
-      setLoading(false);
-      if (error) {
-        callbacksRef.current.onError(error);
-      } else {
-        callbacksRef.current.onCompleted(data as ReturnType<Formatter>);
+      // do not update data and error if the response is for an aborted request
+      // also do not call the callbacks
+      if (!isResponseForAbortedRequest) {
+        setData(data);
+        setError(error);
+        if (error) {
+          callbacksRef.current.onError(error);
+        } else {
+          callbacksRef.current.onCompleted(data as ReturnType<Formatter>);
+        }
       }
+      setLoading(false);
+
       return {
         data,
         error,
@@ -118,17 +129,13 @@ export function useLazyQuery<
       setError(null);
       setLoading(true);
 
-      const res = await fetchQuery<ResponseType>(
+      const response = await fetchQuery<ResponseType>(
         query,
         _variables || variablesRef.current,
         { ...configRef.current, abortController }
       );
 
-      const isResponseForAbortedRequest = abortController.signal.aborted;
-      // make sure the data remains null if the response is for an aborted request, this will make sure the onCompleted callback is called with null value
-      const response = isResponseForAbortedRequest ? null : res;
-
-      return handleResponse(response);
+      return handleResponse(response, abortController);
     },
     [setError, setLoading, query, variablesRef, configRef, handleResponse]
   );

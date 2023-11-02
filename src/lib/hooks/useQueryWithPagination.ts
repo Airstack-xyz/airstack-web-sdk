@@ -130,18 +130,24 @@ export function useLazyQueryWithPagination<
         hasPrevPage = res.hasPrevPage;
       }
 
-      setData(data);
-      setError(error);
-      setLoading(false);
       hasNextPageRef.current = hasNextPage;
       setHasNextPage(hasNextPage);
       hasPrevPageRef.current = hasPrevPage;
       setHasPrevPage(hasPrevPage);
-      if (error) {
-        callbacksRef.current.onError(error);
-      } else {
-        callbacksRef.current.onCompleted(data as ReturnType<Formatter>);
+
+      // do not update data and error if the response is for an aborted request
+      // also do not call the callbacks
+      if (!isResponseForAbortedRequest) {
+        setData(data);
+        setError(error);
+        if (error) {
+          callbacksRef.current.onError(error);
+        } else {
+          callbacksRef.current.onCompleted(data as ReturnType<Formatter>);
+        }
       }
+      setLoading(false);
+
       return {
         data,
         error,
