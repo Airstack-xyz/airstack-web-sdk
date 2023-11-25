@@ -106,8 +106,8 @@ export function getUrlFromData({
   // use animation url if available, otherwise use video, audio, or image
   return (
     data.animation_url?.original ||
-    data.video ||
-    data.audio ||
+    data.video?.original ||
+    data.audio?.original ||
     (data.image || {})[preset] ||
     ""
   );

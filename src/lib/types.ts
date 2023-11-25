@@ -60,8 +60,12 @@ export interface type {
           large: string;
           original: string;
         };
-        video: string;
-        audio: string;
+        video: {
+          original: string;
+        };
+        audio: {
+          original: string;
+        };
         animation_url?: {
           original: string;
         };

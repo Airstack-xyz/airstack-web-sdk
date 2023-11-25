@@ -8,8 +8,12 @@ const query = `query GetTokenNfts($address: Address, $tokenId: String, $blockcha
         tokenId
         contentType
         contentValue {
-          video
-          audio
+          video {
+            original
+          }
+          audio {
+            original
+          }
           image {
             extraSmall
             large
