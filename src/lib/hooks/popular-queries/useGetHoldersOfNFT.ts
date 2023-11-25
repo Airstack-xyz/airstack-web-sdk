@@ -18,7 +18,6 @@ const query = `query GetHoldersOfNFT($tokenAddress: Address, $tokenId: String, $
           animation_url {
             original
           }
-          audio
           image {
             extraSmall
             large
@@ -26,7 +25,12 @@ const query = `query GetHoldersOfNFT($tokenAddress: Address, $tokenId: String, $
             original
             small
           }
-          video
+          video {
+            original
+          }
+          audio {
+            original
+          }
         }
       }
       owner {

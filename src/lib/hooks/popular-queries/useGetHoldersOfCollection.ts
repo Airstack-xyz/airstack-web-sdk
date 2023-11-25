@@ -18,7 +18,6 @@ const query = `query GetHoldersOfCollection($tokenAddress: Address, $blockchain:
           animation_url {
             original
           }
-          audio
           image {
             extraSmall
             large
@@ -26,7 +25,12 @@ const query = `query GetHoldersOfCollection($tokenAddress: Address, $blockchain:
             original
             small
           }
-          video
+          video {
+            original
+          }
+          audio {
+            original
+          }
         }
       }
       owner {

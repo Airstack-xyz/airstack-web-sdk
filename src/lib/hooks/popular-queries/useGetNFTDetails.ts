@@ -6,7 +6,6 @@ const query = `query GetNFTDetails($address: Address!, $tokenId: String!, $block
     blockchain
     contentType
     contentValue {
-      audio
       animation_url {
         original
       }
@@ -17,7 +16,12 @@ const query = `query GetNFTDetails($address: Address!, $tokenId: String!, $block
         original
         small
       }
-      video
+      video {
+        original
+      }
+      audio {
+        original
+      }
     }
     metaData {
       animationUrl

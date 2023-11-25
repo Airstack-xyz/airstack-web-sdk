@@ -9,7 +9,6 @@ const query = `query GetNFTs($address: Address!, $blockchain: TokenBlockchain!, 
       blockchain
       contentType
       contentValue {
-        audio
         animation_url {
           original
         }
@@ -20,7 +19,12 @@ const query = `query GetNFTs($address: Address!, $blockchain: TokenBlockchain!, 
           original
           small
         }
-        video
+        video {
+          original
+        }
+        audio {
+          original
+        }
       }
       metaData {
         animationUrl
