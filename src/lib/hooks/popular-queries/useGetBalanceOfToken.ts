@@ -27,8 +27,12 @@ const query = `query GetBalanceOfToken($blockchain: TokenBlockchain!, $tokenAddr
         animation_url {
           original
         }
-        audio
-        video
+        video {
+          original
+        }
+        audio {
+          original
+        }
       }
       metaData {
         animationUrl
