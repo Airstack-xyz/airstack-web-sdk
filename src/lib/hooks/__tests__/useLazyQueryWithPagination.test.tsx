@@ -221,7 +221,7 @@ describe("useLazyQueryWithPagination", () => {
       // this address has only 2 erc20 token, if this test fails, it means that the address has more than 2 erc20 token
       const variables = {
         address: "betashop.eth",
-        limit: 2,
+        limit: 3,
       };
 
       const { result } = renderHook(() =>
@@ -240,7 +240,7 @@ describe("useLazyQueryWithPagination", () => {
         pagination: { hasNextPage, hasPrevPage, getNextPage },
       } = result.current[1];
       expect(error).toBeNull();
-      expect(data.erc20.data).toHaveLength(1);
+      expect(data.erc20.data).toHaveLength(2);
       expect(hasPrevPage).toBe(false);
       expect(hasNextPage).toBe(false);
       await act(async () => {
