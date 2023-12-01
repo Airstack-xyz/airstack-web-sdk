@@ -1,6 +1,7 @@
 import { IntrospectionSchema, IntrospectionType } from "graphql";
-import { API_ENDPOINT_PROD } from "../../constants";
+import { AIRSTACK_ENDPOINT } from "../../constants";
 import { introspectionQuery } from "../../constants/introspectionQuery";
+import { config } from "../../config";
 
 const mismatchedQueryMap = {
   socialfollowingsinput: "socialfollowinginput",
@@ -25,10 +26,11 @@ export async function getIntrospectionQueryMap(): Promise<SchemaMap> {
     return inProgressRequest;
   }
 
-  inProgressRequest = fetch(API_ENDPOINT_PROD, {
+  inProgressRequest = fetch(AIRSTACK_ENDPOINT, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: config.authKey,
     },
     body: JSON.stringify({
       query: introspectionQuery,

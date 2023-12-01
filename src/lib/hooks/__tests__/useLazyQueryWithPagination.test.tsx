@@ -31,7 +31,7 @@ const testVariables = {
 
 const testMultiQuery = `query tokens($address: Identity!, $address2: Identity!) {
   erc20: TokenBalances(
-    input: {filter: {owner: {_in: [$address]}, tokenType: {_in: [ERC20]}}, limit: 2, blockchain: ethereum}
+    input: {filter: {owner: {_in: [$address]}, tokenType: {_in: [ERC20]}}, limit: 3, blockchain: ethereum}
   ) {
     data: TokenBalance {
       amount
@@ -52,7 +52,7 @@ const testMultiQuery = `query tokens($address: Identity!, $address2: Identity!) 
     }
   },
   _erc20: TokenBalances(
-    input: {filter: {owner: {_in: [$address2]}, tokenType: {_in: [ERC20]}}, limit: 2, blockchain: ethereum}
+    input: {filter: {owner: {_in: [$address2]}, tokenType: {_in: [ERC20]}}, limit: 3, blockchain: ethereum}
   ) {
     data: TokenBalance {
       amount
@@ -218,7 +218,7 @@ describe("useLazyQueryWithPagination", () => {
     }, 10000);
 
     it("should return hasNextPage as false if no next page, and getNextPage should return null", async () => {
-      // this address has only 1 erc20 token, if this test fails, it means that the address has more than 1 erc20 token
+      // this address has only 2 erc20 token, if this test fails, it means that the address has more than 2 erc20 token
       const variables = {
         address: "betashop.eth",
         limit: 2,
@@ -257,7 +257,7 @@ describe("useLazyQueryWithPagination", () => {
     }, 10000);
 
     it("should paginate backward and forward and should add/remove sub-query when required", async () => {
-      // this address has only 1 erc20 token, if this test fails, it means that the address has more than 1 erc20 token
+      // this address has only 2 erc20 token, if this test fails, it means that the address has more than 2 erc20 token
       const variables = {
         address: "betashop.eth",
         address2: "vitalik.eth",
@@ -278,8 +278,8 @@ describe("useLazyQueryWithPagination", () => {
       } = result.current[1];
       // page => 0
       expect(error).toBeNull();
-      expect(data.erc20.data).toHaveLength(1);
-      expect(data._erc20.data).toHaveLength(2);
+      expect(data.erc20.data).toHaveLength(2);
+      expect(data._erc20.data).toHaveLength(3);
       expect(hasPrevPage).toBe(false);
       expect(hasNextPage).toBe(true);
 
@@ -291,7 +291,7 @@ describe("useLazyQueryWithPagination", () => {
         const data = result.current[1].data;
         if (data) {
           expect(data.erc20).toBeUndefined();
-          expect(data._erc20.data).toHaveLength(2);
+          expect(data._erc20.data).toHaveLength(3);
         }
       }
 
@@ -302,7 +302,7 @@ describe("useLazyQueryWithPagination", () => {
         });
         const data = result.current[1].data;
         expect(data.erc20).toBeUndefined();
-        expect(data._erc20.data).toHaveLength(2);
+        expect(data._erc20.data).toHaveLength(3);
       }
       // page => 0
       await act(async () => {
@@ -314,7 +314,7 @@ describe("useLazyQueryWithPagination", () => {
 
   describe("schema mismatch", () => {
     it("should do pagination backward and forward for queries with a mismatched schema", async () => {
-      // this address has only 1 erc20 token, if this test fails, it means that the address has more than 1 erc20 token
+      // this address has only 2 erc20 token, if this test fails, it means that the address has more than 2 erc20 token
       const variables = {
         identity: "betashop.eth",
       };

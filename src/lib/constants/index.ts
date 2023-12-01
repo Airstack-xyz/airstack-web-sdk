@@ -21,5 +21,3 @@ export const PresetArray = [
 ];
 
 export type Chain = "ethereum" | "polygon";
-
-export const API_ENDPOINT_PROD = "https://api.airstack.xyz/gql";
