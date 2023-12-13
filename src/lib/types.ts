@@ -23,6 +23,7 @@ export type FetchQueryReturnType<D> = Promise<
 
 export type Config = {
   cache?: boolean;
+  abortController?: AbortController;
 };
 
 export type DataFormatter<
@@ -33,6 +34,7 @@ export type DataFormatter<
 };
 
 export type ConfigAndCallbacks<D extends ResponseType, F> = Config & {
+  cancelRequestOnUnmount?: boolean;
   onCompleted?: (data: D) => void;
   onError?: (error: any) => void;
   dataFormatter?: F;

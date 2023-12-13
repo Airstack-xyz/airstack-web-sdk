@@ -9,6 +9,7 @@ import {
 import { useRequestState } from "./useDataState";
 import { addPaginationToQuery } from "../utils/addPaginationToQuery";
 import { fetchPaginatedQuery } from "../apis/fetchPaginatedQuery";
+import { config } from "../config";
 
 type BaseReturnType<D> = {
   data: null | D;
@@ -24,6 +25,7 @@ type Pagination = {
 type UseQueryReturnType<D> = BaseReturnType<D> & {
   loading: boolean;
   pagination: Pagination;
+  cancelRequest: () => void;
 };
 
 type FetchType<D extends ResponseType, V extends VariablesType> = (
@@ -66,7 +68,9 @@ export function useLazyQueryWithPagination<
     configAndCallbacks
   );
   const [hasNextPage, setHasNextPage] = useState(false);
+  const hasNextPageRef = useRef(false);
   const [hasPrevPage, setHasPrevPage] = useState(false);
+  const hasPrevPageRef = useRef(false);
   const nextRef = useRef<
     null | (() => Promise<FetchQuery<ResponseType> | null>)
   >(null);
@@ -74,22 +78,41 @@ export function useLazyQueryWithPagination<
     null | (() => Promise<FetchQuery<ResponseType> | null>)
   >(null);
 
+  const { cancelRequestOnUnmount } = configRef.current || {};
+  const shouldCancelRequestOnUnmount =
+    cancelRequestOnUnmount === undefined
+      ? config.cancelHookRequestsOnUnmount
+      : cancelRequestOnUnmount;
+
   const reset = useCallback(() => {
     nextRef.current = null;
     prevRef.current = null;
     setData(null);
     setError(null);
     setLoading(false);
+    hasNextPageRef.current = false;
     setHasNextPage(false);
+    hasPrevPageRef.current = false;
     setHasPrevPage(false);
   }, [setData, setError, setLoading]);
 
   const handleResponse = useCallback(
-    (res: null | Awaited<FetchPaginatedQueryReturnType<ResponseType>>) => {
+    (
+      response: null | Awaited<FetchPaginatedQueryReturnType<ResponseType>>,
+      abortController: AbortController
+    ) => {
+      const isResponseForAbortedRequest = abortController.signal.aborted;
+      // make sure the data remains null if the response is for an aborted request, this will make sure the onCompleted callback is called with null value
+      const res = isResponseForAbortedRequest ? null : response;
+
       let data: ReturnType<Formatter> | null = null;
       let error = null;
-      let hasNextPage = false;
-      let hasPrevPage = false;
+      let hasNextPage = isResponseForAbortedRequest
+        ? hasNextPageRef.current
+        : false;
+      let hasPrevPage = isResponseForAbortedRequest
+        ? hasPrevPageRef.current
+        : false;
 
       if (res) {
         const { data: rawData, getNextPage, getPrevPage } = res;
@@ -107,16 +130,24 @@ export function useLazyQueryWithPagination<
         hasPrevPage = res.hasPrevPage;
       }
 
-      setData(data);
-      setError(error);
-      setLoading(false);
+      hasNextPageRef.current = hasNextPage;
       setHasNextPage(hasNextPage);
+      hasPrevPageRef.current = hasPrevPage;
       setHasPrevPage(hasPrevPage);
-      if (error) {
-        callbacksRef.current.onError(error);
-      } else {
-        callbacksRef.current.onCompleted(data as ReturnType<Formatter>);
+
+      // do not update data and error if the response is for an aborted request
+      // also do not call the callbacks
+      if (!isResponseForAbortedRequest) {
+        setData(data);
+        setError(error);
+        if (error) {
+          callbacksRef.current.onError(error);
+        } else {
+          callbacksRef.current.onCompleted(data as ReturnType<Formatter>);
+        }
       }
+      setLoading(false);
+
       return {
         data,
         error,
@@ -129,9 +160,36 @@ export function useLazyQueryWithPagination<
     [callbacksRef, originalData, setData, setError, setLoading]
   );
 
+  const abortRequest = useCallback(() => {
+    if (configRef.current.abortController && shouldCancelRequestOnUnmount) {
+      configRef.current.abortController.abort();
+    }
+  }, [configRef, shouldCancelRequestOnUnmount]);
+
+  const cancelRequest = useCallback(() => {
+    if (configRef.current.abortController) {
+      configRef.current.abortController.abort();
+    }
+  }, [configRef]);
+
+  const updateAbortController = useCallback(() => {
+    // create a new abort controller only if the previous one is aborted
+    const abortController =
+      !configRef.current.abortController ||
+      configRef.current.abortController.signal.aborted
+        ? new AbortController()
+        : configRef.current.abortController;
+
+    configRef.current.abortController = abortController;
+
+    return abortController;
+  }, [configRef]);
+
   const fetch: FetchType<ReturnType<Formatter>, Variables> = useCallback(
     async (_variables?: Variables) => {
       reset();
+
+      const abortController = updateAbortController();
       setLoading(true);
 
       const queryWithPagination = await addPaginationToQuery(query);
@@ -139,26 +197,44 @@ export function useLazyQueryWithPagination<
       const res = await fetchPaginatedQuery<ResponseType>(
         queryWithPagination,
         _variables || variablesRef.current,
+        // always pass the whole config object to fetchPaginatedQuery
+        // this is nessasary because fetchPaginatedQuery will use the abortController from the config object
+        // and this also helps us to change the abortController
+        // in case user aborts the next/prev page request and then makes a new request next/prev page request
         configRef.current
       );
-      return handleResponse(res);
+
+      return handleResponse(res, abortController);
     },
-    [configRef, handleResponse, query, reset, setLoading, variablesRef]
+    [
+      configRef,
+      handleResponse,
+      query,
+      reset,
+      setLoading,
+      updateAbortController,
+      variablesRef,
+    ]
   );
 
   const getNextPage = useCallback(async () => {
     if (!nextRef.current) return;
+    const abortController = updateAbortController();
     setLoading(true);
     const res = await nextRef.current();
-    handleResponse(res);
-  }, [handleResponse, setLoading]);
+    handleResponse(res, abortController);
+  }, [handleResponse, setLoading, updateAbortController]);
 
   const getPrevPage = useCallback(async () => {
     if (!prevRef.current) return;
+    const abortController = updateAbortController();
     setLoading(true);
     const res = await prevRef.current();
-    handleResponse(res);
-  }, [handleResponse, setLoading]);
+    handleResponse(res, abortController);
+  }, [handleResponse, setLoading, updateAbortController]);
+
+  // cleanup, cancel request on unmount
+  useEffect(() => abortRequest, [abortRequest]);
 
   return useMemo(() => {
     return [
@@ -173,9 +249,11 @@ export function useLazyQueryWithPagination<
           getNextPage,
           getPrevPage,
         },
+        cancelRequest,
       },
     ];
   }, [
+    cancelRequest,
     data,
     error,
     fetch,
@@ -203,6 +281,7 @@ export function useQueryWithPagination<
     Variables,
     Formatter
   >(query, variables, configAndCallbacks);
+
   useEffect(() => {
     fetch();
   }, [fetch]);

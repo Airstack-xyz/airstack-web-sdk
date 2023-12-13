@@ -5,7 +5,8 @@ import { VariablesType } from "../types";
 
 export async function _fetch<ResponseType = any>(
   query: string,
-  variables: VariablesType
+  variables: VariablesType,
+  abortController?: AbortController
 ): Promise<[ResponseType | null, any]> {
   if (!config.authKey) {
     throw new Error("No API key provided");
@@ -17,6 +18,7 @@ export async function _fetch<ResponseType = any>(
         "Content-Type": "application/json",
         Authorization: config.authKey,
       },
+      signal: abortController ? abortController?.signal : null,
       body: JSON.stringify({
         query,
         variables,
@@ -36,17 +38,31 @@ export async function _fetch<ResponseType = any>(
     ];
   }
 }
-const promiseCache: { [key: string]: Promise<any> } = {};
+const promiseCache: {
+  [key: string]: {
+    promise: Promise<[any, any]>;
+    abortController?: AbortController;
+  };
+} = {};
 
 export async function fetchGql<ResponseType = any>(
   query: string,
-  variables: VariablesType
+  variables: VariablesType,
+  abortController?: AbortController
 ): Promise<[ResponseType | null, any]> {
   const key = createCacheKey(query, variables);
-  if (!promiseCache[key]) {
-    promiseCache[key] = _fetch<ResponseType>(query, variables).finally(() => {
+  const cached = promiseCache[key];
+  // if no cache promise or if the abort controller is different, create a new promise
+  if (!cached || cached?.abortController?.signal.aborted) {
+    const promise = _fetch<ResponseType>(
+      query,
+      variables,
+      abortController
+    ).finally(() => {
       delete promiseCache[key];
     });
+
+    promiseCache[key] = { promise, abortController };
   }
-  return promiseCache[key];
+  return promiseCache[key].promise;
 }
