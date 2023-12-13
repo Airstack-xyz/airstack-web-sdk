@@ -4,7 +4,7 @@ import { useLazyQuery } from "../useQuery";
 import { init } from "../../init";
 import { waitForLoadingStartAndStop } from "./utils";
 
-const testAPIKey = "ef3d1cdeafb642d3a8d6a44664ce566c";
+const testAPIKey = "190fc193f24b34d7cafc3dec305c96b0a";
 const testQuery = `query tokens($address: Identity!) {
   erc20: TokenBalances(
     input: {filter: {owner: {_in: [$address]}, tokenType: {_in: [ERC20]}}, limit: 1, blockchain: ethereum}

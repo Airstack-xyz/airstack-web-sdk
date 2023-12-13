@@ -3,7 +3,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { useLazyQueryWithPagination } from "../useQueryWithPagination";
 import { init } from "../../init";
 import { waitForLoadingStartAndStop } from "./utils";
-const testAPIKey = "ef3d1cdeafb642d3a8d6a44664ce566c";
+const testAPIKey = "190fc193f24b34d7cafc3dec305c96b0a";
 const testQuery = `query tokens($address: Identity!, $limit: Int!) {
   erc20: TokenBalances(
     input: {filter: {owner: {_in: [$address]}, tokenType: {_in: [ERC20]}}, limit: $limit, blockchain: ethereum}

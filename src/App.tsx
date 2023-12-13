@@ -10,7 +10,7 @@ import {
 } from "./lib";
 import { QueryInput } from "./QueryInput";
 
-init("ef3d1cdeafb642d3a8d6a44664ce566c", {
+init("190fc193f24b34d7cafc3dec305c96b0a", {
   env: "dev",
   cancelHookRequestsOnUnmount: true,
 });
