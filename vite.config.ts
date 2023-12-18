@@ -1,11 +1,17 @@
 import react from "@vitejs/plugin-react";
-import { defineConfig, configDefaults } from "vitest/config";
-import dts from "vite-plugin-dts";
 import renameNodeModules from "rollup-plugin-rename-node-modules";
+import dts from "vite-plugin-dts";
+import { nodePolyfills } from "vite-plugin-node-polyfills";
+import { configDefaults, defineConfig } from "vitest/config";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), dts()],
+  plugins: [
+    react(), 
+    dts(), 
+    // we need buffer polyfill for @xmtp/xmtp-js
+    nodePolyfills({ include: ["buffer"] })
+  ],
   build: {
     target: "modules",
     lib: {
@@ -24,7 +30,7 @@ export default defineConfig({
       external: ["react", "react-dom"],
       output: {
         // we need to set preserveModules to true, so vite will not bundle the library
-        // and will preserve the folder stucture of the library, so the library can be tree-shaken
+        // and will preserve the folder structure of the library, so the library can be tree-shaken
         preserveModules: true,
         // build files from src/lib to the dist folder
         preserveModulesRoot: "src/lib",
