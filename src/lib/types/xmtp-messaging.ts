@@ -5,8 +5,8 @@ export type ProcessedAddress = {
   address: string;
   walletAddress: string;
   isIdentity: boolean;
-  isXMTPEnabled: boolean,
-}
+  isXMTPEnabled: boolean;
+};
 
 export type ProgressResult = {
   total: number;
@@ -18,25 +18,42 @@ export type MessagingResult = {
   address: string;
   recipientAddress: string;
   sent: boolean;
-  error?: unknown
-}
-
+  error?: unknown;
+};
 
 export type SendMessageOnXmtpParamsType = {
   message: string;
   addresses: string[];
-  useAirstackForProcessingAddresses?: boolean;
+  processAddressesViaAirstackAPIs?: boolean;
   wallet?: Signer | WalletClient | null;
   onProgress?: (data: ProgressResult) => void;
   onComplete?: (data: MessagingResult[]) => void;
   onError?: (err: unknown) => boolean | void;
 };
 
-export type SendMessageOnXmtpReturnType = Promise<{
+export type SendMessageOnXmtpReturnType = {
   data: MessagingResult[] | null;
   progress: ProgressResult | null;
   error: unknown;
-}>;
+};
+
+export type SendMessageParamsType = Pick<SendMessageOnXmtpParamsType, "message"| "addresses">;
+
+export type UseMessagingOnXmtpHookParamsType = SendMessageOnXmtpParamsType;
+
+export type UseMessagingOnXmtpHookReturnType = SendMessageOnXmtpReturnType & {
+  loading: boolean;
+};
+
+export type UseLazyMessagingOnXmtpHookParamsType = Omit<SendMessageOnXmtpParamsType, "message"| "addresses"> & {
+  message?: string;
+  addresses?: string[];
+};
+
+export type UseLazyMessagingOnXmtpHookReturnType = [
+  (sendParams?: SendMessageParamsType) => Promise<SendMessageOnXmtpReturnType>,
+  UseMessagingOnXmtpHookReturnType
+];
 
 export type GetXmtpOwnersQuery = {
   XMTPs: {
@@ -63,5 +80,5 @@ export type GetXmtpOwnersQuery = {
 };
 
 export type GetXmtpOwnersQueryVariables = {
-  owners: string[]
-}
+  owners: string[];
+};

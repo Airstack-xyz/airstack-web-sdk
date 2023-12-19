@@ -15,12 +15,12 @@ import {
 export async function sendMessageOnXMTP({
   message,
   addresses,
-  useAirstackForProcessingAddresses,
+  processAddressesViaAirstackAPIs,
   wallet,
   onProgress,
   onComplete,
   onError,
-}: SendMessageOnXmtpParamsType): SendMessageOnXmtpReturnType {
+}: SendMessageOnXmtpParamsType): Promise<SendMessageOnXmtpReturnType> {
   const resultToReturn: {
     data: MessagingResult[];
     progress: ProgressResult;
@@ -58,7 +58,7 @@ export async function sendMessageOnXMTP({
         batchIndex + XMTP_ADDRESS_BATCH_SIZE
       );
       // resolve identities/check xmtp status for addresses
-      const processedBatch = useAirstackForProcessingAddresses
+      const processedBatch = processAddressesViaAirstackAPIs
         ? await processAddressesViaAirstack(addressesBatch)
         : await processAddressesViaXMTP(addressesBatch, xmtpClient);
 
