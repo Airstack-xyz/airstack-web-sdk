@@ -1,20 +1,26 @@
 import React, { useState } from "react";
-import { sendMessageOnXMTP } from "../lib";
+import { init, sendMessageOnXMTP } from "../lib";
+
+init("190fc193f24b34d7cafc3dec305c96b0a", {
+  env: "dev",
+});
 
 function XMTPMessaging() {
-  const [text, setText] = useState("0x937C0d4a6294cdfa575de17382c7076b579DC176, 0x37cf8bd14e92B1fc849469EddBA264E923bd7bd8");
+  const [messageText, setMessageText] = useState("Hey this is sample message");
+  const [addressesText, setAddressesText] = useState("gm.xmtp.eth");
   const [loading, setLoading] = useState(false);
 
   const sendMessage = async () => {
-    const addresses = text
+    const addresses = addressesText
       .split(/[\s,]/)
       .filter(Boolean)
       .map((x) => x.trim());
 
     setLoading(true); 
     const { data, error, progress } = await sendMessageOnXMTP({
-      message: "Hey this is me",
+      message: messageText,
       addresses,
+      useAirstackForProcessingAddresses: true,
       onComplete: (data) => console.log("sendMessageOnXMTP:onComplete -", data),
       onProgress: (data) => console.log("sendMessageOnXMTP:onProgress -", data),
       onError: (err) => {
@@ -29,13 +35,22 @@ function XMTPMessaging() {
   return (
     <div style={{ marginInline: "5rem"}}>
       <h1>XMTP Messaging playground</h1>
-      <label>Addresses</label>
+      <h3>Message</h3>
       <div>
         <textarea
           style={{ minWidth: 500 }}
           rows={10}
-          value={text}
-          onChange={(event) => setText(event.target.value)}
+          value={messageText}
+          onChange={(event) => setMessageText(event.target.value)}
+        />
+      </div>
+      <h3>Addresses</h3>
+      <div>
+        <textarea
+          style={{ minWidth: 500 }}
+          rows={10}
+          value={addressesText}
+          onChange={(event) => setAddressesText(event.target.value)}
         />
       </div>
       <button type="button" disabled={loading} onClick={sendMessage}>

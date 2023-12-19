@@ -1,25 +1,34 @@
 import { Client } from "@xmtp/xmtp-js";
 import { Eip1193Provider, ethers } from "ethers";
 import {
+  MessagingResult,
+  ProgressResult,
   SendMessageOnXmtpParamsType,
   SendMessageOnXmtpReturnType,
 } from "../types/xmtp-messaging";
-
-// see: https://xmtp.org/docs/faq#rate-limiting for rate limiting info
-const MAX_ADDRESS_PER_BATCH = 50;
+import { XMTP_ADDRESS_BATCH_SIZE } from "../constants/xmtp-messaging";
+import {
+  processAddressesViaXMTP,
+  processAddressesViaAirstack,
+} from "../utils/xmtp-messaging";
 
 export async function sendMessageOnXMTP({
   message,
   addresses,
+  useAirstackForProcessingAddresses,
   wallet,
   onProgress,
   onComplete,
   onError,
 }: SendMessageOnXmtpParamsType): SendMessageOnXmtpReturnType {
-  const resultToReturn: Awaited<SendMessageOnXmtpReturnType> = {
+  const resultToReturn: {
+    data: MessagingResult[];
+    progress: ProgressResult;
+    error: unknown;
+  } = {
     data: [],
-    error: null,
     progress: { total: addresses.length, sent: 0, error: 0 },
+    error: null,
   };
 
   let signer = wallet;
@@ -35,53 +44,76 @@ export async function sendMessageOnXMTP({
       signer = await provider.getSigner();
     }
 
-    const xmtp = await Client.create(signer, { env: "dev" });
+    const xmtpClient = await Client.create(signer, { env: "dev" });
 
-    for (let i = 0; i < addresses.length; i += MAX_ADDRESS_PER_BATCH) {
+    for (
+      let batchIndex = 0;
+      batchIndex < addresses.length;
+      batchIndex += XMTP_ADDRESS_BATCH_SIZE
+    ) {
       // split addresses into batches to be processed in parallel
-      const addressesBatch = addresses.slice(i, i + MAX_ADDRESS_PER_BATCH);
-      // check presence of addresses on XMTP network
-      const canSendMessages = await xmtp.canMessage(addressesBatch);
-      
-      const promisesBatch = addressesBatch.map(async (address, index) => {
-        if (canSendMessages[index]) {
-          const conversation = await xmtp.conversations.newConversation(
-            address
+      // see: https://xmtp.org/docs/faq#rate-limiting for rate limiting info
+      const addressesBatch = addresses.slice(
+        batchIndex,
+        batchIndex + XMTP_ADDRESS_BATCH_SIZE
+      );
+      // resolve identities/check xmtp status for addresses
+      const processedBatch = useAirstackForProcessingAddresses
+        ? await processAddressesViaAirstack(addressesBatch)
+        : await processAddressesViaXMTP(addressesBatch, xmtpClient);
+
+      const promisesBatch = processedBatch.map(async (item) => {
+        if (!item.isXMTPEnabled) {
+          throw new Error(
+            `Recipient ${item.address} is not on the XMTP network`
           );
-          await conversation.send(message);
-        } else {
-          throw new Error(`${address} is not present on XMTP network`);
         }
+        if (item.isIdentity && !item.walletAddress) {
+          throw new Error(
+            `Identity ${item.address} couldn't be resolved to address`
+          );
+        }
+        const conversation = await xmtpClient.conversations.newConversation(
+          item.walletAddress
+        );
+        return conversation.send(message);
       });
 
-      const results = await Promise.allSettled(promisesBatch);
+      const resultsBatch = await Promise.allSettled(promisesBatch);
 
-      for (let j = 0; j < results.length; j += 1) {
-        const result = results[j];
-        // increase progress stats based on settled promise's status
-        if (result.status === "fulfilled") {
+      resultsBatch.forEach((item, itemIndex) => {
+        const dataIndex = batchIndex + itemIndex;
+        if (item.status === "fulfilled") {
           resultToReturn.progress.sent += 1;
-          resultToReturn.data[i + j] = true;
+          resultToReturn.data[dataIndex] = {
+            address: processedBatch[itemIndex].address,
+            recipientAddress: processedBatch[itemIndex].walletAddress,
+            sent: true,
+          };
         } else {
           resultToReturn.progress.error += 1;
-          resultToReturn.data[i + j] = false;
+          resultToReturn.data[dataIndex] = {
+            address: processedBatch[itemIndex].address,
+            recipientAddress: processedBatch[itemIndex].walletAddress,
+            sent: false,
+            error: item.reason,
+          };
           // if onError exist -> based on its return value halt further processing
           if (onError) {
-            const shouldHalt = onError(result.reason);
+            const shouldHalt = onError(item.reason);
             if (shouldHalt) {
-              resultToReturn.error = result.reason;
+              resultToReturn.error = item.reason;
               return resultToReturn;
             }
           }
         }
-      }
+      });
 
       onProgress?.(resultToReturn.progress);
     }
   } catch (err) {
-    resultToReturn.error = err;
-    onError?.(resultToReturn.error);
-    return resultToReturn;
+    onError?.(err);
+    return { data: null, progress: null, error: err };
   }
 
   onComplete?.(resultToReturn.data);

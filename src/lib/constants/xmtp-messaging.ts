@@ -1,0 +1,1 @@
+export const XMTP_ADDRESS_BATCH_SIZE = 50;
