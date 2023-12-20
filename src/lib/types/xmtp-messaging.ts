@@ -24,9 +24,9 @@ export type MessagingResult = {
 export type SendMessageOnXmtpParamsType = {
   message: string;
   addresses: string[];
-  wallet?: Signer | WalletClient | null;
+  wallet?: Signer | WalletClient;
   processAddressesViaAirstackAPIs?: boolean;
-  abortController?: AbortController,
+  abortController?: AbortController;
   onProgress?: (data: ProgressResult) => void;
   onComplete?: (data: MessagingResult[]) => void;
   onError?: (err: unknown) => boolean | void;
@@ -38,23 +38,32 @@ export type SendMessageOnXmtpReturnType = {
   error: unknown;
 };
 
-export type SendMessageParamsType = Pick<SendMessageOnXmtpParamsType, "message"| "addresses">;
+export type SendMessageParamsType = Pick<
+  SendMessageOnXmtpParamsType,
+  "message" | "addresses"
+>;
 
-export type UseMessagingOnXmtpHookParamsType = SendMessageOnXmtpParamsType;
+export type UseSendMessageOnXMTPHookParamsType = Omit<
+  SendMessageOnXmtpParamsType,
+  "abortController"
+>;
 
-export type UseMessagingOnXmtpHookReturnType = SendMessageOnXmtpReturnType & {
+export type UseSendMessageOnXMTPHookReturnType = SendMessageOnXmtpReturnType & {
   loading: boolean;
   cancel: () => void;
 };
 
-export type UseLazyMessagingOnXmtpHookParamsType = Omit<SendMessageOnXmtpParamsType, "message"| "addresses"> & {
+export type UseLazySendMessageOnXMTPHookParamsType = Omit<
+  SendMessageOnXmtpParamsType,
+  "message" | "addresses" | "abortController"
+> & {
   message?: string;
   addresses?: string[];
 };
 
-export type UseLazyMessagingOnXmtpHookReturnType = [
+export type UseLazySendMessageOnXMTPHookReturnType = [
   (params?: SendMessageParamsType) => Promise<SendMessageOnXmtpReturnType>,
-  UseMessagingOnXmtpHookReturnType
+  UseSendMessageOnXMTPHookReturnType
 ];
 
 export type GetXmtpOwnersQuery = {

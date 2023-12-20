@@ -4,17 +4,17 @@ import {
   useLazyQueryWithPagination,
 } from "./useQueryWithPagination";
 import {
-  useMessagingOnXMTP,
-  useLazyMessagingOnXMTP,
-} from "./useMessagingOnXMTP";
+  useSendMessageOnXMTP,
+  useLazySendMessageOnXMTP,
+} from "./useSendMessageOnXMTP";
 
 export {
   useQuery,
   useQueryWithPagination,
-  useMessagingOnXMTP,
+  useSendMessageOnXMTP,
   useLazyQuery,
   useLazyQueryWithPagination,
-  useLazyMessagingOnXMTP
+  useLazySendMessageOnXMTP
 };
 
 export * from "./popular-queries";

@@ -5,15 +5,15 @@ import {
   ProgressResult,
   SendMessageOnXmtpParamsType,
   SendMessageParamsType,
-  UseLazyMessagingOnXmtpHookParamsType,
-  UseLazyMessagingOnXmtpHookReturnType,
-  UseMessagingOnXmtpHookParamsType,
-  UseMessagingOnXmtpHookReturnType,
+  UseLazySendMessageOnXMTPHookParamsType,
+  UseLazySendMessageOnXMTPHookReturnType,
+  UseSendMessageOnXMTPHookParamsType,
+  UseSendMessageOnXMTPHookReturnType,
 } from "../types/xmtp-messaging";
 
-export function useLazyMessagingOnXMTP(
-  hookParams: UseLazyMessagingOnXmtpHookParamsType
-): UseLazyMessagingOnXmtpHookReturnType {
+export function useLazySendMessageOnXMTP(
+  hookParams: UseLazySendMessageOnXMTPHookParamsType
+): UseLazySendMessageOnXMTPHookReturnType {
   const [data, setData] = useState<MessagingResult[] | null>(null);
   const [progress, setProgress] = useState<ProgressResult | null>(null);
   const [error, setError] = useState<unknown>(null);
@@ -23,7 +23,7 @@ export function useLazyMessagingOnXMTP(
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const hookParamsRef =
-    useRef<UseLazyMessagingOnXmtpHookParamsType>(hookParams);
+    useRef<UseLazySendMessageOnXMTPHookParamsType>(hookParams);
 
   // store it in refs so that is can be used in callbacks/events
   hookParamsRef.current = hookParams;
@@ -53,13 +53,10 @@ export function useLazyMessagingOnXMTP(
       },
     } as SendMessageOnXmtpParamsType);
 
+    // if aborted then do not update data and error
     if (!abortControllerRef.current?.signal?.aborted) {
-      if (result.error) {
         setError(result.error);
-      }
-      if (result.data) {
         setData(result.data);
-      }
     }
 
     setLoading(false);
@@ -79,11 +76,11 @@ export function useLazyMessagingOnXMTP(
   return [send, { data, progress, error, loading, cancel }];
 }
 
-export function useMessagingOnXMTP(
-  hookParams: UseMessagingOnXmtpHookParamsType
-): UseMessagingOnXmtpHookReturnType {
+export function useSendMessageOnXMTP(
+  hookParams: UseSendMessageOnXMTPHookParamsType
+): UseSendMessageOnXMTPHookReturnType {
   const [send, { data, progress, error, loading, cancel }] =
-    useLazyMessagingOnXMTP(hookParams);
+    useLazySendMessageOnXMTP(hookParams);
 
   useEffect(() => {
     send();

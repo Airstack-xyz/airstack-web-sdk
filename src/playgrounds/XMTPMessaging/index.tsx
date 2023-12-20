@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { init, useLazyMessagingOnXMTP } from "../../lib";
+import { init, useLazySendMessageOnXMTP } from "../../lib";
 
 init("190fc193f24b34d7cafc3dec305c96b0a", {
   env: "dev",
@@ -9,14 +9,14 @@ function XMTPMessaging() {
   const [messageText, setMessageText] = useState("Hey this is sample message");
   const [addressesText, setAddressesText] = useState("gm.xmtp.eth");
   const [sendMessage, { data, progress, error, loading, cancel }] =
-    useLazyMessagingOnXMTP({
+    useLazySendMessageOnXMTP({
       processAddressesViaAirstackAPIs: true,
       onComplete: (data) =>
-        console.log("useLazyMessagingOnXMTP:onComplete -", data),
+        console.log("useLazySendMessageOnXMTP:onComplete -", data),
       onProgress: (data) =>
-        console.log("useLazyMessagingOnXMTP:onProgress -", data),
+        console.log("useLazySendMessageOnXMTP:onProgress -", data),
       onError: (err) => {
-        console.log("useLazyMessagingOnXMTP:onError -", err);
+        console.log("useLazySendMessageOnXMTP:onError -", err);
       },
     });
 
