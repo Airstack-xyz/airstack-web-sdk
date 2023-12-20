@@ -15,8 +15,8 @@ import {
 export async function sendMessageOnXMTP({
   message,
   addresses,
-  processAddressesViaAirstackAPIs,
   wallet,
+  processAddressesViaAirstackAPIs,
   onProgress,
   onComplete,
   onError,
@@ -46,6 +46,9 @@ export async function sendMessageOnXMTP({
 
     const xmtpClient = await Client.create(signer, { env: "dev" });
 
+    // trigger progress event before starting
+    onProgress?.(resultToReturn.progress);
+
     for (
       let batchIndex = 0;
       batchIndex < addresses.length;
@@ -63,14 +66,19 @@ export async function sendMessageOnXMTP({
         : await processAddressesViaXMTP(addressesBatch, xmtpClient);
 
       const promisesBatch = processedBatch.map(async (item) => {
+        if (item.isIdentity && !item.walletAddress) {
+          if (!processAddressesViaAirstackAPIs) {
+            throw new Error(
+              `Address ${item.address} is not valid`
+            );
+          }
+          throw new Error(
+            `Identity ${item.address} couldn't be resolved to address`
+          );
+        }
         if (!item.isXMTPEnabled) {
           throw new Error(
             `Recipient ${item.address} is not on the XMTP network`
-          );
-        }
-        if (item.isIdentity && !item.walletAddress) {
-          throw new Error(
-            `Identity ${item.address} couldn't be resolved to address`
           );
         }
         const conversation = await xmtpClient.conversations.newConversation(
@@ -109,6 +117,7 @@ export async function sendMessageOnXMTP({
         }
       });
 
+      // trigger progress event for batch results
       onProgress?.(resultToReturn.progress);
     }
   } catch (err) {

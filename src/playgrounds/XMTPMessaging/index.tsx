@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { init, useLazyMessagingOnXMTP } from "../lib";
+import { init, useLazyMessagingOnXMTP } from "../../lib";
 
 init("190fc193f24b34d7cafc3dec305c96b0a", {
   env: "dev",
@@ -35,7 +35,7 @@ function XMTPMessaging() {
   };
 
   return (
-    <div style={{ marginInline: "5rem" }}>
+    <div>
       <h2>XMTP Messaging playground</h2>
       <div style={{ display: "flex", gap: "2rem" }}>
         <div>
@@ -58,7 +58,11 @@ function XMTPMessaging() {
         </div>
       </div>
       <button type="button" disabled={loading} onClick={handleButtonClick}>
-        {loading ? "Loading..." : "Send Message"}
+        {loading
+          ? `Loading... (${(progress?.sent || 0) + (progress?.error || 0)}/${
+              progress?.total || 0
+            })`
+          : "Send Message"}
       </button>
       <h3>Hook Data</h3>
       <div>

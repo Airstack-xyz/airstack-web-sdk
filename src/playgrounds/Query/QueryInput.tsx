@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useLazyQueryWithPagination, useQueryWithPagination } from "./lib";
+import { useLazyQueryWithPagination, useQueryWithPagination } from "../../lib";
 
 const defaultQuery = `query GetPOAPs($owner: Identity, $cursor: String) {
   Poaps(input: {filter: {owner: {_eq: $owner}}, blockchain: ALL, cursor: $cursor}) {

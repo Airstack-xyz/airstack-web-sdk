@@ -15,9 +15,10 @@ export function useLazyMessagingOnXMTP(
   hookParams: UseLazyMessagingOnXmtpHookParamsType
 ): UseLazyMessagingOnXmtpHookReturnType {
   const [data, setData] = useState<MessagingResult[] | null>(null);
-  const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState<ProgressResult | null>(null);
   const [error, setError] = useState<unknown>(null);
+  
+  const [loading, setLoading] = useState(false);
 
   const hookParamsRef =
     useRef<UseLazyMessagingOnXmtpHookParamsType>(hookParams);
@@ -27,6 +28,10 @@ export function useLazyMessagingOnXMTP(
 
   const sendMessage = useCallback(
     async (params?: SendMessageParamsType) => {
+      setData(null)
+      setError(null)
+      setProgress(null);
+
       setLoading(true);
 
       const result = await sendMessageOnXMTP({
