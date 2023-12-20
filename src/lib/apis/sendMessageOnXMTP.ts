@@ -17,6 +17,7 @@ export async function sendMessageOnXMTP({
   addresses,
   wallet,
   processAddressesViaAirstackAPIs,
+  abortController,
   onProgress,
   onComplete,
   onError,
@@ -33,6 +34,10 @@ export async function sendMessageOnXMTP({
 
   let signer = wallet;
 
+  if (abortController?.signal?.aborted) {
+    return resultToReturn;
+  }
+
   try {
     if (!signer) {
       if (!("ethereum" in window)) {
@@ -46,6 +51,10 @@ export async function sendMessageOnXMTP({
 
     const xmtpClient = await Client.create(signer, { env: "dev" });
 
+    if (abortController?.signal?.aborted) {
+      return resultToReturn;
+    }
+
     // trigger progress event before starting
     onProgress?.(resultToReturn.progress);
 
@@ -54,18 +63,32 @@ export async function sendMessageOnXMTP({
       batchIndex < addresses.length;
       batchIndex += XMTP_ADDRESS_BATCH_SIZE
     ) {
+      if (abortController?.signal?.aborted) {
+        return resultToReturn;
+      }
+
       // split addresses into batches to be processed in parallel
       // see: https://xmtp.org/docs/faq#rate-limiting for rate limiting info
       const addressesBatch = addresses.slice(
         batchIndex,
         batchIndex + XMTP_ADDRESS_BATCH_SIZE
       );
-      // resolve identities/check xmtp status for addresses
+      // process addresses using airstack or xmtp apis based on flag
+      // processing via airstack also resolves identities
       const processedBatch = processAddressesViaAirstackAPIs
-        ? await processAddressesViaAirstack(addressesBatch)
+        ? await processAddressesViaAirstack(addressesBatch, abortController)
         : await processAddressesViaXMTP(addressesBatch, xmtpClient);
+      
+      if (abortController?.signal?.aborted) {
+        return resultToReturn;
+      }
 
       const promisesBatch = processedBatch.map(async (item) => {
+        if (abortController?.signal?.aborted) {
+          throw new Error(
+            `Messaging to address ${item.address} is aborted`
+          );
+        }
         if (item.isIdentity && !item.walletAddress) {
           if (!processAddressesViaAirstackAPIs) {
             throw new Error(
@@ -89,6 +112,10 @@ export async function sendMessageOnXMTP({
 
       const resultsBatch = await Promise.allSettled(promisesBatch);
 
+      if (abortController?.signal?.aborted) {
+        return resultToReturn;
+      }
+
       resultsBatch.forEach((item, itemIndex) => {
         const dataIndex = batchIndex + itemIndex;
         if (item.status === "fulfilled") {
@@ -106,7 +133,7 @@ export async function sendMessageOnXMTP({
             sent: false,
             error: item.reason,
           };
-          // if onError exist -> based on its return value halt further processing
+          // if onError exist then based on its return value halt further processing
           if (onError) {
             const shouldHalt = onError(item.reason);
             if (shouldHalt) {
@@ -117,12 +144,22 @@ export async function sendMessageOnXMTP({
         }
       });
 
+      if (abortController?.signal?.aborted) {
+        return resultToReturn;
+      }
+
       // trigger progress event for batch results
       onProgress?.(resultToReturn.progress);
     }
-  } catch (err) {
+  } 
+  // catching fatal errors i.e. errors which prevents messaging
+  catch (err) {
     onError?.(err);
     return { data: null, progress: null, error: err };
+  }
+
+  if (abortController?.signal?.aborted) {
+    return resultToReturn;
   }
 
   onComplete?.(resultToReturn.data);

@@ -8,7 +8,7 @@ init("190fc193f24b34d7cafc3dec305c96b0a", {
 function XMTPMessaging() {
   const [messageText, setMessageText] = useState("Hey this is sample message");
   const [addressesText, setAddressesText] = useState("gm.xmtp.eth");
-  const [sendMessage, { data, loading, progress, error }] =
+  const [sendMessage, { data, progress, error, loading, cancel }] =
     useLazyMessagingOnXMTP({
       processAddressesViaAirstackAPIs: true,
       onComplete: (data) =>
@@ -26,12 +26,12 @@ function XMTPMessaging() {
       .filter(Boolean)
       .map((x) => x.trim());
 
-    const { data, error, progress } = await sendMessage({
+    const result = await sendMessage({
       message: messageText,
       addresses,
     });
 
-    console.log("sendMessage:returnValue -", { data, error, progress });
+    console.log("sendMessage:returnValue -", result);
   };
 
   return (
@@ -57,13 +57,18 @@ function XMTPMessaging() {
           />
         </div>
       </div>
-      <button type="button" disabled={loading} onClick={handleButtonClick}>
-        {loading
-          ? `Loading... (${(progress?.sent || 0) + (progress?.error || 0)}/${
-              progress?.total || 0
-            })`
-          : "Send Message"}
-      </button>
+      <div style={{ display: "flex", gap: "0.5rem" }}>
+        <button type="button" disabled={loading} onClick={handleButtonClick}>
+          {loading
+            ? `Loading... (${(progress?.sent || 0) + (progress?.error || 0)}/${
+                progress?.total || 0
+              })`
+            : "Send"}
+        </button>
+        <button type="button" disabled={!loading} onClick={cancel}>
+          Cancel
+        </button>
+      </div>
       <h3>Hook Data</h3>
       <div>
         <textarea

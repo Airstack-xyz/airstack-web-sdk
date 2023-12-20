@@ -24,8 +24,9 @@ export type MessagingResult = {
 export type SendMessageOnXmtpParamsType = {
   message: string;
   addresses: string[];
-  processAddressesViaAirstackAPIs?: boolean;
   wallet?: Signer | WalletClient | null;
+  processAddressesViaAirstackAPIs?: boolean;
+  abortController?: AbortController,
   onProgress?: (data: ProgressResult) => void;
   onComplete?: (data: MessagingResult[]) => void;
   onError?: (err: unknown) => boolean | void;
@@ -43,6 +44,7 @@ export type UseMessagingOnXmtpHookParamsType = SendMessageOnXmtpParamsType;
 
 export type UseMessagingOnXmtpHookReturnType = SendMessageOnXmtpReturnType & {
   loading: boolean;
+  cancel: () => void;
 };
 
 export type UseLazyMessagingOnXmtpHookParamsType = Omit<SendMessageOnXmtpParamsType, "message"| "addresses"> & {
@@ -51,7 +53,7 @@ export type UseLazyMessagingOnXmtpHookParamsType = Omit<SendMessageOnXmtpParamsT
 };
 
 export type UseLazyMessagingOnXmtpHookReturnType = [
-  (sendParams?: SendMessageParamsType) => Promise<SendMessageOnXmtpReturnType>,
+  (params?: SendMessageParamsType) => Promise<SendMessageOnXmtpReturnType>,
   UseMessagingOnXmtpHookReturnType
 ];
 

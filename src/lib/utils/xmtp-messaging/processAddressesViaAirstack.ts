@@ -26,16 +26,28 @@ const GetXmtpOwners = `query GetXmtpOwners($owners: [Identity!]) {
 // 1. Resolve identity to address
 // 2. Check if XMTP is enabled for address
 export async function processAddressesViaAirstack(
-  addresses: string[]
+  addresses: string[],
+  abortController?: AbortController
 ): Promise<ProcessedAddress[]> {
   // used for storing map for xmtp enabled identity/address -> wallet address
   const identityToAddressMap = new Map<string, string>();
 
-  const { data, error } = await fetchQuery<GetXmtpOwnersQuery>(GetXmtpOwners, {
-    owners: addresses,
-  });
+  const { data, error } = await fetchQuery<GetXmtpOwnersQuery>(
+    GetXmtpOwners,
+    {
+      owners: addresses,
+    },
+    {
+      abortController,
+    }
+  );
 
-  // if error occurred while calling GetXmtpOwnersQuery then throw error
+  // if request was aborted then simply return empty data
+  if (abortController?.signal?.aborted) {
+    return [];
+  }
+
+  // if error occurred while calling query then throw error
   if (error) {
     throw new Error("Error ocurred in GetXmtpOwnersQuery ", error);
   }
@@ -65,7 +77,7 @@ export async function processAddressesViaAirstack(
           identityToAddressMap.set(lensV1ProfileName, walletAddress);
         }
       });
-      // store addresses in map also -> gives info about address having XMTP enabled
+      // store addresses in map also, it gives info about address having XMTP enabled
       addresses.forEach((address) => {
         identityToAddressMap.set(address, address);
       });
