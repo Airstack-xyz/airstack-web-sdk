@@ -21,52 +21,51 @@ export type MessagingResult = {
   error?: unknown;
 };
 
-export type SendMessageOnXmtpParamsType = {
+export type SendMessageOnXMTPParamsType = {
   message: string;
   addresses: string[];
   wallet?: Signer | WalletClient;
-  processAddressesViaAirstackAPIs?: boolean;
   abortController?: AbortController;
   onProgress?: (data: ProgressResult) => void;
   onComplete?: (data: MessagingResult[]) => void;
-  onError?: (err: unknown) => boolean | void;
+  onError?: (err: unknown) => void;
 };
 
-export type SendMessageOnXmtpReturnType = {
+export type SendMessageOnXMTPReturnType = {
   data: MessagingResult[] | null;
   progress: ProgressResult | null;
   error: unknown;
 };
 
 export type SendMessageParamsType = Pick<
-  SendMessageOnXmtpParamsType,
+  SendMessageOnXMTPParamsType,
   "message" | "addresses"
 >;
 
-export type UseSendMessageOnXMTPHookParamsType = Omit<
-  SendMessageOnXmtpParamsType,
+export type UseSendMessageOnXMTPParamsType = Omit<
+  SendMessageOnXMTPParamsType,
   "abortController"
 >;
 
-export type UseSendMessageOnXMTPHookReturnType = SendMessageOnXmtpReturnType & {
+export type UseSendMessageOnXMTPReturnType = SendMessageOnXMTPReturnType & {
   loading: boolean;
   cancel: () => void;
 };
 
-export type UseLazySendMessageOnXMTPHookParamsType = Omit<
-  SendMessageOnXmtpParamsType,
+export type UseLazySendMessageOnXMTPParamsType = Omit<
+  SendMessageOnXMTPParamsType,
   "message" | "addresses" | "abortController"
 > & {
   message?: string;
   addresses?: string[];
 };
 
-export type UseLazySendMessageOnXMTPHookReturnType = [
-  (params?: SendMessageParamsType) => Promise<SendMessageOnXmtpReturnType>,
-  UseSendMessageOnXMTPHookReturnType
+export type UseLazySendMessageOnXMTPReturnType = [
+  (params?: SendMessageParamsType) => Promise<SendMessageOnXMTPReturnType>,
+  UseSendMessageOnXMTPReturnType
 ];
 
-export type GetXmtpOwnersQuery = {
+export type GetXMTPOwnersQueryType = {
   XMTPs: {
     XMTP:
       | {
@@ -88,8 +87,4 @@ export type GetXmtpOwnersQuery = {
         }[]
       | null;
   };
-};
-
-export type GetXmtpOwnersQueryVariables = {
-  owners: string[];
 };

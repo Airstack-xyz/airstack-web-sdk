@@ -1,27 +1,23 @@
 import { Client } from "@xmtp/xmtp-js";
-import { Eip1193Provider, ethers } from "ethers";
+import { BrowserProvider, Eip1193Provider } from "ethers";
+import { XMTP_ADDRESS_BATCH_SIZE } from "../constants/xmtp-messaging";
 import {
   MessagingResult,
   ProgressResult,
-  SendMessageOnXmtpParamsType,
-  SendMessageOnXmtpReturnType,
+  SendMessageOnXMTPParamsType,
+  SendMessageOnXMTPReturnType,
 } from "../types/xmtp-messaging";
-import { XMTP_ADDRESS_BATCH_SIZE } from "../constants/xmtp-messaging";
-import {
-  processAddressesViaXMTP,
-  processAddressesViaAirstack,
-} from "../utils/xmtp-messaging";
+import { processAddressesViaAirstack } from "../utils/xmtp-messaging";
 
 export async function sendMessageOnXMTP({
   message,
   addresses,
   wallet,
-  processAddressesViaAirstackAPIs,
   abortController,
   onProgress,
   onComplete,
   onError,
-}: SendMessageOnXmtpParamsType): Promise<SendMessageOnXmtpReturnType> {
+}: SendMessageOnXMTPParamsType): Promise<SendMessageOnXMTPReturnType> {
   const resultToReturn: {
     data: MessagingResult[];
     progress: ProgressResult;
@@ -43,13 +39,13 @@ export async function sendMessageOnXMTP({
       if (!("ethereum" in window)) {
         throw new Error("Browser based wallet not found");
       }
-      const provider = new ethers.BrowserProvider(
-        window.ethereum as Eip1193Provider
-      );
+      const provider = new BrowserProvider(window.ethereum as Eip1193Provider);
       signer = await provider.getSigner();
     }
 
-    const xmtpClient = await Client.create(signer, { env: "dev" });
+    const client = await Client.create(signer, {
+      env: "production",
+    });
 
     if (abortController?.signal?.aborted) {
       return resultToReturn;
@@ -59,42 +55,37 @@ export async function sendMessageOnXMTP({
     onProgress?.(resultToReturn.progress);
 
     for (
-      let batchIndex = 0;
-      batchIndex < addresses.length;
-      batchIndex += XMTP_ADDRESS_BATCH_SIZE
+      let currentBatchIndex = 0;
+      currentBatchIndex < addresses.length;
+      currentBatchIndex += XMTP_ADDRESS_BATCH_SIZE
     ) {
       if (abortController?.signal?.aborted) {
         return resultToReturn;
       }
 
       // split addresses into batches to be processed in parallel
-      // see: https://xmtp.org/docs/faq#rate-limiting for rate limiting info
-      const addressesBatch = addresses.slice(
-        batchIndex,
-        batchIndex + XMTP_ADDRESS_BATCH_SIZE
+      const currentBatch = addresses.slice(
+        currentBatchIndex,
+        currentBatchIndex + XMTP_ADDRESS_BATCH_SIZE
       );
-      // process addresses using airstack or xmtp apis based on flag
-      // processing via airstack also resolves identities
-      const processedBatch = processAddressesViaAirstackAPIs
-        ? await processAddressesViaAirstack(addressesBatch, abortController)
-        : await processAddressesViaXMTP(addressesBatch, xmtpClient);
-      
+
+      // process addresses using Airstack's XMTPs api:
+      // 1. resolve identity to address
+      // 2. check if XMTP is enabled for address
+      const processedBatch = await processAddressesViaAirstack(
+        currentBatch,
+        abortController
+      );
+
       if (abortController?.signal?.aborted) {
         return resultToReturn;
       }
 
-      const promisesBatch = processedBatch.map(async (item) => {
+      const promises = processedBatch.map(async (item) => {
         if (abortController?.signal?.aborted) {
-          throw new Error(
-            `Messaging to address ${item.address} is aborted`
-          );
+          throw new Error(`Messaging to address ${item.address} is aborted`);
         }
         if (item.isIdentity && !item.walletAddress) {
-          if (!processAddressesViaAirstackAPIs) {
-            throw new Error(
-              `Address ${item.address} is not valid`
-            );
-          }
           throw new Error(
             `Identity ${item.address} couldn't be resolved to address`
           );
@@ -104,20 +95,20 @@ export async function sendMessageOnXMTP({
             `Recipient ${item.address} is not on the XMTP network`
           );
         }
-        const conversation = await xmtpClient.conversations.newConversation(
+        const conversation = await client.conversations.newConversation(
           item.walletAddress
         );
         return conversation.send(message);
       });
 
-      const resultsBatch = await Promise.allSettled(promisesBatch);
+      const settledPromises = await Promise.allSettled(promises);
 
       if (abortController?.signal?.aborted) {
         return resultToReturn;
       }
 
-      resultsBatch.forEach((item, itemIndex) => {
-        const dataIndex = batchIndex + itemIndex;
+      settledPromises.forEach((item, itemIndex) => {
+        const dataIndex = currentBatchIndex + itemIndex;
         if (item.status === "fulfilled") {
           resultToReturn.progress.sent += 1;
           resultToReturn.data[dataIndex] = {
@@ -133,14 +124,6 @@ export async function sendMessageOnXMTP({
             sent: false,
             error: item.reason,
           };
-          // if onError exist then based on its return value halt further processing
-          if (onError) {
-            const shouldHalt = onError(item.reason);
-            if (shouldHalt) {
-              resultToReturn.error = item.reason;
-              return resultToReturn;
-            }
-          }
         }
       });
 
@@ -148,12 +131,10 @@ export async function sendMessageOnXMTP({
         return resultToReturn;
       }
 
-      // trigger progress event for batch results
+      // trigger progress event for batch
       onProgress?.(resultToReturn.progress);
     }
-  } 
-  // catching fatal errors i.e. errors which prevents messaging
-  catch (err) {
+  } catch (err) {
     onError?.(err);
     return { data: null, progress: null, error: err };
   }

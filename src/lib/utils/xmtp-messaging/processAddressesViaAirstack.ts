@@ -1,10 +1,10 @@
 import { fetchQuery } from "../../apis";
 import {
-  GetXmtpOwnersQuery,
+  GetXMTPOwnersQueryType,
   ProcessedAddress,
 } from "../../types/xmtp-messaging";
 
-const GetXmtpOwners = `query GetXmtpOwners($owners: [Identity!]) {
+const GetXMTPOwnersQuery = `query GetXMTPOwners($owners: [Identity!]) {
     XMTPs(input: {blockchain: ALL, filter: {owner: {_in: $owners}}, limit: 100}) {
       XMTP {
         isXMTPEnabled
@@ -22,9 +22,9 @@ const GetXmtpOwners = `query GetXmtpOwners($owners: [Identity!]) {
     }
   }`;
 
-// Use Airstack API to process addresses:
-// 1. Resolve identity to address
-// 2. Check if XMTP is enabled for address
+// use Airstack's XMTPs api to process addresses:
+// 1. resolve identity to address
+// 2. check if XMTP is enabled for address
 export async function processAddressesViaAirstack(
   addresses: string[],
   abortController?: AbortController
@@ -32,10 +32,15 @@ export async function processAddressesViaAirstack(
   // used for storing map for xmtp enabled identity/address -> wallet address
   const identityToAddressMap = new Map<string, string>();
 
-  const { data, error } = await fetchQuery<GetXmtpOwnersQuery>(
-    GetXmtpOwners,
+  // convert addresses to lowercase to avoid mismatch from api response
+  const normalizedAddresses = addresses.map((address) =>
+    address.trim().toLowerCase()
+  );
+
+  const { data, error } = await fetchQuery<GetXMTPOwnersQueryType>(
+    GetXMTPOwnersQuery,
     {
-      owners: addresses,
+      owners: normalizedAddresses,
     },
     {
       abortController,
@@ -49,24 +54,24 @@ export async function processAddressesViaAirstack(
 
   // if error occurred while calling query then throw error
   if (error) {
-    throw new Error("Error ocurred in GetXmtpOwnersQuery ", error);
+    throw new Error("Error ocurred in GetXMTPOwnersQuery ", error);
   }
 
-  const XMTPList = data?.XMTPs?.XMTP || [];
+  const xmtpList = data?.XMTPs?.XMTP || [];
 
-  XMTPList.forEach((xmtp) => {
-    const isXMTPEnabled = xmtp?.isXMTPEnabled;
-    const walletAddress = xmtp?.owner?.addresses?.[0];
+  xmtpList.forEach((item) => {
+    const isXMTPEnabled = item?.isXMTPEnabled;
+    const walletAddress = item?.owner?.addresses?.[0];
 
     if (isXMTPEnabled && walletAddress) {
-      const domains = xmtp?.owner?.domains || [];
-      const socials = xmtp?.owner?.socials || [];
-      const addresses = xmtp?.owner?.addresses || [];
+      const ownerDomains = item?.owner?.domains || [];
+      const ownerSocials = item?.owner?.socials || [];
+      const ownerAddresses = item?.owner?.addresses || [];
 
-      domains.forEach((domain) => {
+      ownerDomains.forEach((domain) => {
         identityToAddressMap.set(domain.name, walletAddress);
       });
-      socials.forEach((social) => {
+      ownerSocials.forEach((social) => {
         identityToAddressMap.set(social.profileName, walletAddress);
         // put mapping for lens v1 profile name also
         if (
@@ -78,13 +83,13 @@ export async function processAddressesViaAirstack(
         }
       });
       // store addresses in map also, it gives info about address having XMTP enabled
-      addresses.forEach((address) => {
+      ownerAddresses.forEach((address) => {
         identityToAddressMap.set(address, address);
       });
     }
   });
 
-  const result: ProcessedAddress[] = addresses.map((address) => {
+  const result: ProcessedAddress[] = normalizedAddresses.map((address) => {
     const isIdentity = address.startsWith("0x") ? false : true;
     return {
       address,

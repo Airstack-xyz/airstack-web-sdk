@@ -10,7 +10,6 @@ function XMTPMessaging() {
   const [addressesText, setAddressesText] = useState("gm.xmtp.eth");
   const [sendMessage, { data, progress, error, loading, cancel }] =
     useLazySendMessageOnXMTP({
-      processAddressesViaAirstackAPIs: true,
       onComplete: (data) =>
         console.log("useLazySendMessageOnXMTP:onComplete -", data),
       onProgress: (data) =>

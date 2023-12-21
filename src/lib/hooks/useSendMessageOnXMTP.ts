@@ -3,17 +3,17 @@ import { sendMessageOnXMTP } from "../apis";
 import {
   MessagingResult,
   ProgressResult,
-  SendMessageOnXmtpParamsType,
+  SendMessageOnXMTPParamsType,
   SendMessageParamsType,
-  UseLazySendMessageOnXMTPHookParamsType,
-  UseLazySendMessageOnXMTPHookReturnType,
-  UseSendMessageOnXMTPHookParamsType,
-  UseSendMessageOnXMTPHookReturnType,
+  UseLazySendMessageOnXMTPParamsType,
+  UseLazySendMessageOnXMTPReturnType,
+  UseSendMessageOnXMTPParamsType,
+  UseSendMessageOnXMTPReturnType,
 } from "../types/xmtp-messaging";
 
 export function useLazySendMessageOnXMTP(
-  hookParams: UseLazySendMessageOnXMTPHookParamsType
-): UseLazySendMessageOnXMTPHookReturnType {
+  hookParams: UseLazySendMessageOnXMTPParamsType
+): UseLazySendMessageOnXMTPReturnType {
   const [data, setData] = useState<MessagingResult[] | null>(null);
   const [progress, setProgress] = useState<ProgressResult | null>(null);
   const [error, setError] = useState<unknown>(null);
@@ -23,7 +23,7 @@ export function useLazySendMessageOnXMTP(
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const hookParamsRef =
-    useRef<UseLazySendMessageOnXMTPHookParamsType>(hookParams);
+    useRef<UseLazySendMessageOnXMTPParamsType>(hookParams);
 
   // store it in refs so that is can be used in callbacks/events
   hookParamsRef.current = hookParams;
@@ -51,13 +51,11 @@ export function useLazySendMessageOnXMTP(
         hookParamsRef.current?.onProgress?.(data);
         setProgress(data);
       },
-    } as SendMessageOnXmtpParamsType);
+    } as SendMessageOnXMTPParamsType);
 
-    // if aborted then do not update data and error
-    if (!abortControllerRef.current?.signal?.aborted) {
-        setError(result.error);
-        setData(result.data);
-    }
+    setData(result.data);
+    setProgress(result.progress);
+    setError(result.error);
 
     setLoading(false);
 
@@ -77,8 +75,8 @@ export function useLazySendMessageOnXMTP(
 }
 
 export function useSendMessageOnXMTP(
-  hookParams: UseSendMessageOnXMTPHookParamsType
-): UseSendMessageOnXMTPHookReturnType {
+  hookParams: UseSendMessageOnXMTPParamsType
+): UseSendMessageOnXMTPReturnType {
   const [send, { data, progress, error, loading, cancel }] =
     useLazySendMessageOnXMTP(hookParams);
 
