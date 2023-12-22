@@ -54,7 +54,7 @@ export async function processAddressesViaAirstack(
 
   // if error occurred while calling query then throw error
   if (error) {
-    throw new Error("Error ocurred in GetXMTPOwnersQuery ", error);
+    throw new Error(`Couldn't fetch GetXMTPOwners - ${error?.[0]?.message}`);
   }
 
   const xmtpList = data?.XMTPs?.XMTP || [];
@@ -69,20 +69,38 @@ export async function processAddressesViaAirstack(
       const ownerAddresses = item?.owner?.addresses || [];
 
       ownerDomains.forEach((domain) => {
+        // store ens identity (name.eth) in map
         identityToAddressMap.set(domain.name, walletAddress);
       });
       ownerSocials.forEach((social) => {
-        identityToAddressMap.set(social.profileName, walletAddress);
-        // put mapping for lens v1 profile name also
-        if (
-          social.dappName === "lens" &&
-          social.profileName.startsWith("lens/@")
-        ) {
-          const lensV1ProfileName = `${social.profileName.substring(6)}.lens`;
-          identityToAddressMap.set(lensV1ProfileName, walletAddress);
+        const profileName = social?.profileName || "";
+        const dappName = social?.dappName || "";
+
+        switch (dappName) {
+          case "lens":
+            {
+              // store lens v2 identity (lens/@name) in map
+              const lensV2Identity = profileName;
+              identityToAddressMap.set(lensV2Identity, walletAddress);
+              // store lens v1 identity (name.lens) in map
+              if (profileName.startsWith("lens/@")) {
+                const lensV1Identity = `${profileName.substring(6)}.lens`;
+                identityToAddressMap.set(lensV1Identity, walletAddress);
+              }
+            }
+            break;
+          case "farcaster":
+            {
+              // store farcaster identity (fc_fname:name) in map
+              const farcasterIdentity = `fc_fname:${profileName}`;
+              identityToAddressMap.set(farcasterIdentity, walletAddress);
+            }
+            break;
+          default:
+            identityToAddressMap.set(profileName, walletAddress);
         }
       });
-      // store addresses in map also, it gives info about address having XMTP enabled
+      // store owner addresses in map also, it gives info about address having XMTP enabled
       ownerAddresses.forEach((address) => {
         identityToAddressMap.set(address, address);
       });
