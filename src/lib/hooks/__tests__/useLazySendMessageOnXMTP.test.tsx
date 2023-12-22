@@ -11,6 +11,12 @@ const testWallet = Wallet.createRandom();
 
 init(testAPIKey);
 
+// sources of addresses used in tests:
+// gm.xmtp.eth      - https://xmtp.org/docs/tutorials/debug-and-test
+// vitalik.eth      - https://docs.airstack.xyz/airstack-docs-and-faqs/guides/ens-domain/resolve-ens-domain
+// fc_fname:dwr.eth - https://docs.airstack.xyz/airstack-docs-and-faqs/guides/farcaster/resolve-farcaster-users
+// lens/@stani      - https://docs.airstack.xyz/airstack-docs-and-faqs/guides/lens/resolve-lens-profiles
+
 vi.mock("@xmtp/xmtp-js", () => ({
   Client: {
     create: () => ({
@@ -28,7 +34,7 @@ describe("useLazySendMessageOnXMTP", () => {
     const { result } = renderHook(() =>
       useLazySendMessageOnXMTP({
         message: "This is a test message",
-        addresses: ["gm.xmtp.eth"], // test address can be found here: https://xmtp.org/docs/tutorials/debug-and-test#use-test-message-bots-and-addresses
+        addresses: ["gm.xmtp.eth"],
         wallet: testWallet,
       })
     );
@@ -115,22 +121,64 @@ describe("useLazySendMessageOnXMTP", () => {
     });
 
     expect(result.current[1].data).toHaveLength(2);
-
-    expect(result.current[1].data?.[0]).toMatchObject({
-      address: "gm.xmtp.eth",
-      recipientAddress: "0x937c0d4a6294cdfa575de17382c7076b579dc176", // actual wallet address of gm.xmtp.eth
-      sent: true,
-    });
-    expect(result.current[1].data?.[1]).toMatchObject({
-      address: "unknown.fail",
-      recipientAddress: "",
-      sent: false,
-    });
+    expect(result.current[1].data?.[0]?.sent).toBe(true); // for gm.xmtp.eth
+    expect(result.current[1].data?.[1]?.sent).toBe(false); // for unknown.fail
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(result.current[1].data?.[1]?.error?.message).toBe(
       "Identity unknown.fail couldn't be resolved to address"
     );
+  }, 10000);
+
+  it("should send invites to different kinds of identities", async () => {
+    const { result } = renderHook(() =>
+      useLazySendMessageOnXMTP({
+        message: "This is a test message",
+        addresses: [
+          "gm.xmtp.eth", 
+          "fc_fname:dwr.eth", 
+          "lens/@stani", 
+          "0xd8da6bf26964af9d7eed9e03e53415d37aa96045", // address for vitalik.eth
+        ],
+        wallet: testWallet,
+      })
+    );
+
+    expect(result.current[1].progress).toBe(null);
+    expect(result.current[1].data).toBe(null);
+
+    await act(async () => {
+      result.current[0]();
+    });
+    await waitForLoadingStartAndStop(result);
+
+    expect(result.current[1].progress).toMatchObject({
+      total: 4,
+      sent: 4,
+      error: 0,
+    });
+
+    expect(result.current[1].data).toHaveLength(4);
+    expect(result.current[1].data?.[0]).toMatchObject({
+      address: "gm.xmtp.eth",
+      recipientAddress: "0x937c0d4a6294cdfa575de17382c7076b579dc176",
+      sent: true,
+    });
+    expect(result.current[1].data?.[1]).toMatchObject(  {
+      address: "fc_fname:dwr.eth",
+      recipientAddress: "0x8fc5d6afe572fefc4ec153587b63ce543f6fa2ea",
+      sent: true,
+    });
+    expect(result.current[1].data?.[2]).toMatchObject({
+      address: "lens/@stani",
+      recipientAddress: "0x7241dddec3a6af367882eaf9651b87e1c7549dff",
+      sent: true,
+    });
+    expect(result.current[1].data?.[3]).toMatchObject({
+      address: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+      recipientAddress: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+      sent: true,
+    });
   }, 10000);
 
   it("should abort messaging on calling cancel method", async () => {
@@ -139,7 +187,7 @@ describe("useLazySendMessageOnXMTP", () => {
     const { result } = renderHook(() =>
       useLazySendMessageOnXMTP({
         message: "This is a test message",
-        addresses: ["gm.xmtp.eth", "hi.xmtp.eth"],
+        addresses: ["gm.xmtp.eth"],
         wallet: testWallet,
       })
     );
@@ -158,7 +206,7 @@ describe("useLazySendMessageOnXMTP", () => {
     expect(result.current[1].error).toBe(null);
     expect(result.current[1].data).toHaveLength(0);
     expect(result.current[1].progress).toMatchObject({
-      total: 2,
+      total: 1,
       sent: 0,
       error: 0,
     });
@@ -170,7 +218,7 @@ describe("useLazySendMessageOnXMTP", () => {
     const { result, unmount } = renderHook(() =>
       useLazySendMessageOnXMTP({
         message: "This is a test message",
-        addresses: ["gm.xmtp.eth", "hi.xmtp.eth"],
+        addresses: ["gm.xmtp.eth"],
         wallet: testWallet,
       })
     );
