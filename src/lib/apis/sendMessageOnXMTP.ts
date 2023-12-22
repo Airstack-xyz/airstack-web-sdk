@@ -85,14 +85,14 @@ export async function sendMessageOnXMTP({
         if (abortController?.signal?.aborted) {
           throw new Error(`Messaging to address ${item.address} is aborted`);
         }
-        if (item.isIdentity && !item.walletAddress) {
-          throw new Error(
-            `Identity ${item.address} couldn't be resolved to address`
-          );
-        }
         if (!item.isXMTPEnabled) {
           throw new Error(
             `Recipient ${item.address} is not on the XMTP network`
+          );
+        }
+        if (item.isIdentity && !item.walletAddress) {
+          throw new Error(
+            `Identity ${item.address} couldn't be resolved to address`
           );
         }
         const conversation = await client.conversations.newConversation(

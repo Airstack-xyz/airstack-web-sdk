@@ -29,8 +29,8 @@ export async function processAddressesViaAirstack(
   addresses: string[],
   abortController?: AbortController
 ): Promise<ProcessedAddress[]> {
-  // used for storing map for xmtp enabled identity/address -> wallet address
-  const identityToAddressMap = new Map<string, string>();
+  // used for storing map for xmtp enabled identity/address -> wallet-address
+  const identityToWalletAddressMap = new Map<string, string>();
 
   // convert addresses to lowercase to avoid mismatch from api response
   const normalizedAddresses = addresses.map((address) =>
@@ -70,7 +70,7 @@ export async function processAddressesViaAirstack(
 
       ownerDomains.forEach((domain) => {
         // store ens identity (name.eth) in map
-        identityToAddressMap.set(domain.name, walletAddress);
+        identityToWalletAddressMap.set(domain.name, walletAddress);
       });
       ownerSocials.forEach((social) => {
         const profileName = social?.profileName || "";
@@ -81,11 +81,11 @@ export async function processAddressesViaAirstack(
             {
               // store lens v2 identity (lens/@name) in map
               const lensV2Identity = profileName;
-              identityToAddressMap.set(lensV2Identity, walletAddress);
+              identityToWalletAddressMap.set(lensV2Identity, walletAddress);
               // store lens v1 identity (name.lens) in map
               if (profileName.startsWith("lens/@")) {
                 const lensV1Identity = `${profileName.substring(6)}.lens`;
-                identityToAddressMap.set(lensV1Identity, walletAddress);
+                identityToWalletAddressMap.set(lensV1Identity, walletAddress);
               }
             }
             break;
@@ -93,29 +93,31 @@ export async function processAddressesViaAirstack(
             {
               // store farcaster identity (fc_fname:name) in map
               const farcasterIdentity = `fc_fname:${profileName}`;
-              identityToAddressMap.set(farcasterIdentity, walletAddress);
+              identityToWalletAddressMap.set(farcasterIdentity, walletAddress);
             }
             break;
           default:
-            identityToAddressMap.set(profileName, walletAddress);
+            identityToWalletAddressMap.set(profileName, walletAddress);
         }
       });
       // store owner addresses in map also, it gives info about address having XMTP enabled
       ownerAddresses.forEach((address) => {
-        identityToAddressMap.set(address, address);
+        identityToWalletAddressMap.set(address, address);
       });
     }
   });
 
   const result: ProcessedAddress[] = normalizedAddresses.map((address) => {
     const isIdentity = address.startsWith("0x") ? false : true;
+    const isXMTPEnabled = identityToWalletAddressMap.has(address);
+    const walletAddress = isIdentity
+      ? identityToWalletAddressMap.get(address) || ""
+      : address;
     return {
       address,
-      walletAddress: isIdentity
-        ? identityToAddressMap.get(address) || ""
-        : address.toLowerCase(),
+      walletAddress: walletAddress,
+      isXMTPEnabled: isXMTPEnabled,
       isIdentity: isIdentity,
-      isXMTPEnabled: identityToAddressMap.has(address),
     };
   });
 

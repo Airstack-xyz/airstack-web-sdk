@@ -30,7 +30,7 @@ vi.mock("@xmtp/xmtp-js", () => ({
 }));
 
 describe("useLazySendMessageOnXMTP", () => {
-  it("should send invites with callbacks", async () => {
+  it("should send invite with callbacks", async () => {
     const { result } = renderHook(() =>
       useLazySendMessageOnXMTP({
         message: "This is a test message",
@@ -50,7 +50,7 @@ describe("useLazySendMessageOnXMTP", () => {
 
     expect(result.current[1].error).toBe(null);
     expect(result.current[1].data).toHaveLength(1);
-    expect(result.current[1].progress).toMatchObject({
+    expect(result.current[1].progress).toEqual({
       total: 1,
       sent: 1,
       error: 0,
@@ -66,7 +66,7 @@ describe("useLazySendMessageOnXMTP", () => {
       useLazySendMessageOnXMTP({
         message: "This is a test message",
         addresses: ["gm.xmtp.eth"],
-        // wallet: testWallet, // not passing wallet, with throw fatal error 'Error: Browser based wallet not found'
+        // wallet: testWallet, // not passing wallet, with throw fatal error
         onProgress: mockOnProgressCallback,
         onComplete: mockOnCompleteCallback,
         onError: mockOnErrorCallback,
@@ -100,7 +100,7 @@ describe("useLazySendMessageOnXMTP", () => {
         message: "This is a test message",
         addresses: [
           "gm.xmtp.eth",
-          "unknown.fail", // invite should not be sent to this address as identity resolution should fail
+          "unknown.fail", // invite should not be sent to this address
         ],
         wallet: testWallet,
       })
@@ -114,7 +114,7 @@ describe("useLazySendMessageOnXMTP", () => {
     });
     await waitForLoadingStartAndStop(result);
 
-    expect(result.current[1].progress).toMatchObject({
+    expect(result.current[1].progress).toEqual({
       total: 2,
       sent: 1,
       error: 1,
@@ -126,7 +126,7 @@ describe("useLazySendMessageOnXMTP", () => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(result.current[1].data?.[1]?.error?.message).toBe(
-      "Identity unknown.fail couldn't be resolved to address"
+      "Recipient unknown.fail is not on the XMTP network"
     );
   }, 10000);
 
@@ -135,9 +135,9 @@ describe("useLazySendMessageOnXMTP", () => {
       useLazySendMessageOnXMTP({
         message: "This is a test message",
         addresses: [
-          "gm.xmtp.eth", 
-          "fc_fname:dwr.eth", 
-          "lens/@stani", 
+          "gm.xmtp.eth",
+          "fc_fname:dwr.eth",
+          "lens/@stani",
           "0xd8da6bf26964af9d7eed9e03e53415d37aa96045", // address for vitalik.eth
         ],
         wallet: testWallet,
@@ -152,29 +152,29 @@ describe("useLazySendMessageOnXMTP", () => {
     });
     await waitForLoadingStartAndStop(result);
 
-    expect(result.current[1].progress).toMatchObject({
+    expect(result.current[1].progress).toEqual({
       total: 4,
       sent: 4,
       error: 0,
     });
 
     expect(result.current[1].data).toHaveLength(4);
-    expect(result.current[1].data?.[0]).toMatchObject({
+    expect(result.current[1].data?.[0]).toEqual({
       address: "gm.xmtp.eth",
       recipientAddress: "0x937c0d4a6294cdfa575de17382c7076b579dc176",
       sent: true,
     });
-    expect(result.current[1].data?.[1]).toMatchObject(  {
+    expect(result.current[1].data?.[1]).toEqual({
       address: "fc_fname:dwr.eth",
       recipientAddress: "0x8fc5d6afe572fefc4ec153587b63ce543f6fa2ea",
       sent: true,
     });
-    expect(result.current[1].data?.[2]).toMatchObject({
+    expect(result.current[1].data?.[2]).toEqual({
       address: "lens/@stani",
       recipientAddress: "0x7241dddec3a6af367882eaf9651b87e1c7549dff",
       sent: true,
     });
-    expect(result.current[1].data?.[3]).toMatchObject({
+    expect(result.current[1].data?.[3]).toEqual({
       address: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
       recipientAddress: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
       sent: true,
@@ -205,7 +205,7 @@ describe("useLazySendMessageOnXMTP", () => {
 
     expect(result.current[1].error).toBe(null);
     expect(result.current[1].data).toHaveLength(0);
-    expect(result.current[1].progress).toMatchObject({
+    expect(result.current[1].progress).toEqual({
       total: 1,
       sent: 0,
       error: 0,
