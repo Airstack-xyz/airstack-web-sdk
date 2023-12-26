@@ -39,7 +39,7 @@ export type SendMessageOnXMTPReturnType = {
 
 export type SendMessageParamsType = Pick<
   SendMessageOnXMTPParamsType,
-  "message" | "addresses"
+  "message" | "addresses" | "wallet"
 >;
 
 export type UseSendMessageOnXMTPParamsType = Omit<
