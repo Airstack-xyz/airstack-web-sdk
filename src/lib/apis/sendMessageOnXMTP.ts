@@ -1,18 +1,17 @@
-import { Client } from "@xmtp/xmtp-js";
-import { BrowserProvider, Eip1193Provider } from "ethers";
 import { XMTP_ADDRESS_BATCH_SIZE } from "../constants/xmtp-messaging";
 import {
   MessagingResult,
   ProgressResult,
   SendMessageOnXMTPParamsType,
-  SendMessageOnXMTPReturnType,
+  SendMessageOnXMTPReturnType
 } from "../types/xmtp-messaging";
-import { processAddressesViaAirstack } from "../utils/xmtp-messaging";
+import { getProcessedAddresses, getXMTPClient } from "../utils/xmtp-messaging";
 
 export async function sendMessageOnXMTP({
   message,
   addresses,
   wallet,
+  cacheXMTPClient,
   abortController,
   onProgress,
   onComplete,
@@ -28,24 +27,12 @@ export async function sendMessageOnXMTP({
     error: null,
   };
 
-  let signer = wallet;
-
   if (abortController?.signal?.aborted) {
     return resultToReturn;
   }
 
   try {
-    if (!signer) {
-      if (!("ethereum" in window)) {
-        throw new Error("Browser based wallet not found");
-      }
-      const provider = new BrowserProvider(window.ethereum as Eip1193Provider);
-      signer = await provider.getSigner();
-    }
-
-    const client = await Client.create(signer, {
-      env: "production",
-    });
+    const client = await getXMTPClient(wallet, cacheXMTPClient);
 
     if (abortController?.signal?.aborted) {
       return resultToReturn;
@@ -72,7 +59,7 @@ export async function sendMessageOnXMTP({
       // process addresses using Airstack's XMTPs api:
       // 1. resolve identity to address
       // 2. check if XMTP is enabled for address
-      const processedBatch = await processAddressesViaAirstack(
+      const processedBatch = await getProcessedAddresses(
         currentBatch,
         abortController
       );

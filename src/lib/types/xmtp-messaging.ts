@@ -21,10 +21,13 @@ export type MessagingResult = {
   error?: unknown;
 };
 
+export type WalletType = Signer | WalletClient;
+
 export type SendMessageOnXMTPParamsType = {
   message: string;
   addresses: string[];
-  wallet?: Signer | WalletClient;
+  wallet?: WalletType;
+  cacheXMTPClient?: boolean;
   abortController?: AbortController;
   onProgress?: (data: ProgressResult) => void;
   onComplete?: (data: MessagingResult[]) => void;
