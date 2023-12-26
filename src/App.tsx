@@ -20,7 +20,7 @@ const PLAYGROUNDS = [
 ];
 
 function App() {
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedTab, setSelectedTab] = useState(1);
   return (
     <div>
       <h1 style={{ textAlign: "center", fontSize: "2rem"}}>Airstack Web SDK</h1>
