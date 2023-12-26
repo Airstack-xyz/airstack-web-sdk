@@ -20,10 +20,9 @@ export function useLazySendMessageOnXMTP(
 
   const [loading, setLoading] = useState(false);
 
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const abortControllerRef = useRef<AbortController>();
 
-  const hookParamsRef =
-    useRef<UseLazySendMessageOnXMTPParamsType>(hookParams);
+  const hookParamsRef = useRef<UseLazySendMessageOnXMTPParamsType>(hookParams);
 
   // store it in refs so that is can be used in callbacks/events
   hookParamsRef.current = hookParams;
@@ -36,12 +35,10 @@ export function useLazySendMessageOnXMTP(
     setLoading(true);
 
     // create a new abort controller only if the previous one is aborted
-    const abortController =
+    abortControllerRef.current =
       !abortControllerRef.current || abortControllerRef.current?.signal?.aborted
         ? new AbortController()
         : abortControllerRef.current;
-
-    abortControllerRef.current = abortController;
 
     const result = await sendMessageOnXMTP({
       ...hookParamsRef.current,
@@ -62,14 +59,17 @@ export function useLazySendMessageOnXMTP(
     return result;
   }, []);
 
-  const cancel = useCallback(() => {
+  const abort = useCallback(() => {
     abortControllerRef.current?.abort();
-    // optimistically stop loading as sendMessageOnXMTP can't be quickly aborted
-    setLoading(false);
   }, []);
 
+  const cancel = useCallback(() => {
+    abort();
+    setLoading(false);  // optimistically stop loading as sendMessageOnXMTP can't be quickly aborted
+  }, [abort]);
+
   // cleanup, call cancel on unmount
-  useEffect(() => cancel, [cancel]);
+  useEffect(() => abort, [abort]);
 
   return [send, { data, progress, error, loading, cancel }];
 }
@@ -82,8 +82,7 @@ export function useSendMessageOnXMTP(
 
   useEffect(() => {
     send();
-    return () => cancel();
-  }, [cancel, send]);
+  }, [send]);
 
   return { data, progress, error, loading, cancel };
 }

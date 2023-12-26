@@ -25,7 +25,7 @@ const GetXMTPOwnersQuery = `query GetXMTPOwners($owners: [Identity!]) {
 // use Airstack's XMTPs api to process addresses:
 // 1. resolve identity to address
 // 2. check if XMTP is enabled for address
-export async function processAddressesViaAirstack(
+export async function getProcessedAddresses(
   addresses: string[],
   abortController?: AbortController
 ): Promise<ProcessedAddress[]> {
