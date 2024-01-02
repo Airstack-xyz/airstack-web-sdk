@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { Wallet } from "ethers";
 import { vi } from "vitest";
 import { init } from "../../init";
+import * as clientCacheUtils from "../../utils/xmtp-messaging/clientCache";
 import { useLazySendMessageOnXMTP } from "../useSendMessageOnXMTP";
 import { noop, waitForLoadingStartAndStop } from "./utils";
 
@@ -179,6 +180,27 @@ describe("useLazySendMessageOnXMTP", () => {
       recipientAddress: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
       sent: true,
     });
+  }, 10000);
+
+  it("should cache xmtp client", async () => {
+    const putClientIntoCacheSpy = vi.spyOn(clientCacheUtils, "putClientIntoCache");
+    const getClientFromCacheSpy = vi.spyOn(clientCacheUtils, "getClientFromCache");
+
+    const { result } = renderHook(() =>
+      useLazySendMessageOnXMTP({
+        message: "This is a test message",
+        addresses: ["gm.xmtp.eth"],
+        wallet: testWallet,
+        cacheXMTPClient: true
+      })
+    );
+
+    await act(async () => {
+      result.current[0]();
+    });
+
+    expect(getClientFromCacheSpy).toHaveBeenCalledOnce();
+    expect(putClientIntoCacheSpy).toHaveBeenCalledOnce();
   }, 10000);
 
   it("should abort messaging on calling cancel method", async () => {
