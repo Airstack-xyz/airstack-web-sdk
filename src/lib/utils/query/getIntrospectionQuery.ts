@@ -6,6 +6,7 @@ import { config } from "../../config";
 const mismatchedQueryMap = {
   socialfollowingsinput: "socialfollowinginput",
   socialfollowersinput: "socialfollowerinput",
+  farcastercastsinput: "farcastercastinput",
 } as const;
 
 export type SchemaMap = Record<string, IntrospectionType>;
