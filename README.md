@@ -542,9 +542,9 @@ const [fetchData, { data, loading, pagination }] = useGetENSSubDomains({
 Get all transfer of a token
 
 ```jsx
-import { useGetNFTTransfers } from "@airstack/airstack-react";
+import { useGetTokenTransfers } from "@airstack/airstack-react";
 
-const [fetchData, { data, loading, pagination }] = useGetNFTTransfers({
+const [fetchData, { data, loading, pagination }] = useGetTokenTransfers({
   address: "vitalik.eth",
   blockchain: "ethereum"
 });
