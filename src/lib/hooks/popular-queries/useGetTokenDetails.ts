@@ -1,31 +1,37 @@
 import { useQuery } from "../useQuery";
 
-const query = `query TokenDetails($address: Address!, $blockchain: TokenBlockchain!) {
-  Token(input: {address: $address, blockchain: $blockchain}) {
-    name
-    symbol
-    decimals
-    totalSupply
-    type
-    baseURI
-    address
-    blockchain
-    logo {
-      large
-      medium
-      original
-      small
-    }
-    projectDetails {
-      collectionName
-      description
-      imageUrl
-      discordUrl
-      externalUrl
-      twitterUrl
+const query = /* GraphQL */ `
+  query TokenDetails($address: Address!, $blockchain: TokenBlockchain!) {
+    Tokens(
+      input: { filter: { address: { _eq: $address } }, blockchain: $blockchain }
+    ) {
+      Token {
+        name
+        symbol
+        decimals
+        totalSupply
+        type
+        baseURI
+        address
+        blockchain
+        logo {
+          large
+          medium
+          original
+          small
+        }
+        projectDetails {
+          collectionName
+          description
+          imageUrl
+          discordUrl
+          externalUrl
+          twitterUrl
+        }
+      }
     }
   }
-}`;
+`;
 
 export type GetTokenDetailsVariables = {
   address: string;
