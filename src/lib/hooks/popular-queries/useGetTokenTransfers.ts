@@ -1,8 +1,17 @@
 import { useQuery } from "../useQuery";
 
-const query = `query GetTokenTransfers($tokenAddress: Address, $blockchain: TokenBlockchain!, $limit: Int) {
+const query = /* GraphQL */ `
+  query GetTokenTransfers(
+    $tokenAddress: Address
+    $blockchain: TokenBlockchain!
+    $limit: Int
+  ) {
     TokenTransfers(
-      input: {filter: { tokenAddress: {_eq: $tokenAddress}}, blockchain: $blockchain, limit: $limit}
+      input: {
+        filter: { tokenAddress: { _eq: $tokenAddress } }
+        blockchain: $blockchain
+        limit: $limit
+      }
     ) {
       TokenTransfer {
         amount
@@ -25,7 +34,8 @@ const query = `query GetTokenTransfers($tokenAddress: Address, $blockchain: Toke
         prevCursor
       }
     }
-  }`;
+  }
+`;
 
 export type GetTokenTransfersVariables = {
   address: string;

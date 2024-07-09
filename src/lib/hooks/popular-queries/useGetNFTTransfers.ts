@@ -1,31 +1,45 @@
 import { useLazyQueryWithPagination } from "../useQueryWithPagination";
 
-const query = `query GetNFTTransfers($tokenAddress: Address, $tokenId: String, $blockchain: TokenBlockchain!, $limit: Int) {
-  TokenTransfers(
-    input: {filter: {tokenId: {_eq: $tokenId}, tokenAddress: {_eq: $tokenAddress}}, blockchain: $blockchain, limit: $limit}
+const query = /* GraphQL */ `
+  query GetNFTTransfers(
+    $tokenAddress: Address
+    $tokenId: String
+    $blockchain: TokenBlockchain!
+    $limit: Int
   ) {
-    TokenTransfer {
-      amount
-      blockNumber
-      blockTimestamp
-      from {
-        addresses
+    TokenTransfers(
+      input: {
+        filter: {
+          tokenId: { _eq: $tokenId }
+          tokenAddress: { _eq: $tokenAddress }
+        }
+        blockchain: $blockchain
+        limit: $limit
       }
-      to {
-        addresses
+    ) {
+      TokenTransfer {
+        amount
+        blockNumber
+        blockTimestamp
+        from {
+          addresses
+        }
+        to {
+          addresses
+        }
+        tokenAddress
+        transactionHash
+        tokenId
+        tokenType
+        blockchain
       }
-      tokenAddress
-      transactionHash
-      tokenId
-      tokenType
-      blockchain
-    }
-    pageInfo {
-      nextCursor
-      prevCursor
+      pageInfo {
+        nextCursor
+        prevCursor
+      }
     }
   }
-}`;
+`;
 
 export type GetNFTTransfersVariables = {
   tokenAddress: string;

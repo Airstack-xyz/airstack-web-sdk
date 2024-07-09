@@ -1,18 +1,31 @@
 import { useQuery } from "../useQuery";
 
-const query = `query GetNFTImages($address: Address!, $tokenId: String!, $blockchain: TokenBlockchain!) {
-  TokenNft(input: {address: $address, tokenId: $tokenId, blockchain: $blockchain}) {
-    contentValue {
-      image {
-        original
-        extraSmall
-        large
-        medium
-        small
+const query = /* GraphQL */ `
+  query GetNFTImages(
+    $address: Address!
+    $tokenId: String!
+    $blockchain: TokenBlockchain!
+  ) {
+    TokenNfts(
+      input: {
+        filter: { address: { _eq: $address }, tokenId: { _eq: $tokenId } }
+        blockchain: $blockchain
+      }
+    ) {
+      TokenNft {
+        contentValue {
+          image {
+            original
+            extraSmall
+            large
+            medium
+            small
+          }
+        }
       }
     }
   }
-}`;
+`;
 
 export type GetNFTImagesVariables = {
   address: string;

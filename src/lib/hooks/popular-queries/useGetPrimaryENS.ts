@@ -1,20 +1,22 @@
 import { useQuery } from "../useQuery";
 
-const query = `query GetPrimaryENS($identity: Identity!, $blockchain: TokenBlockchain!) {
-  Wallet(input: {identity: $identity, blockchain: $blockchain}) {
-    primaryDomain {
-      name
-      dappName
-      tokenId
-      chainId
-      blockchain
-      labelName
-      labelHash
-      owner
-      parent
+const query = /* GraphQL */ `
+  query GetPrimaryENS($identity: Identity!, $blockchain: TokenBlockchain!) {
+    Wallet(input: { identity: $identity, blockchain: $blockchain }) {
+      primaryDomain {
+        name
+        dappName
+        tokenId
+        chainId
+        blockchain
+        labelName
+        labelHash
+        owner
+        parent
+      }
     }
   }
-}`;
+`;
 
 export type GetPrimaryENSVariables = {
   identity: string;

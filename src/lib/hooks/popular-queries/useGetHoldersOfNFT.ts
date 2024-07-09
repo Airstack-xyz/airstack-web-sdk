@@ -1,62 +1,74 @@
 import { useLazyQueryWithPagination } from "../useQueryWithPagination";
 
-const query = `query GetHoldersOfNFT($tokenAddress: Address, $tokenId: String, $blockchain: TokenBlockchain!) {
-  TokenBalances(
-    input: {filter: {tokenAddress: {_eq: $tokenAddress}, tokenId: {_eq: $tokenId}}, blockchain: $blockchain}
+const query = /* GraphQL */ `
+  query GetHoldersOfNFT(
+    $tokenAddress: Address
+    $tokenId: String
+    $blockchain: TokenBlockchain!
   ) {
-    TokenBalance {
-      token {
-        name
-        symbol
-        decimals
-      }
-      tokenId
-      tokenType
-      tokenNfts {
-        contentType
-        contentValue {
-          animation_url {
-            original
-          }
-          image {
-            extraSmall
-            large
-            medium
-            original
-            small
-          }
-          video {
-            original
-          }
-          audio {
-            original
-          }
+    TokenBalances(
+      input: {
+        filter: {
+          tokenAddress: { _eq: $tokenAddress }
+          tokenId: { _eq: $tokenId }
         }
+        blockchain: $blockchain
       }
-      owner {
-        addresses
-        primaryDomain {
+    ) {
+      TokenBalance {
+        token {
           name
-          resolvedAddress
+          symbol
+          decimals
         }
-        domains {
-          name
-          owner
+        tokenId
+        tokenType
+        tokenNfts {
+          contentType
+          contentValue {
+            animation_url {
+              original
+            }
+            image {
+              extraSmall
+              large
+              medium
+              original
+              small
+            }
+            video {
+              original
+            }
+            audio {
+              original
+            }
+          }
         }
-        socials {
-          dappName
-          profileName
-          userAddress
-          userAssociatedAddresses
+        owner {
+          addresses
+          primaryDomain {
+            name
+            resolvedAddress
+          }
+          domains {
+            name
+            owner
+          }
+          socials {
+            dappName
+            profileName
+            userAddress
+            userAssociatedAddresses
+          }
         }
       }
-    }
-    pageInfo {
-      nextCursor
-      prevCursor
+      pageInfo {
+        nextCursor
+        prevCursor
+      }
     }
   }
-}`;
+`;
 
 export type GetHoldersOfNFTVariables = {
   tokenAddress: string;
