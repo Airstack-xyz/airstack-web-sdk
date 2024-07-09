@@ -5,36 +5,45 @@ With the provided hooks and components, you can easily query and fetch data from
 
 ## Table of Contents
 
-- [Installation](#installation)
-  - [With NPM](#with-npm)
-  - [With yarn](#with-yarn)
-  - [With pnpm](#with-pnpm)
-- [Getting Started](#getting-started)
-- [Hooks](#hooks)
-  - [Query Hooks](#query-hooks)
+- [Airstack Web SDK](#airstack-web-sdk)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+    - [With NPM](#with-npm)
+    - [With yarn](#with-yarn)
+    - [With pnpm](#with-pnpm)
+  - [Getting started](#getting-started)
+  - [Hooks](#hooks)
+    - [Query Hooks](#query-hooks)
     - [useQuery](#usequery)
+      - [Example](#example)
     - [useLazyQuery](#uselazyquery)
-  - [Pagination Hooks](#pagination-hooks)
-- [Components](#components)
-  - [Asset](#asset)
-  - [Props](#props)
-- [fetchQuery](#fetchquery)
-- [fetchQueryWithPagination](#fetchquerywithpagination)
-- [Hooks for Popular Queries](#hooks-for-popular-queries)
-  - [useGetTokenBalances](#usegettokenbalances)
-  - [useGetTokenDetails](#usegettokendetails)
-  - [useGetNFTDetails](#usegetnftdetails)
-  - [useGetNFTs](#usegetnfts)
-  - [useGetNFTImages](#usegetnftimages)
-  - [useGetWalletENSAndSocial](#usegetwalletensandsocial)
-  - [useGetWalletENS](#usegetwalletens)
-  - [useGetBalanceOfToken](#usegetbalanceoftoken)
-  - [useGetHoldersOfCollection](#usegetholdersofcollection)
-  - [useGetHoldersOfNFT](usegetholdersofnft)
-  - [useGetPrimaryENS](#usegetprimaryens)
-  - [useGetENSSubDomains](#usegetenssubdomains)
-  - [useGetTokenTransfers](#usegettokentransfers)
-  - [useGetNFTTransfers](#usegetnfttransfers)
+      - [Example](#example-1)
+    - [Pagination Hooks](#pagination-hooks)
+    - [useQueryWithPagination](#usequerywithpagination)
+      - [Example](#example-2)
+    - [useLazyQueryWithPagination](#uselazyquerywithpagination)
+  - [Components](#components)
+    - [Asset](#asset)
+    - [Props](#props)
+      - [Example](#example-3)
+  - [fetchQuery](#fetchquery) - [Example](#example-4)
+  - [fetchQueryWithPagination](#fetchquerywithpagination) - [Example](#example-5)
+  - [Hooks for Popular Queries](#hooks-for-popular-queries)
+    - [`useGetTokenBalances`](#usegettokenbalances)
+    - [`useGetTokenDetails`](#usegettokendetails)
+      - [Code](#code)
+    - [`useGetNFTDetails`](#usegetnftdetails)
+    - [`useGetNFTs`](#usegetnfts)
+    - [`useGetNFTImages`](#usegetnftimages)
+    - [`useGetWalletENSAndSocial`](#usegetwalletensandsocial)
+    - [`useGetWalletENS`](#usegetwalletens)
+    - [`useGetBalanceOfToken`](#usegetbalanceoftoken)
+    - [`useGetHoldersOfCollection`](#usegetholdersofcollection)
+    - [`useGetHoldersOfNFT`](#usegetholdersofnft)
+    - [`useGetPrimaryENS`](#usegetprimaryens)
+    - [`useGetENSSubDomains`](#usegetenssubdomains)
+    - [`useGetTokenTransfers`](#usegettokentransfers)
+    - [`useGetNFTTransfers`](#usegetnfttransfers)
 
 ## Installation
 
@@ -58,9 +67,9 @@ pnpm install @airstack/airstack-react
 
 ## Getting started
 
-To use the SDK you will need airstack api-key, which you can find in your profile setting section in [airstack web](https://app.airstack.xyz), once you have it you can call the `init` function with the api-key or use `AirstackProvider`.
+To use the SDK you will need the [Airstack API key](https://app.airstack.xyz/profile-settings/api-keys), once you have it you can call the `init` function with the API key or use `AirstackProvider`.
 
-**`init` must be called before any of the SDK hook or component is used or you can use AirstackProvider**, we recommend to use `init` or `AirstackProvider` in the _App.ts_ file.
+**`init` must be called before any of the SDK hooks or components are used or you can use AirstackProvider**, we recommend using `init` or `AirstackProvider` in the _App.ts_ file.
 
 **Example with init**
 
@@ -152,7 +161,11 @@ The `useQuery` hook loads query data as soon as the component is mounted. It ret
 import { useQuery } from "@airstack/airstack-react";
 
 const MyComponent = () => {
-  const { data, loading, error } = useQuery(query, variables, configAndCallbacks);
+  const { data, loading, error } = useQuery(
+    query,
+    variables,
+    configAndCallbacks
+  );
 
   if (loading) {
     return <p>Loading...</p>;
@@ -199,7 +212,7 @@ const MyComponent = () => {
 
 ### Pagination Hooks
 
-**Note:** pagination hooks only works with queries that has support for pagination.
+**Note:** pagination hooks only work with queries that have support for pagination.
 
 ### useQueryWithPagination
 
@@ -329,8 +342,8 @@ function App() {
 
 ## fetchQuery
 
-fetchQuery can be used in places where using hooks is not possible. `fetchQuery` accepts same parameter as hooks.
-**Note**: fetchQuery only accepts config and do not accept callbacks in the third parameter.
+fetchQuery can be used in places where using hooks is not possible. `fetchQuery` accepts the same parameter as hooks.
+**Note**: fetchQuery only accepts config and does not accept callbacks in the third parameter.
 
 `fetchQuery` returns a promise with an object, which contains the following properties:
 
@@ -347,7 +360,7 @@ const { data, error } = await fetchQuery(query, variables, config);
 
 ## fetchQueryWithPagination
 
-`fetchQueryWithPagination` take same parameter as `fetchQuery`.
+`fetchQueryWithPagination` takes the same parameter as `fetchQuery`.
 
 It returns a promise with an object, which contains the following properties:
 
@@ -355,10 +368,10 @@ It returns a promise with an object, which contains the following properties:
 - `error`: An error object, if an error occurred during the network request.
 - `hasNextPage`: A boolean that indicates whether there is a next page of data available.
 - `hasPrevPage`: A boolean that indicates whether there is a previous page of data available.
-- `getNextPage()`: A function that returns a next page of data. Returns `null` if there is no next page.
-- `getPrevPage()`: A function that returns previous page of data. Returns `null` if there is no previous page.
+- `getNextPage()`: A function that returns the next page of data. Returns `null` if there is no next page.
+- `getPrevPage()`: A function that returns the pråevious page of data. Returns `null` if there is no previous page.
 
-**Note:** fetchQueryWithPagination only works with queries that has support for pagination.
+**Note:** fetchQueryWithPagination only works with queries that have support for pagination.
 
 ##### Example
 
@@ -382,7 +395,7 @@ const [fetchData, { data, loading, pagination }] = useGetTokenBalances({
   identitity: "vitalik.eth",
   tokenType: ["ERC20", "ERC721", "ERC1155"],
   blockchain: "ethereum",
-  limit: 200
+  limit: 200,
 });
 ```
 
@@ -395,9 +408,9 @@ Get token details(Name, Symbol, Decimals, TotalSupply) for given contract addres
 ```jsx
 import { useGetTokenDetails } from "@airstack/airstack-react";
 
-const [fetchData, { data, loading, pagination }] = useGetTokenDetails({
+const { data, loading, pagination } = useGetTokenDetails({
   address: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
-  blockchain: "ethereum"
+  blockchain: "ethereum",
 });
 ```
 
@@ -408,16 +421,16 @@ Get NFT details (Name, Symbol, Decimals, TotalSupply, Metadata, TokenURI, Images
 ```jsx
 import { useGetNFTDetails } from "@airstack/airstack-react";
 
-const [fetchData, { data, loading, pagination }] = useGetNFTDetails({
+const { data, loading, pagination } = useGetNFTDetails({
   address: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
   tokenId: "1751",
-  blockchain: "ethereum"
+  blockchain: "ethereum",
 });
 ```
 
 ### `useGetNFTs`
 
-Get all NFTs of an collection
+Get all NFTs of an NFT collection
 
 ```jsx
 import { useGetNFTs } from "@airstack/airstack-react";
@@ -425,18 +438,18 @@ import { useGetNFTs } from "@airstack/airstack-react";
 const [fetchData, { data, loading, pagination }] = useGetNFTs({
   blockchain: "ethereum",
   limit: 200,
-  address: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D"
+  address: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
 });
 ```
 
 ### `useGetNFTImages`
 
-Get image of an NFT
+Get images of an NFT
 
 ```jsx
 import { useGetNFTImages } from "@airstack/airstack-react";
 
-const [fetchData, { data, loading, pagination }] = useGetNFTImages({
+const { data, loading, pagination } = useGetNFTImages({
   address: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
   tokenId: "1751",
   blockchain: "ethereum",
@@ -445,41 +458,41 @@ const [fetchData, { data, loading, pagination }] = useGetNFTImages({
 
 ### `useGetWalletENSAndSocial`
 
-Get all social profile and ENS name of an wallet
+Get all social profiles and ENS names of a wallet
 
 ```jsx
 import { useGetWalletENSAndSocial } from "@airstack/airstack-react";
 
 const [fetchData, { data, loading, pagination }] = useGetWalletENSAndSocial({
   identity: "vitalik.eth",
-  blockchain: "ethereum"
+  blockchain: "ethereum",
 });
 ```
 
 ### `useGetWalletENS`
 
-Get the ENS name of an wallet address
+Get the ENS name of a wallet address
 
 ```jsx
 import { useGetWalletENS } from "@airstack/airstack-react";
 
-const [fetchData, { data, loading, pagination }] = useGetWalletENS({
+const { data, loading, pagination } = useGetWalletENS({
   identity: "vitalik.eth",
-  blockchain: "ethereum"
+  blockchain: "ethereum",
 });
 ```
 
 ### `useGetBalanceOfToken`
 
-Get balance of wallet address for a particular token
+Get the balance of a given wallet address for a particular token
 
 ```jsx
 import { useGetBalanceOfToken } from "@airstack/airstack-react";
 
-const [fetchData, { data, loading, pagination }] = useGetBalanceOfToken({
+const { data, loading, pagination } = useGetBalanceOfToken({
   blockchain: "ethereum",
   tokenAddress: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
-  owner: "vitalik.eth"
+  owner: "vitalik.eth",
 });
 ```
 
@@ -493,13 +506,13 @@ import { useGetHoldersOfCollection } from "@airstack/airstack-react";
 const [fetchData, { data, loading, pagination }] = useGetHoldersOfCollection({
   tokenAddress: ["0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D"],
   blockchain: "ethereum",
-  limit: 200
+  limit: 200,
 });
 ```
 
 ### `useGetHoldersOfNFT`
 
-Get owner(s) of the NFT
+Get all the owner(s) of the NFT
 
 ```jsx
 import { useGetHoldersOfNFT } from "@airstack/airstack-react";
@@ -507,52 +520,52 @@ import { useGetHoldersOfNFT } from "@airstack/airstack-react";
 const [fetchData, { data, loading, pagination }] = useGetHoldersOfNFT({
   tokenAddress: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
   tokenId: "1751",
-  blockchain: "ethereum"
+  blockchain: "ethereum",
 });
 ```
 
 ### `useGetPrimaryENS`
 
-Get Primary Domain for an address
+Get the primary domain for an address
 
 ```jsx
 import { useGetPrimaryENS } from "@airstack/airstack-react";
 
-const [fetchData, { data, loading, pagination }] = useGetPrimaryENS({
+const { data, loading, pagination } = useGetPrimaryENS({
   identity: "vitalik.eth",
-  blockchain: "ethereum"
+  blockchain: "ethereum",
 });
 ```
 
 ### `useGetENSSubDomains`
 
-Get sub domains for an address
+Get all the ENS subdomains owned by an address
 
 ```jsx
 import { useGetENSSubDomains } from "@airstack/airstack-react";
 
-const [fetchData, { data, loading, pagination }] = useGetENSSubDomains({
+const { data, loading, pagination } = useGetENSSubDomains({
   owner: "vitalik.eth",
-  blockchain: "ethereum"
+  blockchain: "ethereum",
 });
 ```
 
 ### `useGetTokenTransfers`
 
-Get all transfer of a token
+Get all transfers of a token
 
 ```jsx
 import { useGetTokenTransfers } from "@airstack/airstack-react";
 
-const [fetchData, { data, loading, pagination }] = useGetTokenTransfers({
+const { data, loading, pagination } = useGetTokenTransfers({
   address: "vitalik.eth",
-  blockchain: "ethereum"
+  blockchain: "ethereum",
 });
 ```
 
 ### `useGetNFTTransfers`
 
-Get all transfer of a token NFT
+Get all transfers of a token NFT
 
 ```jsx
 import { useGetNFTTransfers } from "@airstack/airstack-react";
@@ -561,6 +574,6 @@ const [fetchData, { data, loading, pagination }] = useGetNFTTransfers({
   tokenAddress: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
   tokenId: "1751",
   blockchain: "ethereum",
-  limit: 200
+  limit: 200,
 });
 ```

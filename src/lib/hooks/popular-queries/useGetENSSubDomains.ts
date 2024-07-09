@@ -1,9 +1,24 @@
 import { useQuery } from "../useQuery";
 
-const query = `query GetENSSubDomains($owner: Identity, $blockchain: Blockchain!) {
-  Domains(input: {filter: {owner: {_eq: $owner}}, blockchain: $blockchain}) {
-    Domain {
-      subDomains {
+const query = /* GraphQL */ `
+  query GetENSSubDomains($owner: Identity, $blockchain: Blockchain!) {
+    Domains(
+      input: { filter: { owner: { _eq: $owner } }, blockchain: $blockchain }
+    ) {
+      Domain {
+        subDomains {
+          name
+          dappName
+          tokenId
+          chainId
+          blockchain
+          labelName
+          labelHash
+          owner
+          parent
+          expiryTimestamp
+          resolvedAddress
+        }
         name
         dappName
         tokenId
@@ -13,25 +28,14 @@ const query = `query GetENSSubDomains($owner: Identity, $blockchain: Blockchain!
         labelHash
         owner
         parent
-        expiryTimestamp
-        resolvedAddress
       }
-      name
-      dappName
-      tokenId
-      chainId
-      blockchain
-      labelName
-      labelHash
-      owner
-      parent
-    }
-    pageInfo {
-      nextCursor
-      prevCursor
+      pageInfo {
+        nextCursor
+        prevCursor
+      }
     }
   }
-}`;
+`;
 
 export type GetENSSubDomainsVariables = {
   owner: string;

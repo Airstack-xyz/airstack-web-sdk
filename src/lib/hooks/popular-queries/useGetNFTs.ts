@@ -1,57 +1,67 @@
 import { useLazyQueryWithPagination } from "../useQueryWithPagination";
 
-const query = `query GetNFTs($address: Address!, $blockchain: TokenBlockchain!, $limit: Int) {
-  TokenNfts(
-    input: {blockchain: $blockchain, limit: $limit, filter: {address: {_eq: $address}}}
+const query = /* GraphQL */ `
+  query GetNFTs(
+    $address: Address!
+    $blockchain: TokenBlockchain!
+    $limit: Int
   ) {
-    TokenNft {
-      address
-      blockchain
-      contentType
-      contentValue {
-        animation_url {
-          original
-        }
-        image {
-          extraSmall
-          medium
-          large
-          original
-          small
-        }
-        video {
-          original
-        }
-        audio {
-          original
-        }
+    TokenNfts(
+      input: {
+        blockchain: $blockchain
+        limit: $limit
+        filter: { address: { _eq: $address } }
       }
-      metaData {
-        animationUrl
-        backgroundColor
-        attributes {
-          displayType
-          maxValue
-          value
-          trait_type
+    ) {
+      TokenNft {
+        address
+        blockchain
+        contentType
+        contentValue {
+          animation_url {
+            original
+          }
+          image {
+            extraSmall
+            medium
+            large
+            original
+            small
+          }
+          video {
+            original
+          }
+          audio {
+            original
+          }
         }
-        description
-        externalUrl
-        image
-        imageData
-        youtubeUrl
-        name
+        metaData {
+          animationUrl
+          backgroundColor
+          attributes {
+            displayType
+            maxValue
+            value
+            trait_type
+          }
+          description
+          externalUrl
+          image
+          imageData
+          youtubeUrl
+          name
+        }
+        tokenURI
+        type
+        tokenId
       }
-      tokenURI
-      type
-      tokenId
-    }
-    pageInfo {
-      nextCursor
-      prevCursor
+      pageInfo {
+        nextCursor
+        prevCursor
+      }
     }
   }
-}`;
+`;
 
 export type GetNFTsVariables = {
   blockchain: string;
